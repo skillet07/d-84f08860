@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f4a42">
+<title>Demo-concepto · Ni un contacto sin respuesta</title>
+<style>
+:root{
+  --ink:#17211f; --muted:#56655f; --line:#dcd6ca; --paper:#f4f1ea; --card:#ffffff;
+  --brand:#0f4a42; --brand-ink:#ffffff; --action:#17684f; --action-soft:#e3f1ea;
+  --wall:#ebe5da; --in:#ffffff; --out:#d7efc6;
+  --warn:#8a4b00; --warn-bg:#fdf0d9; --bad:#a5231a; --bad-bg:#fbe4e0; --ok:#17684f;
+  --navy:#23337f;
+  --r:14px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:var(--font);color:var(--ink);background:#1f2825;font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:3px solid #f0b429;outline-offset:2px}
+.app{width:100%;max-width:430px;height:100dvh;margin:0 auto;display:flex;flex-direction:column;background:var(--paper);position:relative;overflow:hidden}
+@media (min-width:600px){.app{height:min(100dvh,900px);margin-top:max(0px,calc((100dvh - 900px)/2));border-radius:18px}}
+
+/* aviso */
+.notice{background:#2c3935;color:#d6dfdb;font-size:12px;line-height:1.3;padding:6px 12px;text-align:center}
+.notice b{color:#fff;font-weight:600}
+
+/* roles */
+.roles{display:flex;gap:4px;padding:8px 10px;background:var(--brand)}
+.roles button{flex:1;min-height:44px;border-radius:10px;color:#cfe3dd;font-weight:600;font-size:14px;letter-spacing:.01em}
+.roles button[aria-selected="true"]{background:#fff;color:var(--brand)}
+.roles small{display:block;font-weight:500;font-size:12px;opacity:.85;margin-top:1px}
+
+.pane{display:none;flex:1;min-height:0;flex-direction:column}
+.pane.on{display:flex}
+.scroll{overflow-y:auto;padding:14px 12px 28px;-webkit-overflow-scrolling:touch}
+
+/* chat */
+.chat-head{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;background:var(--brand);color:#fff;border-top:1px solid rgba(255,255,255,.12)}
+.ava{width:38px;height:38px;border-radius:50%;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
+.chat-head h1{font-size:16px;font-weight:650;line-height:1.15}
+.chat-head p{font-size:12px;opacity:.85}
+.chat-head .grow{flex:1;min-width:0}
+.chip-btn{min-height:44px;padding:0 12px;border-radius:10px;color:#fff;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.35)}
+#msgs{flex:1;min-height:0;overflow-y:auto;padding:10px 10px 8px;background:var(--wall);display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth}
+.day{align-self:center;background:#fffbea;color:#5d5230;border-radius:8px;padding:4px 10px;font-size:12px;box-shadow:0 1px 0 rgba(0,0,0,.08);margin:6px 0 2px;text-align:center;max-width:92%}
+.sys{align-self:center;background:#e1e8e4;color:#37453f;border-radius:8px;padding:6px 10px;font-size:12px;text-align:center;max-width:92%}
+.b{max-width:84%;padding:7px 9px 5px;border-radius:10px;box-shadow:0 1px 0 rgba(0,0,0,.1);position:relative;word-wrap:break-word;animation:pop .18s ease-out}
+.b.in{align-self:flex-start;background:var(--in);border-top-left-radius:2px}
+.b.out{align-self:flex-end;background:var(--out);border-top-right-radius:2px}
+.b p+p{margin-top:6px}
+.b .meta{display:flex;justify-content:flex-end;align-items:center;gap:3px;font-size:12px;color:#5f6b66;margin-top:2px}
+.b .meta svg{width:16px;height:16px}
+.b.wide{max-width:90%}
+.typing{align-self:flex-start;background:#fff;border-radius:10px;border-top-left-radius:2px;padding:11px 12px;display:flex;gap:4px;box-shadow:0 1px 0 rgba(0,0,0,.1)}
+.typing i{width:7px;height:7px;border-radius:50%;background:#8a9690;animation:dot 1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.lot{margin:4px 0 2px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.lot .ph{height:74px;background:
+  linear-gradient(135deg,#dfe6e2 0 50%,#e9eeea 50% 100%);display:flex;align-items:flex-end;justify-content:space-between;padding:6px 8px;position:relative}
+.lot .ph svg{position:absolute;right:10px;top:10px;width:46px;height:46px;opacity:.5}
+.lot .ph span{font-size:12px;color:#4b5a54;background:rgba(255,255,255,.8);padding:1px 6px;border-radius:6px}
+.lot .tx{padding:8px 10px 9px}
+.lot h4{font-size:15px;color:var(--navy);line-height:1.2}
+.lot .zona{font-size:12.5px;color:var(--muted);margin-top:1px}
+.lot .det{font-size:13px;margin-top:5px}
+.lot .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px;gap:8px}
+.lot .price{font-weight:700;font-size:15px}
+.lot .state{font-size:12px;color:var(--ok);font-weight:600}
+.ticket{margin:4px 0 2px;border:1px dashed #7f948b;border-radius:10px;padding:8px 10px;background:#f6fbf8;font-size:13.5px}
+.ticket b{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ok);margin-bottom:3px}
+.ticket div+div{margin-top:3px}
+
+.composer{background:#f0ece3;border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center}
+.sug{flex:1;min-width:0;min-height:46px;max-height:92px;overflow:hidden;background:#fff;border-radius:23px;padding:8px 14px;font-size:14px;line-height:1.3;text-align:left;border:1px solid var(--line);color:var(--ink)}
+.sug small{display:block;font-size:12px;color:var(--action);font-weight:700;letter-spacing:.02em;margin-bottom:1px}
+.send{width:48px;height:48px;border-radius:50%;background:var(--action);display:grid;place-items:center;flex:none;color:#fff}
+.send svg{width:22px;height:22px}
+.send[disabled],.sug[disabled]{opacity:.45;cursor:default}
+.next{flex:1;min-height:48px;border-radius:24px;background:var(--action);color:#fff;font-weight:650;padding:0 18px}
+.again{min-height:48px;padding:0 10px;color:var(--muted);font-size:13px;text-decoration:underline}
+
+/* hoja catalogo */
+.sheet{position:absolute;inset:0;background:rgba(10,20,17,.5);display:none;align-items:flex-end;z-index:5}
+.sheet.on{display:flex}
+.sheet-in{background:var(--paper);width:100%;max-height:82%;overflow-y:auto;border-radius:18px 18px 0 0;padding:14px 12px 24px}
+.sheet h2{font-size:17px;margin-bottom:2px}
+.sheet .lead{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.sheet .lot{margin:0 0 8px}
+.close{min-height:44px;width:100%;margin-top:6px;border-radius:12px;background:#fff;border:1px solid var(--line);font-weight:600}
+
+/* tarjetas equipo/direccion */
+.who{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.who .ava{background:var(--brand);color:#fff;width:34px;height:34px;font-size:12px}
+.who h2{font-size:16px;line-height:1.2}
+.who p{font-size:12.5px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:12px}
+.card h3{font-size:14.5px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.tag{font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.ok{background:var(--action-soft);color:var(--ok)}
+.tag.bad{background:var(--bad-bg);color:var(--bad)}
+.tag.ej{background:#ece8de;color:#5b5a50;font-weight:600}
+dl.kv{margin-top:8px;display:grid;grid-template-columns:96px 1fr;gap:5px 10px;font-size:13.5px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0}
+.sum{margin-top:10px;padding:9px 10px;background:#f5f3ed;border-radius:10px;font-size:13px}
+.sum b{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.sum ul{padding-left:16px}
+.btns{display:flex;gap:8px;margin-top:12px}
+.btn{flex:1;min-height:46px;border-radius:12px;font-weight:650;font-size:14px;padding:0 10px}
+.btn.pri{background:var(--action);color:#fff}
+.btn.sec{background:#fff;border:1px solid #b9c4be}
+.btn.ghost{color:var(--action);text-decoration:underline;min-height:44px}
+.btn[disabled]{opacity:.5}
+.timer{margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:13px;font-weight:600}
+.timer.done{background:var(--action-soft);color:var(--ok)}
+.timer.late{background:var(--bad-bg);color:var(--bad)}
+.tl{list-style:none;padding:0;margin-top:10px;font-size:13px}
+.tl li{display:grid;grid-template-columns:48px 14px 1fr;gap:8px;padding:6px 0;color:var(--muted);position:relative}
+.tl li .t{font-variant-numeric:tabular-nums;font-weight:600}
+.tl li .d{width:10px;height:10px;border-radius:50%;background:#c9d2cd;margin-top:5px}
+.tl li.on{color:var(--ink)}
+.tl li.on .d{background:var(--action)}
+.tl li.on.late .d{background:var(--bad)}
+.tl li.on.late{color:var(--bad)}
+.fine{font-size:12px;color:var(--muted);margin-top:8px}
+.msgprev{margin-top:10px;background:var(--wall);border-radius:10px;padding:10px}
+.msgprev .b{max-width:100%;animation:none}
+
+/* direccion */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:11px 12px}
+.kpi .n{font-size:30px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.35}
+.kpi.bad .n{color:var(--bad)} .kpi.ok .n{color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{text-align:right;padding:8px 4px;border-bottom:1px solid #ece8de;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600;line-height:1.2}
+td.r{color:var(--bad);font-weight:700}
+.list{list-style:none;padding:0;margin-top:8px}
+.list li{padding:10px 0;border-top:1px solid #ece8de;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.list li:first-child{border-top:0}
+.list .t1{font-size:13.5px}.list .t2{font-size:12px;color:var(--muted)}
+.mini{min-height:44px;padding:0 12px;border-radius:10px;border:1px solid #b9c4be;background:#fff;font-weight:600;font-size:13px;white-space:nowrap}
+.mini.done{background:var(--action-soft);border-color:transparent;color:var(--ok)}
+.cta{display:block;width:100%;min-height:52px;border-radius:14px;background:var(--brand);color:#fff;font-weight:700;font-size:15.5px;margin-top:6px}
+
+/* final */
+.pane.final{padding:22px 16px 30px;flex-direction:column;gap:14px;overflow-y:auto}
+.final h2{font-size:26px;line-height:1.15;letter-spacing:-.01em}
+.final .big{font-size:17px;line-height:1.4}
+.contact a{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 14px;border-radius:14px;background:#fff;border:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:650;margin-top:8px}
+.contact a small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.contact svg{width:24px;height:24px;color:var(--action);flex:none}
+.legend{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.legend b{color:var(--ink)}
+.legend p+p{margin-top:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+@media (max-width:360px){.roles small{display:none}dl.kv{grid-template-columns:84px 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="notice"><b>Demo-concepto.</b> No es la web oficial de la empresa. Datos de fuentes públicas a 09/11/2026</div>
+
+  <nav class="roles" role="tablist" aria-label="Vista del demo">
+    <button role="tab" id="t-cliente" aria-selected="true" aria-controls="p-cliente">Cliente<small>lo que escribe</small></button>
+    <button role="tab" id="t-equipo" aria-selected="false" aria-controls="p-equipo">Equipo<small>lo que recibe</small></button>
+    <button role="tab" id="t-direccion" aria-selected="false" aria-controls="p-direccion">Dirección<small>resumen del día</small></button>
+  </nav>
+
+  <!-- CLIENTE -->
+  <section class="pane on" id="p-cliente" role="tabpanel" aria-labelledby="t-cliente">
+    <header class="chat-head">
+      <div class="ava" aria-hidden="true">S2</div>
+      <div class="grow">
+        <h1>Sevilla 2000 · Asistente</h1>
+        <p>asistente virtual · responde al instante</p>
+      </div>
+      <button class="chip-btn" id="open-cat" type="button">Catálogo</button>
+    </header>
+    <div id="msgs" aria-live="polite"></div>
+    <footer class="composer" id="composer"></footer>
+  </section>
+
+  <!-- EQUIPO -->
+  <section class="pane scroll" id="p-equipo" role="tabpanel" aria-labelledby="t-equipo">
+    <div class="who">
+      <div class="ava" aria-hidden="true">N</div>
+      <div><h2>Oficina Nervión Sur</h2><p>Así le llega la solicitud al agente, en su móvil</p></div>
+    </div>
+
+    <article class="card" id="lead">
+      <h3>Solicitud con visita <span class="tag warn" id="lead-tag">Sin atender</span></h3>
+      <dl class="kv">
+        <dt>Cliente</dt><dd>Lucía <span class="tag ej">ejemplo</span></dd>
+        <dt>WhatsApp</dt><dd>+34 6·· ··· ···</dd>
+        <dt>Llegó</dt><dd>jueves 12 nov, 21:42 (oficina cerrada)</dd>
+        <dt>Busca</dt><dd>Comprar · 3 dormitorios · Nervión / Rosaleda</dd>
+        <dt>Presupuesto</dt><dd>unos 400.000 € (dicho por la clienta)</dd>
+        <dt>Visita pedida</dt><dd>sáb 14 nov · 11:00 Ramón y Cajal 29 y 12:15 Ctra. Carmona 72</dd>
+      </dl>
+      <div class="sum">
+        <b>Resumen de la conversación</b>
+        <ul>
+          <li>Preguntó por 3 dormitorios en Ramón y Cajal 29.</li>
+          <li>El asistente no inventó la disponibilidad: la deja para usted.</li>
+          <li>Se le propuso también Ctra. Carmona 72 (3 dorm., 87,01 m²).</li>
+        </ul>
+      </div>
+      <div class="timer" id="lead-timer"><span>Responder antes del vie 13 nov, 08:45</span></div>
+      <p class="fine" id="lead-fine">El plazo son 15 minutos desde que abre la oficina (08:30).</p>
+      <div class="btns" id="lead-btns">
+        <button class="btn pri" id="take" type="button">La llevo yo</button>
+        <button class="btn sec" id="pass" type="button">Pasar a otro agente</button>
+      </div>
+      <button class="btn ghost" id="sim" type="button" style="width:100%;margin-top:4px">Ver qué pasa si nadie contesta</button>
+
+      <ul class="tl" id="tl" aria-label="Cronología del aviso">
+        <li class="on" data-s="0"><span class="t">08:30</span><i class="d"></i><span>Aviso al agente de guardia de Nervión Sur</span></li>
+        <li data-s="1"><span class="t">08:38</span><i class="d"></i><span>Recordatorio al agente</span></li>
+        <li data-s="2"><span class="t">08:45</span><i class="d"></i><span>Sin respuesta: aviso al responsable de la oficina y mensaje de disculpa a la clienta</span></li>
+      </ul>
+      <div class="msgprev" id="late-msg" hidden>
+        <p class="fine" style="margin:0 0 6px">Mensaje que recibe la clienta:</p>
+        <div class="b in"><p>Lucía, disculpe la espera. Su solicitud sigue en marcha y ya la ha visto el responsable de la oficina. Le escribirán en unos minutos.</p><div class="meta">08:45</div></div>
+      </div>
+      <div class="msgprev" id="take-msg" hidden>
+        <p class="fine" style="margin:0 0 6px">Mensaje que recibe la clienta:</p>
+        <div class="b in"><p>Buenos días, Lucía. Soy Marta <span class="tag ej">ejemplo</span>, de la oficina de Nervión Sur. Me encargo de su solicitud: la visita del sábado a las 11:00 queda confirmada.</p><div class="meta">08:36</div></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h3>Después de la visita <span class="tag ok">Recordatorio automático</span></h3>
+      <dl class="kv">
+        <dt>Sáb 14 · 13:30</dt><dd>El asistente pregunta a Lucía qué tal fueron las visitas.</dd>
+        <dt>Respuesta</dt><dd>Le gustó Ramón y Cajal 29. Duda: el precio final con gastos.</dd>
+        <dt>Tarea</dt><dd><b>Llamar hoy a las 17:00</b> para hablar del precio final.</dd>
+      </dl>
+      <div class="btns"><button class="btn pri" id="callmade" type="button">Marcar llamada hecha</button></div>
+      <p class="fine">Si la llamada no se marca como hecha, el aviso sube al responsable de la oficina.</p>
+    </article>
+
+    <article class="card">
+      <h3>Mis pendientes de hoy <span class="tag ej">ejemplo</span></h3>
+      <ul class="list">
+        <li><div><div class="t1">Llamar tras visita · cliente ejemplo B</div><div class="t2">Visita de ayer, 18:00 · sin llamada aún</div></div><span class="tag warn">Hoy</span></li>
+        <li><div><div class="t1">Confirmar visita · cliente ejemplo C</div><div class="t2">Vie 13 · 10:30 · Ctra. Carmona 72</div></div><span class="tag ok">Al día</span></li>
+      </ul>
+    </article>
+  </section>
+
+  <!-- DIRECCION -->
+  <section class="pane scroll" id="p-direccion" role="tabpanel" aria-labelledby="t-direccion">
+    <div class="who">
+      <div class="ava" aria-hidden="true">D</div>
+      <div><h2>Resumen del jueves 12 nov</h2><p>Las 5 oficinas · llega cada día a las 20:00</p></div>
+    </div>
+    <p class="fine" style="margin:-4px 0 10px"><span class="tag ej">ejemplo</span> Todas las cifras de esta pantalla son ilustrativas.</p>
+
+    <div class="kpis">
+      <div class="kpi"><div class="n">34</div><div class="l">consultas nuevas por WhatsApp (11 fuera de horario)</div></div>
+      <div class="kpi ok"><div class="n">34</div><div class="l">contestadas en menos de 1 minuto</div></div>
+      <div class="kpi bad"><div class="n">4</div><div class="l">sin respuesta del agente en más de 15 min</div></div>
+      <div class="kpi"><div class="n">8</div><div class="l">visitas agendadas</div></div>
+    </div>
+
+    <article class="card">
+      <h3>Por oficina <span class="tag ej">ejemplo</span></h3>
+      <table>
+        <thead><tr><th>Oficina</th><th>Consultas</th><th>Visitas</th><th>Sin resp. &gt;15 min</th></tr></thead>
+        <tbody>
+          <tr><td>Centro I · Puerta Osario</td><td>6</td><td>1</td><td>0</td></tr>
+          <tr><td>Centro II · Plaza Nueva</td><td>5</td><td>1</td><td class="r">1</td></tr>
+          <tr><td>Sevilla Este I · Ciencias</td><td>11</td><td>3</td><td class="r">2</td></tr>
+          <tr><td>Sevilla Este II · Uruñuela</td><td>5</td><td>1</td><td>0</td></tr>
+          <tr><td>Nervión Sur</td><td>7</td><td>2</td><td class="r">1</td></tr>
+        </tbody>
+      </table>
+    </article>
+
+    <article class="card">
+      <h3>Visitas sin llamada de seguimiento <span class="tag bad">3</span></h3>
+      <p class="fine">Visitas de ayer en las que el agente aún no ha llamado.</p>
+      <ul class="list" id="fu">
+        <li><div><div class="t1">Cliente ejemplo B · Nervión Sur</div><div class="t2">Visita 18:00 · agente Marta <span class="tag ej">ejemplo</span></div></div><button class="mini" type="button">Recordar</button></li>
+        <li><div><div class="t1">Cliente ejemplo D · Sevilla Este I</div><div class="t2">Visita 17:30 · agente Carlos <span class="tag ej">ejemplo</span></div></div><button class="mini" type="button">Recordar</button></li>
+        <li><div><div class="t1">Cliente ejemplo E · Centro II</div><div class="t2">Visita 12:00 · agente Pablo <span class="tag ej">ejemplo</span></div></div><button class="mini" type="button">Recordar</button></li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <h3>Escaladas a responsable hoy <span class="tag warn">4</span></h3>
+      <ul class="list">
+        <li><div><div class="t1">Sevilla Este I · consulta por Hábitat Itálica</div><div class="t2">El agente tardó 22 min · resuelta por la responsable</div></div></li>
+        <li><div><div class="t1">Centro II · petición de visita</div><div class="t2">El agente tardó 17 min · resuelta</div></div></li>
+      </ul>
+      <p class="fine">Las otras dos, en el detalle completo.</p>
+    </article>
+
+    <button class="cta" id="to-final" type="button">Cómo sería en su empresa</button>
+  </section>
+
+  <!-- FINAL -->
+  <section class="pane final" id="p-final" aria-label="Contacto">
+    <h2>Así puede funcionar en su empresa.</h2>
+    <p class="big">Puesta en marcha en 2–4 semanas, después acompañamiento mensual.</p>
+    <p class="big"><b>Roman Blagov</b></p>
+    <div class="contact">
+      <a href="https://t.me/blagov369" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4 3 11l5.5 2L10 19l3-4 4.5 3.5z"/></svg>
+        <span>Telegram<small>@blagov369</small></span>
+      </a>
+      <a href="tel:+375298611029">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+        <span>Teléfono<small>+375 29 861-10-29</small></span>
+      </a>
+    </div>
+    <div class="legend">
+      <p><b>Dato real (sevilla-2000.com, 09/11/2026):</b> nombres de promociones, zonas, descripciones, precios «desde» y las 5 oficinas.</p>
+      <p><b>Ejemplo:</b> clientes, agentes, horas, cifras y resúmenes. Nada de esto son datos de la empresa.</p>
+      <p>Este demo no envía nada por la red ni contacta con nadie.</p>
+    </div>
+    <button class="btn ghost" id="back" type="button" style="flex:none">Volver al demo</button>
+  </section>
+
+  <!-- CATALOGO -->
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Catálogo cargado en el asistente">
+    <div class="sheet-in">
+      <h2>Catálogo del asistente</h2>
+      <p class="lead">6 promociones tomadas de la web pública de la empresa. En la puesta en marcha se conecta también el resto de su cartera.</p>
+      <div id="cat"></div>
+      <button class="close" id="close-cat" type="button">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s)};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Promociones: datos públicos de sevilla-2000.com a 09/11/2026 */
+  var LOTS = {
+    ramon:{n:"Ramón y Cajal 29", z:"Nervión", d:"20 viviendas de 1 a 4 dormitorios con garajes, trasteros y solárium con piscina en cubierta.", p:"Desde 237.000 € + IVA", s:"Obras comenzadas"},
+    carmona:{n:"Ctra. Carmona 72", z:"Rosaleda · Ctra. Carmona", d:"Última vivienda de 87,01 m²: salón-cocina, 3 dormitorios, 2 baños y patio privado de 25,29 m². Plaza de garaje opcional.", p:"Desde 349.000 € + IVA", s:"Obras comenzadas"},
+    italica:{n:"Hábitat Itálica", z:"Triana · Ronda de Los Tejares 1", d:"69 viviendas de 1 a 4 dormitorios, garajes y trasteros incluidos en el precio. Piscina, gimnasio y sala comunitaria.", p:"Desde 725.000 € + IVA", s:"Obras comenzadas"},
+    santamaria:{n:"Santa María 16 · Fontanal", z:"Arroyo · Santa Justa", d:"Ático dúplex a estrenar con terraza privada de 18 m².", p:"Desde 449.000 € + IVA", s:"Obras comenzadas"},
+    cruzroja:{n:"Cruz Roja 28", z:"Macarena", d:"Pisos y áticos de 2, 3 y 4 dormitorios con solárium, piscina comunitaria, terrazas, garajes y trasteros.", p:"Precio por confirmar", s:"En proyecto"},
+    chipiona:{n:"Chipiona", z:"Cádiz · Calle Pozo Rey 7", d:"35 apartamentos de 2 y 3 dormitorios, con garajes y trasteros.", p:"Desde 240.000 € + IVA", s:"En proyecto"}
+  };
+  var HOUSE = '<svg viewBox="0 0 48 48" fill="none" stroke="#2c3b36" stroke-width="2" aria-hidden="true"><path d="M6 42V16l12-6v32M18 42V6l24 8v28M4 42h40M24 18h4M24 26h4M24 34h4M34 22h4M34 30h4"/></svg>';
+
+  function lotHTML(k){
+    var l = LOTS[k];
+    return '<div class="lot"><div class="ph">'+HOUSE+'<span>Foto: se carga de su catálogo</span></div><div class="tx">'+
+      '<h4>'+l.n+'</h4><div class="zona">'+l.z+'</div><div class="det">'+l.d+'</div>'+
+      '<div class="row"><span class="price">'+l.p+'</span><span class="state">'+l.s+'</span></div></div></div>';
+  }
+  $('#cat').innerHTML = Object.keys(LOTS).map(lotHTML).join('');
+
+  /* Tabs */
+  var tabs = ['cliente','equipo','direccion'];
+  function show(id){
+    tabs.forEach(function(t){
+      var on = t===id;
+      $('#t-'+t).setAttribute('aria-selected', on);
+      $('#p-'+t).classList.toggle('on', on);
+    });
+    $('#p-final').classList.remove('on');
+    if(id==='cliente') scrollEnd();
+  }
+  tabs.forEach(function(t){ $('#t-'+t).addEventListener('click', function(){show(t)}); });
+  $('#to-final').addEventListener('click', function(){
+    tabs.forEach(function(t){ $('#p-'+t).classList.remove('on'); $('#t-'+t).setAttribute('aria-selected','false'); });
+    $('#p-final').classList.add('on');
+  });
+  $('#back').addEventListener('click', function(){ show('cliente'); });
+
+  /* Catalogo */
+  $('#open-cat').addEventListener('click', function(){ $('#sheet').classList.add('on'); $('#close-cat').focus({preventScroll:true}); });
+  $('#close-cat').addEventListener('click', function(){ $('#sheet').classList.remove('on'); });
+  $('#sheet').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('on'); });
+
+  /* Chat */
+  var msgs = $('#msgs'), composer = $('#composer');
+  var CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke="#3a8fb7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 8.5l3 3 5-6M7 11.5l.8.8 6-7"/></svg>';
+  var SEND = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg>';
+
+  var EVENTS = [
+    {k:'day', t:'Jueves 12 de noviembre'},
+    {k:'sys', t:'Lucía (ejemplo) escribe al WhatsApp de la empresa a las 21:42, con las oficinas cerradas.'},
+    {k:'user', time:'21:42', t:'Buenas noches. Vi en su web la promoción de Ramón y Cajal, en Nervión. ¿Queda algo de 3 dormitorios?'},
+    {k:'bot', time:'21:42', t:['Buenas noches. Soy el asistente virtual de Sevilla 2000. Le contesto ahora mismo y, si hace falta, una persona del equipo sigue con usted.']},
+    {k:'bot', time:'21:42', t:['Sí, en Nervión tenemos la promoción Ramón y Cajal 29, con viviendas de 1 a 4 dormitorios:'], lot:'ramon'},
+    {k:'bot', time:'21:43', t:['Cuántas de 3 dormitorios quedan libres lo confirma una persona del equipo. No quiero darle un dato que no tengo.','¿Qué presupuesto maneja, más o menos?']},
+    {k:'user', time:'21:44', t:'Unos 400.000 €. Si hay algo parecido, enséñemelo también.'},
+    {k:'bot', time:'21:44', t:['Con ese presupuesto puede encajarle esta, de 3 dormitorios:'], lot:'carmona'},
+    {k:'bot', time:'21:44', t:['El IVA se suma al precio. El agente le dará el total con gastos.','¿Quiere verlas? Tengo hueco este sábado por la mañana.']},
+    {k:'user', time:'21:46', t:'Sí, el sábado a las 11:00. ¿Pueden enseñarme las dos?'},
+    {k:'bot', time:'21:46', t:['Sí. Pido visita a las 11:00 en Ramón y Cajal 29 y a las 12:15 en Ctra. Carmona 72.','¿Me dice su nombre para pasárselo al agente?']},
+    {k:'user', time:'21:47', t:'Lucía.'},
+    {k:'bot', time:'21:47', t:['Gracias, Lucía. Ya está anotado.'], ticket:true},
+    {k:'bot', time:'21:47', t:['Ahora son las 21:47 y las oficinas abren a las 8:30. Mañana, antes de las 8:45, una persona de la oficina de Nervión Sur le escribirá para confirmar la hora.','Si no lo hace, aviso yo al responsable de la oficina.']},
+    {k:'day', t:'Sábado 14 de noviembre'},
+    {k:'bot', time:'13:30', t:['Hola, Lucía. ¿Qué tal las visitas?','Cuénteme en dos palabras y se lo paso a Marta (ejemplo), para que no tenga que repetir nada.']},
+    {k:'user', time:'13:31', t:'Ramón y Cajal me gustó. Tengo dudas con el precio final.'},
+    {k:'bot', time:'13:31', t:['Anotado. Marta le llamará hoy a las 17:00 para hablar del precio final con todos los gastos.','Si esa hora no le viene bien, dígamelo y la cambio.']}
+  ];
+  var pos = 0, busy = false;
+
+  function wait(ms){ return new Promise(function(r){ setTimeout(r, reduce?0:ms); }); }
+  function scrollEnd(){ msgs.scrollTop = msgs.scrollHeight; }
+  function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+  function add(html){ msgs.insertAdjacentHTML('beforeend', html); scrollEnd(); }
+
+  function bubble(ev, side){
+    var paras = (side==='out' ? [ev.t] : ev.t).map(function(p){return '<p>'+esc(p)+'</p>'}).join('');
+    var extra = '';
+    if(ev.lot) extra += lotHTML(ev.lot);
+    if(ev.ticket) extra += '<div class="ticket"><b>Visita solicitada</b><div>Sáb 14 nov · 11:00 · Ramón y Cajal 29</div><div>Sáb 14 nov · 12:15 · Ctra. Carmona 72</div><div>Atiende: oficina Nervión Sur</div></div>';
+    var meta = '<div class="meta">'+ev.time+(side==='out'?CHECK:'')+'</div>';
+    return '<div class="b '+side+(ev.lot||ev.ticket?' wide':'')+'">'+paras+extra+meta+'</div>';
+  }
+
+  function setComposer(){
+    var next = EVENTS[pos];
+    if(next && next.k==='user'){
+      composer.innerHTML = '<button class="sug" id="sug" type="button"><small>Toque para enviar como la clienta</small>'+esc(next.t)+'</button><button class="send" id="send" type="button" aria-label="Enviar">'+SEND+'</button>';
+      $('#sug').addEventListener('click', go); $('#send').addEventListener('click', go);
+    } else if(!next){
+      composer.innerHTML = '<button class="again" id="again" type="button">Repetir</button><button class="next" id="nx" type="button">Ver qué recibe el equipo</button>';
+      $('#again').addEventListener('click', reset);
+      $('#nx').addEventListener('click', function(){ show('equipo'); });
+    }
+  }
+
+  async function play(){
+    busy = true;
+    composer.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+    while(pos < EVENTS.length && EVENTS[pos].k !== 'user'){
+      var ev = EVENTS[pos];
+      if(ev.k==='day'){ add('<div class="day">'+esc(ev.t)+'</div>'); await wait(350); }
+      else if(ev.k==='sys'){ add('<div class="sys">'+esc(ev.t)+'</div>'); await wait(350); }
+      else if(ev.k==='bot'){
+        add('<div class="typing" id="typ" aria-label="El asistente está escribiendo"><i></i><i></i><i></i></div>');
+        await wait(900 + (ev.lot?300:0));
+        var t = $('#typ'); if(t) t.remove();
+        add(bubble(ev,'in'));
+        await wait(250);
+      }
+      pos++;
+    }
+    busy = false;
+    setComposer();
+  }
+
+  async function go(){
+    if(busy) return;
+    var ev = EVENTS[pos];
+    if(!ev || ev.k!=='user') return;
+    add(bubble(ev,'out'));
+    pos++;
+    await play();
+  }
+
+  function reset(){
+    msgs.innerHTML = ''; pos = 0; composer.innerHTML = '';
+    play();
+  }
+  play();
+
+  /* Equipo */
+  var tl = $('#tl'), timer = $('#lead-timer'), tag = $('#lead-tag'), fine = $('#lead-fine');
+  function setStep(n){
+    $$('li', tl).forEach(function(li){
+      var i = +li.dataset.s;
+      li.classList.toggle('on', i<=n);
+      li.classList.toggle('late', n===2 && i===2);
+    });
+  }
+  $('#take').addEventListener('click', function(){
+    setStep(0);
+    timer.className = 'timer done'; timer.innerHTML = '<span>Tomada por Marta (ejemplo) a las 08:36 · dentro de plazo</span>';
+    tag.className = 'tag ok'; tag.textContent = 'Atendida';
+    fine.hidden = true;
+    $('#late-msg').hidden = true; $('#take-msg').hidden = false;
+    $('#lead-btns').innerHTML = '';
+    $('#sim').hidden = true;
+    $$('li', tl).forEach(function(li, i){ if(i>0) li.classList.remove('on'); });
+  });
+  $('#pass').addEventListener('click', function(){
+    this.textContent = 'Enviada a Carlos (ejemplo)';
+    this.disabled = true;
+    tag.className = 'tag warn'; tag.textContent = 'Pasada a otro agente';
+  });
+  $('#sim').addEventListener('click', function(){
+    setStep(2);
+    timer.className = 'timer late'; timer.innerHTML = '<span>08:45 · Sin respuesta. Avisado el responsable de la oficina</span>';
+    tag.className = 'tag bad'; tag.textContent = 'Escalada';
+    $('#take-msg').hidden = true; $('#late-msg').hidden = false;
+    $('#lead-btns').innerHTML = '';
+    this.hidden = true; fine.hidden = true;
+  });
+  $('#callmade').addEventListener('click', function(){
+    this.textContent = 'Llamada marcada como hecha'; this.disabled = true;
+  });
+
+  /* Direccion */
+  $$('#fu .mini').forEach(function(b){
+    b.addEventListener('click', function(){ b.textContent = 'Recordatorio enviado'; b.classList.add('done'); b.disabled = true; });
+  });
+})();
+</script>
+</body>
+</html>
