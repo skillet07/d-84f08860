@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0a463c">
+<title>Su presupuesto y su obra, sin llamar – demo-concepto</title>
+<style>
+:root{
+  --ink:#16231f; --muted:#4f5f5a; --line:#d7ddd9; --bg:#f1f3f1; --surface:#fff;
+  --brand:#0d5c4f; --brand-dark:#0a463c; --brand-tint:#e3f1ec;
+  --chat:#e2e8e4; --out:#d3eedd; --in:#fff;
+  --warn:#8a5200; --warn-bg:#fff1d2; --bad:#a12315; --bad-bg:#fde6e2; --ok:#17704a; --ok-bg:#dff3e8;
+  --radius:12px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#d6dbd8;color:var(--ink);font:15px/1.4 var(--font);-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+::selection{background:var(--brand);color:#fff}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.app{max-width:430px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden}
+@media(min-width:480px){.app{box-shadow:0 8px 40px rgba(20,30,28,.18)}}
+
+/* top */
+.notice{background:var(--ink);color:#e6ede9;font-size:12px;line-height:1.35;padding:6px 14px;text-align:center}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--brand-dark);padding:0 6px}
+.tab{position:relative;background:none;border:0;color:#b9d3cb;padding:11px 2px 10px;font-size:13.5px;font-weight:600;border-bottom:3px solid transparent;min-height:44px}
+.tab[aria-selected="true"]{color:#fff;border-bottom-color:#fff}
+.tab .dot{position:absolute;top:7px;right:calc(50% - 38px);min-width:17px;height:17px;border-radius:9px;background:#f2b13d;color:#3a2600;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px}
+.tab .dot.on{display:flex}
+.panel{flex:1;min-height:0;display:none;flex-direction:column}
+.panel.on{display:flex}
+.scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:#c4cbc7;border-radius:3px}
+
+/* chat */
+.chat-head{background:var(--brand);color:#fff;display:flex;align-items:center;gap:10px;padding:8px 12px}
+.avatar{width:38px;height:38px;border-radius:50%;background:#e3f1ec;color:var(--brand-dark);display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
+.chat-head .who{flex:1;min-width:0}
+.chat-head .who b{display:block;font-size:15px;line-height:1.3}
+.chat-head .who>span{font-size:12px;color:#cfe5de}
+.iconbtn{background:none;border:0;color:#fff;width:44px;height:44px;border-radius:50%;display:grid;place-items:center}
+.iconbtn:hover{background:rgba(255,255,255,.12)}
+#chatlog{background:var(--chat);padding:12px 10px 8px;display:flex;flex-direction:column;gap:6px}
+.sys{align-self:center;background:#f4f6f4;color:var(--muted);font-size:12px;padding:5px 10px;border-radius:8px;text-align:center;max-width:90%;margin:2px 0 4px}
+.msg{display:flex;max-width:100%}
+.msg.out{justify-content:flex-end}
+.msg .b{max-width:84%;padding:7px 10px 6px;border-radius:10px;box-shadow:0 1px 1px rgba(30,30,20,.12);position:relative;word-wrap:break-word;overflow-wrap:anywhere}
+.msg.in .b{background:var(--in);border-top-left-radius:2px}
+.msg.out .b{background:var(--out);border-top-right-radius:2px}
+.msg .t{display:inline-flex;align-items:center;gap:3px;float:right;margin:6px 0 -2px 10px;font-size:11px;color:var(--muted)}
+.msg.in.wide .b{max-width:92%;width:92%}
+.photo svg{display:block;border-radius:7px;width:200px;max-width:100%;height:auto}
+.photo .cap{font-size:12px;color:var(--muted);margin-top:3px}
+.file{display:flex;align-items:center;gap:8px;padding:2px 0 2px}
+.file svg{flex:none}
+.typing{display:inline-flex;gap:4px;padding:11px 12px}
+.typing i{width:6px;height:6px;border-radius:50%;background:#8a9893;animation:blink 1.1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+@keyframes blink{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}*{scroll-behavior:auto!important}}
+
+.rows{margin:2px 0 0;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px}
+.rows dt{color:var(--muted)}.rows dd{margin:0;font-weight:600}
+.cardh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;font-weight:700}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.01em;padding:2px 7px;border-radius:6px;background:#eef1ef;color:var(--muted);white-space:nowrap}
+.tag.ex{background:#f3ecd6;color:#6b5200}
+.tag.bad{background:var(--bad-bg);color:var(--bad)}.tag.warn{background:var(--warn-bg);color:var(--warn)}.tag.ok{background:var(--ok-bg);color:var(--ok)}.tag.brand{background:var(--brand-tint);color:var(--brand-dark)}
+.steps{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:0}
+.steps li{display:grid;grid-template-columns:20px 1fr;gap:8px;font-size:14px;padding:3px 0;position:relative}
+.steps li i{width:14px;height:14px;border-radius:50%;border:2px solid #b4beb9;margin-top:3px;background:#fff}
+.steps li.done i{background:var(--brand);border-color:var(--brand)}
+.steps li.cur i{border-color:var(--brand);background:#fff;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 8px var(--brand)}
+.steps li.cur{font-weight:700}
+.steps li small{display:block;color:var(--muted);font-weight:400;font-size:12.5px}
+
+.quick{background:#f4f6f4;border-top:1px solid #d3dad5;padding:8px 10px 2px;display:none;flex-wrap:wrap;gap:6px;max-height:30%;overflow-y:auto;flex:none}
+.quick.on{display:flex}
+.chip{background:#fff;border:1px solid var(--brand);color:var(--brand-dark);border-radius:18px;padding:0 12px;min-height:40px;font-weight:600;font-size:13.5px;text-align:left}
+.chip:hover{background:var(--brand-tint)}
+.chip:active{transform:scale(.98)}
+.composer{background:#f4f6f4;padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;gap:8px}
+.composer input{flex:1;min-width:0;border:1px solid #cfd6d2;background:#fff;border-radius:22px;padding:0 15px;min-height:44px}
+.composer input::placeholder{color:#66756f}
+.send{width:44px;height:44px;border-radius:50%;border:0;background:var(--brand);color:#fff;display:grid;place-items:center;flex:none}
+.send:hover{background:var(--brand-dark)}
+
+/* team + direction */
+.phead{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 14px 10px}
+.phead h2{margin:0;font-size:17px;line-height:1.3}
+.phead p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#e7ebe8;border-radius:10px;padding:3px;margin-top:10px}
+.seg button{border:0;background:none;border-radius:8px;min-height:40px;font-weight:600;font-size:13.5px;color:var(--muted)}
+.seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(20,30,28,.15)}
+.list{padding:10px 10px 24px;display:grid;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.item.flag{border-color:#e3b3ab}
+.item .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.item .id{font-weight:700;font-size:14px}
+.item .body{display:grid;grid-template-columns:76px 1fr;gap:10px;margin-top:10px}
+.item .body svg{width:76px;height:auto;border-radius:6px;display:block}
+.facts{margin:0;display:grid;gap:1px;font-size:13.5px}
+.facts b{font-weight:600}
+.facts .m{color:var(--muted)}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btn{border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:9px;min-height:40px;padding:0 14px;font-weight:600;font-size:14px}
+.btn:hover{background:var(--brand-dark)}
+.btn.ghost{background:#fff;color:var(--brand-dark)}
+.btn.ghost:hover{background:var(--brand-tint)}
+.btn[disabled]{background:#e3e8e5;border-color:#e3e8e5;color:#5f6e69;cursor:default}
+.draft{margin-top:10px;background:#f6f8f7;border:1px dashed #b9c4be;border-radius:9px;padding:9px 10px;font-size:13.5px}
+.draft small{display:block;color:var(--muted);margin-bottom:4px}
+.note{padding:10px 14px 0;font-size:12.5px;color:var(--muted)}
+.units{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:0;font-size:13.5px;border-top:1px solid var(--line)}
+.units li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #edf0ee}
+.units li span:last-child{color:var(--muted)}
+.more{background:none;border:0;color:var(--brand-dark);font-weight:600;padding:8px 0 0;min-height:36px;text-decoration:underline;text-underline-offset:3px}
+
+.sect{padding:14px 14px 0}
+.sect h3{margin:0 0 8px;font-size:14px;color:var(--muted);font-weight:700}
+.attn{display:grid;gap:8px}
+.attn .a{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:11px 12px;display:grid;gap:8px}
+.attn .a p{margin:0;font-size:14.5px}
+.attn .a p b{font-weight:700}
+.stat{margin:0;display:grid;gap:0;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:2px 12px}
+.stat div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 0;border-bottom:1px solid #edf0ee}
+.stat div:last-child{border-bottom:0}
+.stat dt{font-size:14px}
+.stat dd{margin:0;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.bars{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px;display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:78px 1fr 26px;gap:8px;align-items:center;font-size:13.5px}
+.bar .tr{height:12px;background:#edf0ee;border-radius:6px;overflow:hidden}
+.bar .tr i{display:block;height:100%;background:var(--brand);border-radius:6px;transition:width .3s cubic-bezier(.2,.8,.2,1)}
+.bar.bad .tr i{background:var(--bad)}
+.bar b{font-variant-numeric:tabular-nums;text-align:right}
+.obras{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0 12px;list-style:none;margin:0}
+.obras li{padding:10px 0;border-bottom:1px solid #edf0ee;display:grid;gap:3px}
+.obras li:last-child{border-bottom:0}
+.obras .n{font-size:14px;font-weight:600}
+.obras .d{font-size:12.5px;color:var(--muted)}
+.pad{height:24px}
+
+/* contact */
+.close{padding:24px 18px 30px;display:grid;gap:18px}
+.close h2{margin:0;font-size:26px;line-height:1.15;text-wrap:balance}
+.close p{margin:0;font-size:16.5px}
+.close .name{font-weight:700;font-size:18px}
+.links{display:grid;gap:10px}
+.link{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0 14px;min-height:56px;color:var(--ink);text-decoration:none;font-weight:600}
+.link:hover{border-color:var(--brand);background:var(--brand-tint)}
+.link small{display:block;color:var(--muted);font-weight:400;font-size:12.5px}
+.link svg{flex:none;color:var(--brand)}
+.what{margin:0;padding:0;list-style:none;display:grid;gap:10px;font-size:15px}
+.what li{padding-left:16px;position:relative}
+.what li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--brand)}
+.fine{font-size:12.5px;color:var(--muted)}
+.hint-first{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="notice">Demo-concepto. No es la web oficial de la empresa. Datos de fuentes públicas a 09/11/2026</div>
+  <div class="tabs" role="tablist" aria-label="Vista de la demo">
+    <button class="tab" role="tab" id="tab-cliente" aria-selected="true" aria-controls="p-cliente" data-tab="cliente">Cliente</button>
+    <button class="tab" role="tab" id="tab-equipo" aria-selected="false" aria-controls="p-equipo" data-tab="equipo">Equipo<span class="dot" id="dot-equipo" aria-label="Novedades"></span></button>
+    <button class="tab" role="tab" id="tab-direccion" aria-selected="false" aria-controls="p-direccion" data-tab="direccion">Dirección</button>
+    <button class="tab" role="tab" id="tab-contacto" aria-selected="false" aria-controls="p-contacto" data-tab="contacto">Contacto</button>
+  </div>
+
+  <!-- CLIENTE -->
+  <section class="panel on" id="p-cliente" role="tabpanel" aria-labelledby="tab-cliente">
+    <div class="chat-head">
+      <div class="avatar" aria-hidden="true">G</div>
+      <div class="who"><b>Asistente de Guzmán <span class="tag ex" style="margin-left:4px;vertical-align:1px">concepto</span></b><span>Recoge su consulta también fuera de horario</span></div>
+      <button class="iconbtn" id="restart" aria-label="Reiniciar la conversación" title="Reiniciar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      </button>
+    </div>
+    <div class="scroll" id="chatscroll" style="background:var(--chat)"><div id="chatlog" role="log" aria-live="polite" aria-label="Conversación"></div></div>
+    <div class="quick" id="quick" aria-label="Respuestas rápidas"></div>
+    <form class="composer" id="composer" autocomplete="off">
+      <input id="msg" type="text" placeholder="Escriba aquí o toque una opción" aria-label="Escribir un mensaje" enterkeyhint="send">
+      <button class="send" type="submit" aria-label="Enviar"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6l-.1 6.5L15 12 3.3 13.9z"/></svg></button>
+    </form>
+  </section>
+
+  <!-- EQUIPO -->
+  <section class="panel" id="p-equipo" role="tabpanel" aria-labelledby="tab-equipo">
+    <div class="phead">
+      <h2>Equipo comercial y servicio técnico</h2>
+      <p>Lo que le llega al comercial en el móvil, ya ordenado</p>
+      <div class="seg" role="tablist" aria-label="Cola">
+        <button role="tab" id="seg-pres" aria-selected="true" data-seg="pres">Presupuestos</button>
+        <button role="tab" id="seg-sat" aria-selected="false" data-seg="sat">SAT y garantías</button>
+      </div>
+    </div>
+    <div class="scroll" id="team-scroll">
+      <div class="note" id="team-note"></div>
+      <div class="list" id="team-list"></div>
+    </div>
+  </section>
+
+  <!-- DIRECCIÓN -->
+  <section class="panel" id="p-direccion" role="tabpanel" aria-labelledby="tab-direccion">
+    <div class="phead">
+      <h2>Resumen del día para Dirección</h2>
+      <p>Llega cada día a las 15:00 por WhatsApp · <span class="tag ex">cifras de ejemplo</span></p>
+    </div>
+    <div class="scroll" id="dir-scroll"><div id="dir"></div></div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="panel" id="p-contacto" role="tabpanel" aria-labelledby="tab-contacto">
+    <div class="scroll">
+      <div class="close">
+        <h2>Así puede funcionar en su empresa.</h2>
+        <p>Puesta en marcha en 2–4 semanas, después acompañamiento mensual.</p>
+        <p class="name">Roman Blagov</p>
+        <div class="links">
+          <a class="link" href="https://t.me/blagov369" target="_blank" rel="noopener">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4 3 11l6 2.5L11.5 20l3-4.5L19 19z"/><path d="m9 13.5 12-9.5"/></svg>
+            <span>Telegram<small>@blagov369</small></span>
+          </a>
+          <a class="link" href="tel:+375298611029">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+            <span>Teléfono<small>+375 29 861-10-29</small></span>
+          </a>
+        </div>
+        <ul class="what">
+          <li>Los plazos y las respuestas los fija la empresa. El asistente no inventa ni precios ni fechas.</li>
+          <li>Cada solicitud llega al comercial con foto, medidas y localidad, sin tener que preguntar otra vez.</li>
+          <li>Dirección ve lo que se retrasa antes de que el cliente llame o escriba una reseña.</li>
+        </ul>
+        <p class="fine">Esta demo usa solo datos públicos de la empresa (web, mapas). Los clientes, números de solicitud, obras y cifras son inventados y están marcados como «ejemplo». No se envía nada por red.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const EX='<span class="tag ex">ejemplo</span>';
+
+/* ---------- fotos de ejemplo (dibujos, no fotografías) ---------- */
+function photoSvg(kind){
+  const wall='#d8d1c3', frame='#8b9398', glass='#c3d5db', dark='#6f777c';
+  const base=`<rect width="200" height="150" fill="${wall}"/>`;
+  const shapes={
+    ventana:`<rect x="45" y="22" width="110" height="96" fill="${frame}"/><rect x="52" y="29" width="48" height="82" fill="${glass}"/><rect x="100" y="29" width="48" height="82" fill="${glass}"/><rect x="98" y="29" width="4" height="82" fill="${dark}"/><rect x="38" y="118" width="124" height="7" fill="#b9b2a4"/>`,
+    puerta:`<rect x="62" y="12" width="76" height="128" fill="${frame}"/><rect x="70" y="20" width="60" height="112" fill="${glass}"/><rect x="118" y="76" width="4" height="22" fill="${dark}"/><rect x="0" y="140" width="200" height="10" fill="#b9b2a4"/>`,
+    cristalera:`<rect x="14" y="26" width="172" height="104" fill="${frame}"/><rect x="20" y="32" width="53" height="92" fill="${glass}"/><rect x="77" y="32" width="46" height="92" fill="${glass}"/><rect x="127" y="32" width="53" height="92" fill="${glass}"/><rect x="0" y="130" width="200" height="20" fill="#b9b2a4"/>`,
+    mampara:`<rect x="0" y="0" width="200" height="150" fill="#cfd6d6"/><g stroke="#bcc5c5" stroke-width="1">${Array.from({length:8},(_,i)=>`<line x1="${i*28}" y1="0" x2="${i*28}" y2="150"/>`).join('')}${Array.from({length:6},(_,i)=>`<line x1="0" y1="${i*28}" x2="200" y2="${i*28}"/>`).join('')}</g><rect x="58" y="14" width="86" height="116" fill="${glass}" opacity=".85"/><rect x="58" y="14" width="86" height="116" fill="none" stroke="${frame}" stroke-width="4"/><rect x="0" y="130" width="200" height="20" fill="#aab3b3"/>`,
+    escaparate:`<rect x="10" y="30" width="180" height="104" fill="${frame}"/><rect x="16" y="36" width="168" height="92" fill="${glass}"/><rect x="10" y="14" width="180" height="16" fill="${dark}"/><rect x="0" y="134" width="200" height="16" fill="#b9b2a4"/><rect x="118" y="62" width="2" height="66" fill="${frame}"/>`,
+    humedad:`<rect x="45" y="22" width="110" height="96" fill="${frame}"/><rect x="52" y="29" width="96" height="82" fill="${glass}"/><g fill="#7d9aa6">${[[70,60,4],[82,74,3],[96,88,5],[112,70,3],[126,94,4],[66,92,3],[104,100,3],[134,60,3]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><rect x="52" y="86" width="96" height="25" fill="#8fb0bb" opacity=".45"/>`,
+    placa:`<rect x="0" y="0" width="200" height="150" fill="#9aa1a5"/><rect x="40" y="40" width="120" height="70" rx="4" fill="#dfe3e4"/><g fill="#8a9296"><rect x="52" y="54" width="60" height="6"/><rect x="52" y="68" width="96" height="5"/><rect x="52" y="80" width="80" height="5"/><rect x="52" y="92" width="50" height="5"/></g><circle cx="48" cy="48" r="2.5" fill="#6f777c"/><circle cx="152" cy="48" r="2.5" fill="#6f777c"/>`
+  };
+  return `<svg viewBox="0 0 200 150" role="img" aria-label="Foto de ejemplo: ${esc(kind)}">${base}${shapes[kind]||shapes.ventana}</svg>`;
+}
+const kindOf=t=>{t=(t||'').toLowerCase();
+  if(t.includes('ventana'))return'ventana';if(t.includes('puerta'))return'puerta';if(t.includes('mampara'))return'mampara';if(t.includes('escaparate'))return'escaparate';return'cristalera'};
+
+const TICKS='<svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="#2f9a7a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m1 6 3 3 6-8"/><path d="m6 8 1 1 6-8"/></svg>';
+const ICON={
+  pdf:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a12315" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/><path d="M9 14h6M9 17.5h4"/></svg>'
+};
+
+/* ---------- estado compartido de la demo ---------- */
+const S={
+  seq:{SP:90,GAR:412,SAT:214,PR:13},
+  extraToday:0, statusAnswered:0, seen:true,
+  segTab:'pres',
+  reqs:[
+    {id:'PR-2411-0012',seg:'Edificación',tipo:'Carpintería de aluminio, 12 viviendas',med:'Según planos (PDF)',loc:'Sevilla Este',plazo:'Entrega de oferta en 10 días',cliente:'Estudio de arquitectura (ejemplo)',wait:59,kind:'cristalera'},
+    {id:'SP-2411-0079',seg:'Particular',tipo:'Ventana corredera',med:'180 × 120 cm',loc:'Mairena del Aljarafe, 41927',plazo:'En 1–2 meses',cliente:'Lucía (ejemplo)',wait:52,kind:'ventana'},
+    {id:'SP-2411-0083',seg:'Comercio',tipo:'Escaparate con vidrio de seguridad',med:'320 × 240 cm',loc:'Sevilla, 41003',plazo:'Lo antes posible',cliente:'Cafetería (ejemplo)',wait:40,kind:'escaparate'},
+    {id:'SP-2411-0086',seg:'Particular',tipo:'Mampara de baño',med:'No las tiene',loc:'Sevilla, 41013',plazo:'Sin prisa',cliente:'Javier (ejemplo)',wait:20,kind:'mampara'},
+    {id:'SP-2411-0088',seg:'Particular',tipo:'Puerta de aluminio exterior',med:'90 × 210 cm',loc:'Dos Hermanas, 41700',plazo:'En 1–2 meses',cliente:'Carmen (ejemplo)',wait:6,kind:'puerta'}
+  ],
+  common:{id:'GAR-C-0007',nombre:'Residencial Los Olivos (ejemplo)',desc:'Entra agua dentro del cristal de las ventanas de los baños',avisos:23,sinVisita:true,days:4,
+    units:['Portal 1 · 1.º B','Portal 1 · 2.º A','Portal 2 · 1.º A','Portal 2 · 3.º C','Portal 3 · Bajo A'],extra:[]},
+  sats:[
+    {id:'SAT-0211',tipo:'Puerta automática de comercio',det:'No la instaló Guzmán · pendiente de decidir si se atiende',estado:'Decisión sí/no pendiente',tag:'warn',days:2,kind:'placa'},
+    {id:'SAT-0207',tipo:'Ventana corredera: ruedas rotas',det:'Pieza pedida al fabricante, sin fecha',estado:'Esperando pieza',tag:'bad',days:9,kind:'ventana'},
+    {id:'SAT-0209',tipo:'Cristal con fisura en oficina',det:'Visita fijada para el jueves',estado:'Visita fijada',tag:'ok',days:1,kind:'cristalera'}
+  ],
+  obras:[
+    {n:'Reforma de 40 ventanas, colegio',est:'En plazo',cls:'ok',d:'Parte semanal entregado'},
+    {n:'Fachada ligera, edificio de oficinas',est:'Retraso de 12 días',cls:'bad',d:'Cliente informado el lunes'},
+    {n:'Carpintería de 24 viviendas',est:'Sin parte desde hace 14 días',cls:'warn',d:'Aviso al jefe de obra'},
+    {n:'Cerramiento de terraza, vivienda',est:'En plazo',cls:'ok',d:'Instalación esta semana'}
+  ]
+};
+const nextId=(p,mid)=>{S.seq[p]++;return mid?`${p}-${mid}-${String(S.seq[p]).padStart(4,'0')}`:`${p}-${String(S.seq[p]).padStart(4,'0')}`};
+const over=r=>!r.done&&!r.paused&&r.wait>=48;
+
+/* ---------- pestañas ---------- */
+function showTab(name){
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===name)));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+name));
+  if(name==='equipo'){S.reqs.forEach(r=>r.seen=true);S.sats.forEach(s=>s.seen=true);S.common.seen=true;updateDot();renderTeam()}
+  if(name==='direccion')renderDir();
+  if(name==='cliente')setTimeout(()=>{scrollChat()},0);
+}
+$$('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+function updateDot(){
+  const n=S.reqs.filter(r=>r.isNew&&!r.seen).length+S.sats.filter(s=>s.isNew&&!s.seen).length+(S.common.pulse&&!S.common.seen?1:0);
+  const d=$('#dot-equipo');d.textContent=n;d.classList.toggle('on',n>0);
+}
+$$('#p-equipo .seg button').forEach(b=>b.addEventListener('click',()=>{S.segTab=b.dataset.seg;renderTeam()}));
+
+/* ---------- chat ---------- */
+const log=$('#chatlog'), scr=$('#chatscroll'), quick=$('#quick'), input=$('#msg');
+let token=0, pending=null, clock=9*60+14;
+const CANCEL={};
+const stamp=()=>{clock+=1;const h=Math.floor(clock/60),m=clock%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')};
+const scrollChat=()=>{scr.scrollTop=scr.scrollHeight};
+function bubble(who,html,cls=''){
+  const d=document.createElement('div');d.className=`msg ${who} ${cls}`;
+  d.innerHTML=`<div class="b">${html}<span class="t">${stamp()}${who==='out'?TICKS:''}</span></div>`;
+  log.appendChild(d);scrollChat();return d;
+}
+function makeApi(my){
+  const chk=()=>{if(my!==token)throw CANCEL};
+  const api={
+    async say(html,opts={}){
+      chk();
+      const t=document.createElement('div');t.className='msg in';t.innerHTML='<div class="b typing" aria-label="Escribiendo"><i></i><i></i><i></i></div>';
+      log.appendChild(t);scrollChat();
+      await sleep(opts.fast?350:Math.min(1200,500+html.length*5));
+      if(my!==token){t.remove();throw CANCEL}
+      t.remove();bubble('in',html,opts.cls||'');
+    },
+    you(html){chk();bubble('out',html)},
+    async card(html){chk();await sleep(350);chk();bubble('in',html,'wide')},
+    choose(options){
+      chk();
+      const opts=options.map(o=>typeof o==='string'?{label:o}:o);
+      quick.innerHTML='';
+      opts.forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=o.label;b.addEventListener('click',()=>answer({label:o.label,idx:i,typed:false,silent:!!o.silent}));quick.appendChild(b)});
+      quick.classList.add('on');
+      requestAnimationFrame(scrollChat);setTimeout(scrollChat,60);
+      return new Promise((resolve,reject)=>{pending={resolve,reject,opts,my}});
+    }
+  };
+  return api;
+}
+function answer(res){
+  if(!pending)return;
+  const p=pending;pending=null;quick.classList.remove('on');quick.innerHTML='';
+  if(!res.silent)bubble('out',esc(res.label));
+  p.resolve(res);
+}
+async function photo(a,kind,caption){
+  const c=await a.choose([{label:'Enviar una foto',silent:true},{label:'Ahora no tengo foto'}]);
+  if(c.idx===1||(c.typed&&!/foto|si|sí|vale|ok/i.test(c.label)))return false;
+  // la respuesta ya pintó la burbuja de texto; añadimos la foto como mensaje propio
+  bubble('out',`<div class="photo">${photoSvg(kind)}<div class="cap">${esc(caption||'Foto (ejemplo)')}</div></div>`);
+  await sleep(350);
+  return true;
+}
+$('#composer').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=input.value.trim();if(!v)return;
+  input.value='';
+  if(pending){answer({label:v,idx:-1,typed:true})}
+  else{bubble('out',esc(v));startFlow(async a=>{await a.say('Para esta demo, elija una de las opciones de abajo y verá cómo seguiría la conversación.',{fast:true});await menu(a)})}
+});
+function startFlow(fn){
+  token++;const my=token;
+  if(pending){pending=null}
+  quick.classList.remove('on');quick.innerHTML='';
+  fn(makeApi(my)).catch(e=>{if(e!==CANCEL)console.error(e)});
+}
+
+/* ---------- flujos ---------- */
+const MENU=['Quiero un presupuesto','Tengo una avería','Estado de mi pedido','Soy arquitecto o constructor'];
+async function menu(a,intro){
+  if(intro)await a.say(intro);
+  for(;;){
+    const c=await a.choose(MENU.concat(['Nada más, gracias']));
+    let i=c.idx;
+    if(c.typed){const t=c.label.toLowerCase();
+      i=/presupuesto|precio|cu[aá]nto/.test(t)?0:/aver|garant|incid|agua|roto|no cierra|no funciona/.test(t)?1:/estado|pedido|obra|ob-|sp-|c[oó]mo va/.test(t)?2:/arquitect|constructor|proyecto|promotor/.test(t)?3:/gracias|nada m[aá]s|adi[oó]s/.test(t)?4:-1;
+      if(i<0){await a.say('No estoy seguro de haberle entendido. ¿Con cuál de estas opciones le puedo ayudar?',{fast:true});continue}
+    }
+    if(i===4){await a.say('A usted. Si necesita algo más, escriba cuando quiera: recojo su consulta a cualquier hora y la pasa a una persona del equipo.');return}
+    await [fPresupuesto,fAveria,fEstado,fProfesional][i](a);
+    await a.say('¿Le ayudo con algo más?',{fast:true});
+  }
+}
+
+async function fPresupuesto(a){
+  await a.say('Encantado. Le hago cinco preguntas rápidas y se lo paso al comercial con todo ordenado. Primero: ¿qué necesita?');
+  const t=await a.choose(['Ventana','Puerta','Cristalera','Mampara de baño','Otro']);
+  const tipo=t.typed?t.label:t.label;
+  const kind=kindOf(tipo);
+  await a.say(`${t.idx===4?'Entendido.':'Perfecto: '+esc(tipo.toLowerCase())+'.'} ¿Puede enviarme una foto de cómo está ahora, o del hueco?`);
+  const hasPhoto=await photo(a,kind,'Foto (ejemplo)');
+  if(hasPhoto)await a.say('Recibida, queda guardada en su solicitud. ¿Qué medidas tiene, aunque sean aproximadas? (ancho × alto)');
+  else await a.say('No pasa nada, el comercial se lo puede pedir luego. ¿Qué medidas tiene, aunque sean aproximadas? (ancho × alto)');
+  const m=await a.choose(['120 × 110 cm','No las tengo']);
+  let med=m.label;
+  if(/no las|no s[eé]|no tengo/i.test(med)){med='No las tiene';await a.say('Sin problema: lo anoto y un técnico puede pasar a medir.',{fast:true})}
+  await a.say('¿En qué localidad o código postal sería la instalación?');
+  const l=await a.choose(['Dos Hermanas, 41700','Sevilla, 41007']);
+  await a.say('Y la última: ¿para cuándo lo querría instalado?');
+  const p=await a.choose(['Lo antes posible','En 1–2 meses','Sin prisa']);
+  const id=nextId('SP','2411');
+  S.reqs.unshift({id,seg:'Particular',tipo:tipo.charAt(0).toUpperCase()+tipo.slice(1),med,loc:l.label,plazo:p.label,cliente:'Usted, en esta demo',wait:0,kind,isNew:true,mine:true,photo:hasPhoto});
+  updateDot();
+  await a.say('Listo, esto es lo que he anotado:',{fast:true});
+  await a.card(`<div class="cardh"><span>Solicitud ${id}</span>${EX}</div><dl class="rows"><dt>Tipo</dt><dd>${esc(tipo)}</dd><dt>Medidas</dt><dd>${esc(med)}</dd><dt>Lugar</dt><dd>${esc(l.label)}</dd><dt>Plazo</dt><dd>${esc(p.label)}</dd><dt>Foto</dt><dd>${hasPhoto?'Adjunta':'Pendiente'}</dd></dl>`);
+  await a.say('Un comercial la revisa y le envía el presupuesto por aquí. Plazo previsto: 48 h laborables (<i>ejemplo</i>: el plazo real lo fija la empresa). Si se pasa, se lo diremos nosotros, sin que tenga que llamar. Con este número puede preguntarme el estado cuando quiera.');
+}
+
+async function fAveria(a){
+  await a.say('Lamento el problema. Para abrirlo bien y que no tenga que repetirlo, necesito unos datos. ¿Dónde está?');
+  const w=await a.choose(['Vivienda en una promoción','Local o comercio','Vivienda particular']);
+  if(w.idx===0){
+    await a.say('¿Cómo se llama la promoción o urbanización?');
+    const n=await a.choose(['Residencial Los Olivos (ejemplo)']);
+    await a.say('¿Qué ocurre?');
+    const q=await a.choose(['Entra agua dentro del cristal','La ventana no cierra o corre mal','Otra cosa']);
+    await a.say('Envíeme una foto del problema, por favor.');
+    const hasPhoto=await photo(a,'humedad','Foto (ejemplo)');
+    const nOrd=S.common.avisos+1+S.common.extra.length;
+    const id=nextId('GAR','2411');
+    S.common.extra.push({u:'Su aviso (demo)',id});S.common.pulse=true;S.common.seen=false;
+    updateDot();
+    await a.say('Gracias. He registrado su aviso:',{fast:true});
+    await a.card(`<div class="cardh"><span>Aviso ${id}</span>${EX}</div><dl class="rows"><dt>Promoción</dt><dd>${esc(n.label)}</dd><dt>Problema</dt><dd>${esc(q.label)}</dd><dt>Expediente</dt><dd>GAR-C-0007 · aviso n.º ${nOrd}</dd></dl>`);
+    await a.say('Su aviso queda unido al expediente común de la promoción: ya hay otros vecinos con el mismo problema y no hace falta que cada uno llame por separado.');
+    await a.say('No puedo decirle yo si queda cubierto por la garantía: lo decide el servicio técnico tras ver las fotos. Sí le aseguro que recibirá aquí la fecha de revisión. Plazo de respuesta: 3 días laborables (<i>ejemplo</i>).');
+  }else if(w.idx===1){
+    await a.say('¿Qué ha ocurrido?');
+    const q=await a.choose(['La puerta automática no cierra','Un cristal roto o con fisura','Otra cosa']);
+    await a.say('¿La instaló Guzmán?');
+    const own=await a.choose(['Sí','No','No lo sé']);
+    await a.say('Envíeme una foto del daño o de la placa del equipo.');
+    const hasPhoto=await photo(a,'placa','Foto de la placa (ejemplo)');
+    const id=nextId('SAT','');
+    S.sats.unshift({id,tipo:q.label.replace(/^./,c=>c.toUpperCase())+' (comercio)',det:own.idx===0?'La instaló Guzmán · prioridad':'No la instaló Guzmán · el técnico decide si se atiende',estado:own.idx===0?'Visita por fijar':'Decisión sí/no pendiente',tag:own.idx===0?'brand':'warn',days:0,kind:'placa',isNew:true});
+    updateDot();
+    await a.say('Gracias. Queda registrado:',{fast:true});
+    await a.card(`<div class="cardh"><span>Incidencia ${id}</span>${EX}</div><dl class="rows"><dt>Problema</dt><dd>${esc(q.label)}</dd><dt>Instalada por</dt><dd>${esc(own.label)}</dd><dt>Estado</dt><dd>${own.idx===0?'Pendiente de fijar visita':'Pendiente de decisión'}</dd></dl>`);
+    if(own.idx===0)await a.say('Como la instalamos nosotros, pasa con prioridad al servicio técnico. Le propondrá fecha de visita en 1 día laborable (<i>ejemplo</i>).');
+    else await a.say('Al no ser una instalación nuestra, el servicio técnico tiene que decidir si puede atenderla. Le diremos un sí o un no claro en 1 día laborable (<i>ejemplo</i>), para que no se quede esperando.');
+  }else{
+    await a.say('¿Qué le pasa?');
+    const q=await a.choose(['Una ventana o puerta no funciona bien','Un cristal roto o con fisura','Otra cosa']);
+    await a.say('Envíeme una foto del problema, por favor.');
+    await photo(a,kindOf(q.label)==='cristalera'&&/cristal/i.test(q.label)?'cristalera':'ventana','Foto (ejemplo)');
+    const id=nextId('SAT','');
+    S.sats.unshift({id,tipo:q.label.replace(/^./,c=>c.toUpperCase()),det:'Vivienda particular · pendiente de revisar si está en garantía',estado:'Por revisar',tag:'brand',days:0,kind:'ventana',isNew:true});
+    updateDot();
+    await a.say('Gracias. Queda registrado:',{fast:true});
+    await a.card(`<div class="cardh"><span>Incidencia ${id}</span>${EX}</div><dl class="rows"><dt>Problema</dt><dd>${esc(q.label)}</dd><dt>Estado</dt><dd>Pendiente de revisión</dd></dl>`);
+    await a.say('El servicio técnico lo revisa y le contesta aquí con una fecha. Plazo de respuesta: 2 días laborables (<i>ejemplo</i>).');
+  }
+}
+
+function obraCard(){
+  return `<div class="cardh"><span>OB-2411-0031</span>${EX}</div>
+  <div style="font-size:14px">Carpintería de aluminio, vivienda unifamiliar</div>
+  <ul class="steps"><li class="done"><i></i><span>Medición</span></li><li class="done"><i></i><span>Fabricación</span></li><li class="cur"><i></i><span>Instalación<small>2 de 4 jornadas hechas</small></span></li><li><i></i><span>Remate y entrega</span></li></ul>
+  <dl class="rows" style="margin-top:8px"><dt>Próxima visita</dt><dd>Jueves, de 8:00 a 14:00</dd><dt>Responsable</dt><dd>Equipo de obra</dd></dl>`;
+}
+async function fEstado(a){
+  await a.say('Dígame el número de su solicitud u obra (empieza por SP u OB). Para probar, puede usar uno de estos dos.');
+  for(;;){
+    const c=await a.choose(['OB-2411-0031','SP-2411-0079']);
+    const t=c.label.toUpperCase().replace(/\s/g,'');
+    if(t.includes('OB-2411-0031')){
+      await a.say('Aquí tiene su obra:',{fast:true});
+      await a.card(obraCard());
+      S.statusAnswered++;
+      await a.say('Esto lo veo en el parte del equipo de obra, sin llamar a nadie. ¿Quiere algo más sobre ella?');
+      const d=await a.choose(['Cambiar la fecha de la visita','Avisar de un problema','No, gracias']);
+      if(d.idx===0){
+        await a.say('Anotado: el responsable de la obra recibe su petición con los datos. Si no la contesta en 1 día laborable (<i>ejemplo</i>), pasa automáticamente a Dirección y yo se lo cuento a usted.');
+      }else if(d.idx===1){
+        const id=nextId('SAT','');
+        S.sats.unshift({id,tipo:'Aviso en obra OB-2411-0031',det:'Cliente avisa de un problema durante la instalación',estado:'Por revisar',tag:'brand',days:0,kind:'ventana',isNew:true});updateDot();
+        await a.say(`Abierta la incidencia ${id} (<i>ejemplo</i>) y avisado el responsable de la obra. No hace falta que repita nada: le contesta aquí.`);
+      }
+      return;
+    }
+    if(t.includes('SP-2411-0079')){
+      const r=S.reqs.find(x=>x.id==='SP-2411-0079');
+      r.asked=true;
+      await a.say('Su solicitud SP-2411-0079:',{fast:true});
+      await a.card(`<div class="cardh"><span>SP-2411-0079</span>${EX}</div><dl class="rows"><dt>Tipo</dt><dd>Ventana corredera</dd><dt>Estado</dt><dd>Pendiente de presupuesto</dd><dt>Espera</dt><dd>${r.wait} h</dd></dl>`);
+      S.statusAnswered++;
+      await a.say('Le soy sincero: ya se ha pasado el plazo previsto de 48 h (<i>ejemplo</i>). He marcado su solicitud como urgente para el comercial y se lo he comunicado a Dirección. Le escribirán por aquí hoy mismo con el presupuesto o con una fecha concreta.');
+      return;
+    }
+    await a.say('No encuentro ese número en esta demo. Pruebe con uno de los dos de ejemplo.',{fast:true});
+  }
+}
+
+async function fProfesional(a){
+  await a.say('Con gusto. Para proyectos y obra nueva tenemos una cola propia, con un técnico asignado. ¿Qué necesita?');
+  const q=await a.choose(['Presupuesto de un proyecto','Entregar planos o mediciones','Hablar con un técnico']);
+  await a.say('Dígame de qué proyecto se trata.');
+  const p=await a.choose(['Edificio de 12 viviendas, Sevilla Este']);
+  await a.say('Adjunte los planos de carpintería o la memoria, si los tiene.');
+  const f=await a.choose([{label:'Enviar Planos_carpinteria.pdf',silent:true},{label:'Los envío más tarde'}]);
+  if(f.idx===0)bubble('out',`<div class="file">${ICON.pdf}<div><b>Planos_carpinteria.pdf</b><div class="cap" style="font-size:12px;color:var(--muted)">2,4 MB · archivo de ejemplo</div></div></div>`);
+  await a.say('¿Para qué fecha necesita la oferta?');
+  const d=await a.choose(['En 10 días','Esta semana']);
+  const id=nextId('PR','2411');
+  S.reqs.unshift({id,seg:'Edificación',tipo:q.label==='Presupuesto de un proyecto'?'Carpintería de aluminio, 12 viviendas':q.label,med:f.idx===0?'Según planos (PDF)':'Planos pendientes',loc:'Sevilla Este',plazo:'Oferta '+d.label.toLowerCase(),cliente:'Estudio de arquitectura (ejemplo)',wait:0,kind:'cristalera',isNew:true,mine:true});
+  updateDot();
+  await a.say('Recibido. Queda así:',{fast:true});
+  await a.card(`<div class="cardh"><span>Proyecto ${id}</span>${EX}</div><dl class="rows"><dt>Proyecto</dt><dd>${esc(p.label)}</dd><dt>Documentación</dt><dd>${f.idx===0?'Planos adjuntos':'Pendiente'}</dd><dt>Oferta para</dt><dd>${esc(d.label)}</dd><dt>Cola</dt><dd>Edificación</dd></dl>`);
+  await a.say('Pasa a la cola de Edificación y un técnico queda asignado en 1 día laborable (<i>ejemplo</i>). Con este número puede preguntar el estado en cualquier momento.');
+}
+
+function startChat(){
+  log.innerHTML='';clock=9*60+14;
+  startFlow(async a=>{
+    const s=document.createElement('div');s.className='sys';s.textContent='Demo: toque una opción o escriba su respuesta. Los datos son de ejemplo y no se envía nada.';log.appendChild(s);
+    await a.say('Buenos días, soy el asistente de Cristalería y Aluminios Guzmán. La tienda atiende de lunes a viernes de 7:00 a 15:00, pero yo recojo su consulta a cualquier hora y la dejo lista para el equipo.');
+    await menu(a,'¿En qué puedo ayudarle?');
+  });
+}
+$('#restart').addEventListener('click',startChat);
+
+/* ---------- Equipo ---------- */
+function waitTag(r){
+  if(r.done)return '<span class="tag ok">Presupuesto enviado</span>';
+  if(r.paused)return '<span class="tag brand">Esperando al cliente</span>';
+  if(r.wait===0)return '<span class="tag brand">Recién llegada</span>';
+  if(r.wait>=48)return `<span class="tag bad">Más de 48 h · ${r.wait} h</span>`;
+  if(r.wait>=36)return `<span class="tag warn">Quedan ${48-r.wait} h · ${r.wait} h</span>`;
+  return `<span class="tag">Hace ${r.wait} h</span>`;
+}
+function reqCard(r,i){
+  const flag=over(r)?' flag':'';
+  const btn=r.done?'<button class="btn" disabled>Enviado</button>':(r.owner?`<button class="btn" data-act="done" data-i="${i}">Marcar presupuesto enviado</button>`:`<button class="btn" data-act="take" data-i="${i}">Tomar la solicitud</button>`);
+  const ask=r.done?'':(r.paused?`<button class="btn ghost" data-act="resume" data-i="${i}">Ya contestó</button>`:`<button class="btn ghost" data-act="ask" data-i="${i}">Pedir más datos</button>`);
+  const img=r.photo===false?`<div style="width:76px;height:57px;border-radius:6px;background:#eef1ef;color:var(--muted);font-size:11.5px;display:grid;place-items:center;text-align:center">Sin foto</div>`:photoSvg(r.kind);
+  return `<article class="item${flag}">
+    <div class="top"><span class="id">${r.id}</span>${waitTag(r)}</div>
+    <div class="body">${img}<div class="facts">
+      <b>${esc(r.tipo)}</b>
+      <span class="m">${esc(r.seg)} · ${esc(r.cliente)}</span>
+      <span>${esc(r.med)} · ${esc(r.loc)}</span>
+      <span class="m">Plazo deseado: ${esc(r.plazo)}</span>
+      ${r.asked?'<span><span class="tag bad">El cliente ha preguntado por el estado</span></span>':''}
+      ${r.isNew?'<span><span class="tag ok">Nueva desde la conversación</span></span>':''}
+      ${r.owner?`<span class="m">La lleva: ${esc(r.owner)}</span>`:''}
+    </div></div>
+    <div class="row-actions">${btn}${ask}</div>
+    ${r.draft?`<div class="draft"><small>Borrador para el cliente (en la demo no se envía)</small>${esc(r.draft)}</div>`:''}
+  </article>`;
+}
+function satCard(s,i){
+  const late=s.days>=5;
+  const msg=s.draft?`<div class="draft"><small>Borrador para el cliente (en la demo no se envía)</small>${esc(s.draft)}</div>`:'';
+  return `<article class="item${late?' flag':''}">
+    <div class="top"><span class="id">${s.id}</span><span class="tag ${s.tag}">${esc(s.estado)}</span></div>
+    <div class="body">${photoSvg(s.kind)}<div class="facts"><b>${esc(s.tipo)}</b><span class="m">${esc(s.det)}</span>
+      <span>${s.days===0?'Abierta hoy':`Sin contestar al cliente desde hace ${s.days} d`}${late?' <span class="tag bad">Revisar</span>':''}</span>
+      ${s.isNew?'<span><span class="tag ok">Nueva desde la conversación</span></span>':''}
+    </div></div>
+    <div class="row-actions"><button class="btn ghost" data-act="satmsg" data-i="${i}">Preparar actualización al cliente</button></div>${msg}
+  </article>`;
+}
+function commonCard(){
+  const c=S.common, total=c.avisos+c.extra.length;
+  const units=c.units.map(u=>`<li><span>${esc(u)}</span><span>aviso abierto</span></li>`).join('')+c.extra.map(u=>`<li><span>${esc(u.u)}</span><span>${u.id}</span></li>`).join('');
+  return `<article class="item${c.sinVisita?' flag':''}">
+    <div class="top"><span class="id">${c.id}</span><span class="tag bad">${c.sinVisita?'Sin visita fijada':'Visita fijada'}</span></div>
+    <div class="facts" style="margin-top:8px"><b>${esc(c.nombre)}</b><span class="m">Expediente común · ${total} avisos de vecinos agrupados</span><span>${esc(c.desc)}</span><span>Sin contestar a los vecinos desde hace ${c.days} d ${c.days>=3?'<span class="tag bad">Revisar</span>':''}</span>
+    ${c.pulse?'<span><span class="tag ok">Un aviso nuevo desde la conversación</span></span>':''}</div>
+    <ul class="units">${units}</ul>
+    <button class="more" data-act="more" type="button">… y ${total-c.units.length-c.extra.length} avisos más (un solo expediente)</button>
+    <div class="row-actions"><button class="btn" data-act="commonmsg">Preparar mensaje para los ${total} vecinos</button></div>
+    ${c.draft?`<div class="draft"><small>Borrador conjunto (en la demo no se envía)</small>${esc(c.draft)}</div>`:''}
+  </article>`;
+}
+function renderTeam(){
+  const el=$('#team-list'), note=$('#team-note');
+  $$('#p-equipo .seg button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.seg===S.segTab)));
+  if(S.segTab==='pres'){
+    const list=S.reqs.map((r,i)=>({r,i})).sort((x,y)=>(over(y.r)-over(x.r))||(y.r.wait-x.r.wait));
+    const n=S.reqs.filter(over).length;
+    note.innerHTML=`${n?`<b style="color:var(--bad)">${n} con más de 48 h sin presupuesto.</b> `:'Ninguna pasa de 48 h. '}Las más antiguas, arriba. ${EX}`;
+    el.innerHTML=list.map(x=>reqCard(x.r,x.i)).join('');
+  }else{
+    note.innerHTML=`Un solo número por problema común. Cada aviso suelto tiene el suyo. ${EX}`;
+    el.innerHTML=commonCard()+S.sats.map((s,i)=>satCard(s,i)).join('');
+  }
+}
+$('#team-list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const i=+b.dataset.i, act=b.dataset.act;
+  if(act==='take'){S.reqs[i].owner='comercial 1 (ejemplo)'}
+  else if(act==='done'){S.reqs[i].done=true;S.reqs[i].draft=null}
+  else if(act==='ask'){const r=S.reqs[i];r.paused=true;r.draft=`Buenos días. Para preparar su presupuesto de ${r.tipo.toLowerCase()} nos falta ${r.med.startsWith('No')?'una medida aproximada del hueco':'una foto más cercana del hueco'}. ¿Puede enviárnosla por aquí? Mientras tanto, su solicitud ${r.id} sigue abierta.`}
+  else if(act==='resume'){S.reqs[i].paused=false;S.reqs[i].draft=null}
+  else if(act==='satmsg'){const s=S.sats[i];s.draft=`Buenos días. Sobre su incidencia ${s.id}: sigue abierta y está en estado «${s.estado.toLowerCase()}». Le escribiremos de nuevo antes de ${s.days>=5?'mañana a mediodía':'el viernes'} con una fecha o con el motivo del retraso (ejemplo).`}
+  else if(act==='commonmsg'){S.common.draft=`Buenos días. Les escribimos a todos los vecinos de ${S.common.nombre.replace(' (ejemplo)','')} con la misma información: el expediente ${S.common.id} agrupa sus avisos por entrada de agua en las ventanas. El servicio técnico fijará fecha de revisión en los próximos días y se la comunicaremos por este mismo canal (ejemplo).`}
+  else if(act==='more'){/* decorativo */ b.textContent='Todos los avisos están agrupados en este expediente.';b.disabled=true}
+  if(act!=='more')renderTeam();
+});
+
+/* ---------- Dirección ---------- */
+function renderDir(){
+  const pend=S.reqs.filter(r=>!r.done);
+  const b1=pend.filter(r=>!over(r)&&r.wait<24).length, b2=pend.filter(r=>!over(r)&&r.wait>=24).length, b3=pend.filter(over).length;
+  const max=Math.max(b1,b2,b3,1);
+  const totalAvisos=S.common.avisos+S.common.extra.length+S.sats.length;
+  const hoy=14+S.reqs.filter(r=>r.mine).length;
+  const wid=n=>Math.round(n/max*100);
+  const att=[];
+  if(b3)att.push(`<div class="a"><p><b>${b3} presupuesto${b3>1?'s llevan':' lleva'} más de 48 h</b> sin enviarse.</p><div class="row-actions" style="margin:0"><button class="btn ghost" data-go="pres">Ver en Equipo</button></div></div>`);
+  if(S.common.sinVisita)att.push(`<div class="a"><p><b>Expediente ${S.common.id}:</b> ${S.common.avisos+S.common.extra.length} avisos de garantía en un mismo complejo, sin visita fijada desde hace ${S.common.days} días.</p><div class="row-actions" style="margin:0"><button class="btn ghost" data-go="sat">Ver en Equipo</button></div></div>`);
+  att.push(`<div class="a"><p><b>Obra «Carpintería de 24 viviendas»:</b> 14 días sin parte de obra.</p></div>`);
+  $('#dir').innerHTML=`
+    <div class="sect"><h3>Necesita su decisión hoy</h3><div class="attn">${att.join('')}</div></div>
+    <div class="sect"><h3>Actividad de hoy</h3>
+      <dl class="stat">
+        <div><dt>Solicitudes nuevas</dt><dd>${hoy}</dd></div>
+        <div><dt>Recogidas fuera de horario (después de las 15:00)</dt><dd>5</dd></div>
+        <div><dt>Consultas de estado resueltas sin llamada</dt><dd>${22+S.statusAnswered}</dd></div>
+        <div><dt>Avisos de garantía y SAT abiertos</dt><dd>${totalAvisos+8}</dd></div>
+      </dl></div>
+    <div class="sect"><h3>Presupuestos pendientes por antigüedad</h3>
+      <div class="bars">
+        <div class="bar"><span>Menos de 24 h</span><span class="tr"><i style="width:${wid(b1)}%"></i></span><b>${b1}</b></div>
+        <div class="bar"><span>24–48 h</span><span class="tr"><i style="width:${wid(b2)}%"></i></span><b>${b2}</b></div>
+        <div class="bar bad"><span>Más de 48 h</span><span class="tr"><i style="width:${wid(b3)}%"></i></span><b>${b3}</b></div>
+      </div></div>
+    <div class="sect"><h3>Estado de las obras</h3>
+      <ul class="obras">${S.obras.map(o=>`<li><span class="n">${esc(o.n)} ${EX}</span><span><span class="tag ${o.cls}">${esc(o.est)}</span></span><span class="d">${esc(o.d)}</span></li>`).join('')}</ul></div>
+    <div class="sect pad"></div>`;
+}
+$('#dir').addEventListener('click',e=>{
+  const b=e.target.closest('[data-go]');if(!b)return;
+  S.segTab=b.dataset.go;showTab('equipo');
+});
+
+updateDot();
+renderTeam();
+renderDir();
+startChat();
+})();
+</script>
+</body>
+</html>
