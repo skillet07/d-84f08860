@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="light">
+<title>Демо-концепт: ИИ-консультант для агентства недвижимости</title>
+<style>
+:root{
+  --ink:#14212b; --muted:#566772; --line:#cfdae1; --bg:#e5edf1; --card:#ffffff;
+  --accent:#0a6e9c; --accent-d:#085a80; --accent-soft:#dcf1fa; --accent-line:#9fd3ea; --brand:#17b7ea;
+  --me:#cde9f6; --ok:#17613a; --ok-bg:#e1f3e8; --warn:#9c3a0d; --warn-bg:#fbe8dd;
+  --strip:#17252f;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:16px/1.4 var(--font);color:var(--ink);background:#c9d5dc;-webkit-text-size-adjust:100%;font-variant-numeric:tabular-nums}
+::selection{background:var(--accent);color:#fff}
+input,button{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+*{scrollbar-width:thin;scrollbar-color:#a9bac4 transparent}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#a9bac4;border-radius:6px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+#app{position:relative;display:flex;flex-direction:column;height:100dvh;max-width:430px;margin:0 auto;background:var(--bg);overflow:hidden}
+@media(min-width:600px){#app{height:min(880px,calc(100dvh - 32px));margin:16px auto;border-radius:24px;box-shadow:0 18px 50px -12px rgba(20,33,43,.35),0 2px 6px rgba(20,33,43,.12)}}
+
+.strip{background:var(--strip);color:#dbe7ee;font-size:11px;line-height:1.25;padding:4px 10px;text-align:center}
+.roles{display:flex;gap:4px;padding:8px 10px;background:var(--card);border-bottom:1px solid var(--line)}
+.roles button{flex:1;min-height:44px;border:0;border-radius:10px;background:transparent;font-weight:600;color:var(--muted);transition:background .2s,color .2s}
+.roles button[aria-selected=true]{background:var(--accent);color:#fff}
+.roles button:not([aria-selected=true]):hover{background:var(--accent-soft);color:var(--accent-d)}
+
+.view{flex:1;min-height:0;display:flex;flex-direction:column}
+.view[hidden]{display:none}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+.ava{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px;flex:none}
+.bar .t{flex:1;min-width:0}
+.bar .t b{display:block;font-size:16px;line-height:1.2}
+.bar .t span{display:block;font-size:13px;color:var(--muted)}
+.ghost{min-height:44px;min-width:44px;padding:0 10px;border:0;background:transparent;color:var(--accent-d);border-radius:10px;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px}
+.ghost:hover{background:var(--accent-soft)}
+
+.scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 10px 16px;scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){.scroll{scroll-behavior:auto}}
+
+/* chat */
+.why{margin:0 0 10px;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px}
+.why summary{min-height:44px;display:flex;align-items:center;padding:0 12px;font-weight:600;color:var(--accent-d);cursor:pointer;list-style:none}
+.why summary::-webkit-details-marker{display:none}
+.why summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s}
+.why[open] summary::after{transform:rotate(-135deg)}
+.why .in{padding:0 12px 12px}
+.why blockquote{margin:8px 0 0;padding:0;color:var(--ink)}
+.why cite{display:block;font-style:normal;color:var(--muted);font-size:12px;margin-top:2px}
+.msg{display:flex;flex-direction:column;margin:0 0 8px;max-width:90%;animation:rise .28s var(--ease) both}
+.msg.me{align-self:flex-end;align-items:flex-end;margin-left:auto}
+.msg.bot{align-items:flex-start}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.msg{animation:none}}
+.bub{background:var(--card);border-radius:4px 16px 16px 16px;padding:9px 12px 6px;box-shadow:0 1px 2px rgba(20,33,43,.12);font-size:16px;overflow-wrap:anywhere}
+.me .bub{background:var(--me);border-radius:16px 4px 16px 16px}
+.bub p{margin:0 0 4px}
+.bub .tm{display:block;text-align:right;font-size:11px;color:var(--muted);margin-top:2px}
+.bub.card{padding:0;overflow:hidden;width:min(330px,100%)}
+.bub.card .tm{padding:0 12px 6px}
+.ph{position:relative;aspect-ratio:16/10;background:#d3dde3;display:block;width:100%}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .miss{position:absolute;inset:0;display:none;place-items:center;text-align:center;padding:12px;color:var(--muted);font-size:14px}
+.ph.bad img{display:none}.ph.bad .miss{display:grid}
+.card .body{padding:10px 12px 4px}
+.lot{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--accent-d);background:var(--accent-soft);padding:2px 8px;border-radius:6px;display:inline-block}
+.card h3{font-size:17px;line-height:1.25;margin:6px 0 2px}
+.card .adr{color:var(--muted);font-size:14px;margin:0 0 6px}
+.facts{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:15px;margin:0 0 6px;padding:0;list-style:none}
+.price{font-size:21px;font-weight:700;margin:4px 0 0}
+.price small{font-size:13px;font-weight:500;color:var(--muted);margin-left:6px}
+.lnk{color:var(--accent-d);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:32px}
+.kb{display:grid;gap:6px;margin-top:6px;width:min(330px,100%)}
+.kb.row2{grid-template-columns:1fr 1fr}
+.lead .kb,.sys .kb{width:100%}
+.kb button{min-height:46px;padding:8px 12px;border:1px solid var(--accent-line);border-radius:12px;background:#f4fbfe;color:var(--accent-d);font-weight:600;font-size:15px;line-height:1.2;text-align:center;transition:background .15s,transform .15s}
+.kb button:hover{background:var(--accent-soft)}
+.kb button:active{transform:scale(.98)}
+.kb button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.kb button.pri:hover{background:var(--accent-d)}
+.kb.done{opacity:.5;pointer-events:none}
+.typing{display:inline-flex;gap:4px;padding:12px 14px;background:var(--card);border-radius:4px 16px 16px 16px;box-shadow:0 1px 2px rgba(20,33,43,.12)}
+.typing i{width:7px;height:7px;border-radius:50%;background:#8aa0ad;animation:bl 1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.35}30%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.7}}
+.mini{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:6px;min-height:64px}
+.mini:hover{border-color:var(--accent-line);background:#f4fbfe}
+.mini .th{width:64px;height:48px;border-radius:8px;overflow:hidden;background:#d3dde3;flex:none}
+.mini .th img{width:100%;height:100%;object-fit:cover;display:block}
+.mini b{display:block;font-size:15px;line-height:1.2}.mini span{display:block;font-size:13px;color:var(--muted)}
+.mini .p{margin-left:auto;font-weight:700;font-size:14px;white-space:nowrap}
+.okcard{border:1px solid #9ad2b0;background:var(--ok-bg);color:var(--ok);border-radius:12px;padding:10px 12px;font-weight:600;display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.composer{display:flex;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line)}
+.composer input{flex:1;min-width:0;min-height:46px;border:1px solid var(--line);border-radius:23px;padding:0 16px;background:#f5f8fa;caret-color:var(--accent)}
+.composer input::placeholder{color:#5f717d}
+.composer input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+.send{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.send:hover{background:var(--accent-d)}
+
+/* staff + owner */
+.note{font-size:13px;color:var(--muted);text-align:center;margin:0 6px 10px}
+.lead{background:#fff;border-radius:4px 16px 16px 16px;box-shadow:0 1px 2px rgba(20,33,43,.12);padding:12px;max-width:100%;animation:rise .28s var(--ease) both}
+.lead h3{margin:0 0 8px;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--warn-bg);color:var(--warn)}
+.tag.ex{background:#eef2f4;color:var(--muted)}
+.dl{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;margin:0;font-size:15px}
+.dl dt{color:var(--muted);font-size:14px}.dl dd{margin:0}
+.dl ul{margin:0;padding-left:18px}
+.timer{margin:10px 0 0;padding:8px 10px;border-radius:10px;background:#eef6fa;font-size:14px;display:flex;gap:8px;align-items:center}
+.timer b{font-size:18px}
+.timer.late{background:var(--warn-bg);color:var(--warn)}
+.timer.ok{background:var(--ok-bg);color:var(--ok)}
+.sm{font-size:14px;color:var(--muted);background:none;border:0;text-decoration:underline;text-underline-offset:3px;min-height:44px;width:100%;text-align:center}
+.stack>*+*{margin-top:8px}
+.sys{background:#fff;border-radius:4px 16px 16px 16px;padding:10px 12px;box-shadow:0 1px 2px rgba(20,33,43,.12);font-size:15px;animation:rise .28s var(--ease) both}
+.sec{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.sec h2{font-size:16px;margin:0 0 2px}
+.sec .sub{font-size:13px;color:var(--muted);margin:0 0 10px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:#eef2f4;color:var(--muted);vertical-align:2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:600;text-align:right;color:var(--muted);font-size:12px;padding:0 0 6px 6px}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+td{text-align:right;padding:9px 0 9px 6px;border-top:1px solid #e3eaee}
+td:first-child{font-weight:600}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+.late-n{color:var(--warn);font-weight:700}
+.bars{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:4px;background:#e3eaee}
+.bars i{display:block}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.seg{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
+.seg button{min-height:44px;padding:0 14px;border:1px solid var(--line);background:#fff;border-radius:22px;font-weight:600;font-size:14px;white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.wait{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #e3eaee}
+.wait:first-of-type{border-top:0}
+.wait .m{flex:1;min-width:0;font-size:14px}.wait .m b{display:block;font-size:15px}
+.wait .t{font-weight:700;color:var(--warn);font-size:14px;white-space:nowrap}
+.wait button{min-height:44px;padding:0 12px;border:1px solid var(--accent-line);background:#f4fbfe;color:var(--accent-d);border-radius:10px;font-weight:600;font-size:14px}
+.big{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--accent);color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.big:hover{background:var(--accent-d)}
+.big.alt{background:#fff;color:var(--accent-d);border:1px solid var(--accent-line)}
+
+#final{position:absolute;inset:0;background:var(--bg);z-index:5;display:flex;flex-direction:column;animation:rise .35s var(--ease) both}
+#final[hidden]{display:none}
+#final .inner{flex:1;overflow-y:auto;padding:28px 18px 18px}
+#final h1{font-size:30px;line-height:1.1;margin:0 0 10px;letter-spacing:-.02em;text-wrap:balance}
+#final p{font-size:17px;margin:0 0 14px;max-width:34ch}
+#final ul{padding:0;margin:0 0 18px;list-style:none;font-size:15px}
+#final li{padding:9px 0;border-top:1px solid var(--line)}
+#final .who{font-size:19px;font-weight:700;margin:6px 0 10px}
+#final .acts{display:grid;gap:8px;margin-bottom:12px}
+#final a.big{text-decoration:none}
+.src{font-size:12px;color:var(--muted);margin-top:8px}
+.toast{position:absolute;left:50%;bottom:76px;transform:translate(-50%,20px);background:var(--strip);color:#fff;padding:10px 14px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .25s var(--ease);z-index:9;max-width:90%;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="strip">Демо-концепт. Не официальный сайт компании. Данные – из открытых источников на 09.11.2026</div>
+  <div class="roles" role="tablist" aria-label="Роль">
+    <button role="tab" id="tab-client" aria-selected="true" aria-controls="v-client">Клиент</button>
+    <button role="tab" id="tab-staff" aria-selected="false" aria-controls="v-staff">Сотрудник</button>
+    <button role="tab" id="tab-owner" aria-selected="false" aria-controls="v-owner">Владелец</button>
+  </div>
+
+  <section class="view" id="v-client" role="tabpanel" aria-labelledby="tab-client">
+    <div class="bar">
+      <div class="ava" aria-hidden="true">Б</div>
+      <div class="t"><b>Бугриэлт · консультант</b><span>бот, отвечает сразу, 24/7</span></div>
+      <button class="ghost" id="restart" aria-label="Начать диалог заново"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Сначала</button>
+    </div>
+    <div class="scroll" id="chat">
+      <details class="why">
+        <summary>Зачем это: из отзывов на Яндекс Картах</summary>
+        <div class="in">
+          <blockquote>«…на сайте оставил сообщение о заинтересованности… просьбой скинуть дополнительные фотографии – никто не отреагировал, написал риэлтору в телеграмм – никто не отреагировал…»<cite>Отзыв, 1★, 07.12.2025</cite></blockquote>
+          <blockquote>«…Я заказал обратный звонок – никто не позвонил. Я не хочу звонить, я хочу написать в мессенджер»<cite>Отзыв, 2★, 16.05.2025</cite></blockquote>
+          <blockquote>«…половина квартир на сайте не актуальны… почему это нигде не отметить на сайте»<cite>Отзыв, 3★, 15.04.2025</cite></blockquote>
+        </div>
+      </details>
+    </div>
+    <form class="composer" id="form" autocomplete="off">
+      <input id="inp" type="text" inputmode="text" placeholder="Номер лота или вопрос" aria-label="Сообщение консультанту" enterkeyhint="send">
+      <button class="send" type="submit" aria-label="Отправить"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </form>
+  </section>
+
+  <section class="view" id="v-staff" role="tabpanel" aria-labelledby="tab-staff" hidden>
+    <div class="bar">
+      <div class="ava" aria-hidden="true">З</div>
+      <div class="t"><b>Бугриэлт · заявки</b><span>Telegram риэлтора Ирины (пример)</span></div>
+    </div>
+    <div class="scroll stack" id="staff"></div>
+  </section>
+
+  <section class="view" id="v-owner" role="tabpanel" aria-labelledby="tab-owner" hidden>
+    <div class="bar">
+      <div class="ava" aria-hidden="true">В</div>
+      <div class="t"><b>Сводка за вчера</b><span>08.11.2026 · все цифры – пример</span></div>
+    </div>
+    <div class="scroll" id="owner"></div>
+  </section>
+
+  <section id="final" hidden aria-label="Внедрение">
+    <div class="bar"><button class="ghost" id="back"><svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>К демо</button></div>
+    <div class="inner">
+      <h1>Так может работать у вас.</h1>
+      <p>Внедрение – 2–4 недели, дальше сопровождение.</p>
+      <ul>
+        <li>Консультант отвечает по вашим объектам и передаёт риэлтору тёплую заявку.</li>
+        <li>Не взяли за 15 минут – заявка уходит руководителю офиса.</li>
+        <li>Владелец видит, где обращения остались без ответа.</li>
+      </ul>
+      <div class="who">Роман Благов</div>
+      <div class="acts">
+        <a class="big" href="https://t.me/blagov369" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M21 4L3 11l6 2 2 6 3-4 5 3z"/></svg>Telegram @blagov369</a>
+        <a class="big alt" href="tel:+375298611029"><svg class="i" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>+375 29 861-10-29</a>
+      </div>
+      <div class="src">Объекты, адреса, площади и цены – с bugrealt.by (Брест), 09.11.2026. Фото – по ссылкам на картинки сайта. Имена клиентов и риэлторов, цифры сводки – примеры.</div>
+    </div>
+  </section>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+const DATA=[{"lot":"260262","type":"1к","rooms":1,"title":"Однокомнатная квартира, Красногвардейская ул.","street":"Красногвардейская ул.","district":"Граевка","floor":4,"floors":5,"year":1989,"area_total":21.8,"area_living":10.8,"area_kitchen":5.6,"area_plot":null,"price_byn":105000,"price_m2":4817,"url":"https://bugrealt.by/260262-78664-p/","img":"https://bugrealt.by/upload/Sh/imageCache/f20/7e2/ab40136b57391408f1de18e0b9bf5d29.jpg","desc":"Уютная однокомнатная квартира в городе Бресте, ул. Красногвардейская.\nГод постройки - 1989. Материал стен - кирпич. 4-ой этаж пятиэтажного дома. \nОписание квартиры:\nПлощадь общая СНБ - 22,7 м2, жилая комната - 10,8 м2, кухня - 5,6 м2. \nКвартира в обычном жилом состоянии. Окна - стеклопакеты. На полу линолеум. Потолки крашеные. Стены оклеены обоями, частично окрашены. \nИмеется подвал.\nБлагоустроенный двор, облагороженная придомовая территория с обустроенной детской площадкой, парковка для автомобилей. Район с развитой инфраструктурой, в шаговой остановка общественного транспорта."},{"lot":"260312","type":"1к","rooms":1,"title":"Однокомнатная квартира, Орловская ул.","street":"Орловская ул.","district":"Восток","floor":1,"floors":9,"year":1982,"area_total":37.2,"area_living":17.1,"area_kitchen":7.7,"area_plot":null,"price_byn":159000,"price_m2":4274,"url":"https://bugrealt.by/260312-78867-p/","img":"https://bugrealt.by/upload/Sh/imageCache/aac/370/e2af72877c4c6d2968eb1dc9d9070d80.jpg","desc":"1- комнатная квартира, г.Брест, Орловская ул., 1982 г.п., 1/9 панель, 37,2/37,2/17,1/7,7 кв.м., с/у раздельный, стеклопакеты, натяжные потолки,снежка, межкомнатные двери МДФ, входная металлическая, новая с/т, кладовка. Чистый, ухоженный подъезд. Благоустроенный двор, облагороженная придомовая территория с обустроенной детской площадкой, со стоянкой для автомобилей. Район с развитой инфраструктурой, рядом с домом расположены: продовольственный магазин, аптека , школа, детский сад. поликлиника, спортивный комплекс. Хорошая транспортная развязка, в шаговой доступности остановка общественного транспорта."},{"lot":"260313","type":"1к","rooms":1,"title":"Однокомнатная квартира, Ленинградская ул.","street":"Ленинградская ул.","district":"Восток","floor":1,"floors":9,"year":1983,"area_total":37.3,"area_living":17.2,"area_kitchen":7.6,"area_plot":null,"price_byn":167000,"price_m2":4477,"url":"https://bugrealt.by/260313-78868-p/","img":"https://bugrealt.by/upload/Sh/imageCache/70a/58d/0d160b48470ff3d0260aee8a6a275a02.jpg","desc":"1- комнатная квартира, г.Брест, Ленинградская ул., 1983 г.п., 1/9 панель, 37,3/37,3/17,2/7,6 кв.м., с/у раздельный, стеклопакеты, ламинат, натяжные потолки, межкомнатные двери деревянные, входная металлическая, с/у плитка, кухонный гарнитур, кладовка. Чистый, ухоженный подъезд. Благоустроенный двор, облагороженная придомовая территория с обустроенной детской площадкой, со стоянкой для автомобилей. Район с развитой инфраструктурой, рядом с домом расположены: продовольственный магазин, аптека, школа, детский сад, спортивный комплекс. Хорошая транспортная развязка, в шаговой доступности остановка общественного транспорта."},{"lot":"250561","type":"1к","rooms":1,"title":"Однокомнатная квартира, ул. Советской Конституции","street":"Сов. Конституции ул.","district":"Восток","floor":5,"floors":9,"year":1998,"area_total":40.6,"area_living":16.8,"area_kitchen":8.7,"area_plot":null,"price_byn":176235,"price_m2":4341,"url":"https://bugrealt.by/250561-72561-p/","img":"https://bugrealt.by/upload/Sh/imageCache/320/91b/61b7f48bb5dd6328a21e464fbbb78652.jpg","desc":"Однокомнатная квартира в восточной части города Бреста, микрорайон Восток.\nКвартира расположена на 5-м этаже панельного 9-ти этажного дома, 1998 года постройки. \nОбщая площадь квартиры с лоджией составляет 42,5 м2, жилая площадь 16,8 м2, кухня - 8,7 м2. Удобная планировка: жилая комната - 16,8 м2, светлая кухня - 8,7 м2, туалет - 1,4 м2, ванная комната - 2,8 м2, застекленная лоджия из кухни - 1,9 м2, просторный коридор - 10,9 м2. Высота потолков - 2,57 метра.\nАккуратное жилое состояние: деревянные окна, входные двери -деревянные, на полу лежит - линолеум, на стенах обои, межкомнатные двери обычные деревянные, потолок в кухне и санузлах - снежка, в комнате и коридоре - оклеен обоями. Санузел раздельный. В ванной сделан ремонт (плитка нового образца). Чистый, аккуратный подъезд. Тихий спокойный двор, облагороженная придомовая территория с обустроенной детской площадкой, со стоянкой для автомобилей. Район с развитой инфраструктурой. Рядом с домом расположены: продовольственный магазин «Санта», аптека, школа, садик, поликлиника, банк. В шаговой доступности спортивный комплекс Виктория, стадион «Строитель», парк Мира, остановка общественного транспорта.\nЗвоните!"},{"lot":"250129","type":"1к","rooms":1,"title":"Однокомнатная квартира, Жукова пер.","street":"Жукова пер.","district":"Южный","floor":5,"floors":5,"year":2006,"area_total":39.0,"area_living":20.8,"area_kitchen":8.9,"area_plot":null,"price_byn":179227,"price_m2":4596,"url":"https://bugrealt.by/250129-68626-p/","img":"https://bugrealt.by/upload/Sh/imageCache/e6a/1c1/a36cd519c2f8a980025dbeda477b8df6.jpg","desc":"В продаже однокомнатная квартира на 5-м этаже 5-этажного кирпичного дома 2006 года постройки в м-не Южный (есть технический этаж). Общая площадь квартиры составляет 43,0 кв.м, жилая площадь 20,8 кв.м, площадь кухни 8,9 кв.м. Санузел совмещен, застекленная лоджия площадью 4,0 кв.м, есть подвал.\n Квартира в аккуратном жилом состоянии: на полу - ламинат, стены оклеены обоями, потолки снежка (в кухне) и натяжные (в коридоре, в спальне), межкомнатные двери - МДФ, входная дверь металлическая, окна- стеклопакеты, в санузле керамическая плитка современного образца.\n Чистый и ухоженный подьезд, благоустроенный двор со стоянкой для авто. Район с развитой инфраструктурой и хорошим транспортным сообщением: в шаговой доступности расположены школы, детские сады, поликлиника, магазины, аптека, остановки общественного транспорта."},{"lot":"260389","type":"1к","rooms":1,"title":"Однокомнатная квартира в новом доме, ВОСТОК","street":"Орловская ул.","district":"Восток","floor":8,"floors":10,"year":2025,"area_total":37.2,"area_living":17.8,"area_kitchen":10.5,"area_plot":null,"price_byn":181000,"price_m2":4866,"url":"https://bugrealt.by/260389-79783-p/","img":"https://bugrealt.by/upload/Sh/imageCache/089/db3/d353854da5cd312df75d2a6d5a2984d0.jpg","desc":"Эксклюзив! Шикарная 1-комнатная новостройка в Бресте (Орловская)\nТолько представьте: вы заходите в квартиру, где еще никто не жил, где пахнет новым ремонтом, а из окна открывается идеальный вид. Это не мечта, это ваша новая реальность на ул. Орловская!\nЭто супер-предложение, которое встречается крайне редко. Единственный дом такого формата в городе — 2025 года постройки из инновационных сэндвич-панелей нового образца. Это гарантия тепла, тишины и энергоэффективности!\nПЛАНИРОВКА И ПАРАМЕТРЫ:\nОбщая площадь: 39,8 кв.м.\nЖилая: 37,2 кв.м.\nКухня: 10,5 кв.м. (простор для кулинарных шедевров!)\nКомната: 17,8 кв.м.\nСанузел: раздельный.\nЭтаж: 8 из 10 (отличный обзор)\nПотолки: 2,63 м (ощущение воздуха и свободы).\nПОЧЕМУ ЭТО ВАШ ВАРИАНТ?\nСостояние «под чистовую отделку»: идеально ровные стены, залита чистовая стяжка, разведены все коммуникации. Вам остается только выбрать дизайн и наслаждаться!\nВосточная сторона — просыпайтесь вместе с солнышком! Квартира наполняется мягким утренним светом — это невероятно заряжает энергией на весь день. Идеальный вид из окна, который будет радовать вас каждое утро!\nБезбарьерная среда в доме это комфорт и доступность для всех.\nСУПЕР-ЛОКАЦИЯ: всё в шаговой доступности!\nОбразование: 2 школы, лицей, детский сад!.\nШопинг: большой ТЦ, магазины, парикмахерские и всё, то необходимо — всё под рукой.\nОтдых: рядом уютные кафе и ФОК (физкультурно-оздоровительный комплекс) для активного образа жизни, детские площадки\nТранспорт: отличное сообщение с любой точкой города.\nЭто не просто квартира — это новостроечка мечты с готовой инфраструктурой, потрясающей атмосферой и солнечным утром в подарок!\nЗвоните прямо сейчас, чтобы записаться на просмотр! Такие варианты уходят за пару дней!"},{"lot":"260370","type":"1к","rooms":1,"title":"Однокомнатная квартира, Гвардейская ул.","street":"Гвардейская ул.","district":"Южный","floor":2,"floors":10,"year":2017,"area_total":41.9,"area_living":17.0,"area_kitchen":10.3,"area_plot":null,"price_byn":201900,"price_m2":4819,"url":"https://bugrealt.by/260370-79703-p/","img":"https://bugrealt.by/upload/Sh/imageCache/3e1/2ff/ce5da077c913a81470eec9a7ef6104ff.jpg","desc":"Однокомнатная квартира в городе Бресте, микрорайон Южный, в доме 2017 года постройки. Второй этаж десятиэтажного дома.\nПлощадь общая с лоджией - 44,5м2, жилая комната - 17,0 м2, просторная кухня - 10,3 м2.\nКвартира с ремонтом: полы - ламинат, потолки - снежка, установлены стеклопакеты, входная дверь - металлическая. Санузел облицован современной керамической плиткой. \nДом оборудован пандусом, высокий цоколь, чистый и аккуратный подъезд. \nРядом с домом парковка для автомобилей. Хорошая инфраструктура.\nКвартира полностью готова к заселению.\nЗвоните, организую просмотр квартиры в удобное для вас время."},{"lot":"250182","type":"1к","rooms":1,"title":"Однокомнатная квартира, Ясеневая ул.","street":"Ясеневая ул.","district":"Ковалево","floor":1,"floors":4,"year":2009,"area_total":39.1,"area_living":21.4,"area_kitchen":8.8,"area_plot":null,"price_byn":206455,"price_m2":5280,"url":"https://bugrealt.by/250182-68806-p/","img":"https://bugrealt.by/upload/Sh/imageCache/65f/09f/ea4b7b7d948071680ed66f626de18a4d.jpg","desc":"Просторная и светлая однокомнатная квартира в Бресте, м-н Ковалево ул. Ясеневая.\nКвартира расположена на 1-м этаже кирпичного дома, 2009 года постройки.\nОбщая площадь квартиры составляет - 41,3 м2, жилая площадь - 21,4 м2, кухня - 8,8 м2. Совмещенный санузел, просторный балкон, есть подвальное помещение.\nКвартира с хорошим ремонтом: входная - дверь металлическая, окна - стеклопакеты, полы - ламинат, в санузле - плитка, потолки - снежка. Стены оклеены обоями.\nЧистый аккуратный подъезд. Благоустроенный двор, облагороженная придомовая территория с обустроенной детской площадкой, стоянкой для автомобилей и закрытым двором.\nВ непосредственной близости находятся магазины, кафе, школы и остановки общественного транспорта.\nЗвоните!"},{"lot":"260359","type":"1к","rooms":1,"title":"Однокомнатная квартира, Янки Купалы ул.","street":"Янки Купалы ул.","district":"Заводской","floor":3,"floors":5,"year":2004,"area_total":39.0,"area_living":19.3,"area_kitchen":9.7,"area_plot":null,"price_byn":217500,"price_m2":5577,"url":"https://bugrealt.by/260359-79651-p/","img":"https://bugrealt.by/upload/Sh/imageCache/bbd/61c/13b8d5843bf830772e85bea60c35eca0.jpg","desc":"1- комнатная квартира, г.Брест, Янки Купалы ул., 2004 г.п., 3/5 кирпич, 42,7/39/19,3/9,7 кв.м., с/у совмещенный, есть подвал. Дом находится во дворе, тихое место. \nДеревянные стеклопакеты, межкомнатные двери - экошпон (дуб), входная дверь двойная - металлическая и деревянная, потолки (2,50 м) - снежка, полы - доска под лак (сосна), телефон, домофон. Большая застекленная лоджия ( 7 кв.м) ,выход из кухни и комнаты.\nВстроенная кухня, холодильник, обеденный стол. Все окна выходят во двор. Система видеонаблюдения. Во дворе игровая детская площадка, парковка для автомобилей. Благоустроенный двор. Район с развитой инфраструктурой. Хорошая транспортная развязка ."},{"lot":"260392","type":"1к","rooms":1,"title":"Однокомнатная квартира, Олега Кошевого ул.","street":"Олега Кошевого ул.","district":"Граевка","floor":8,"floors":11,"year":2025,"area_total":42.3,"area_living":17.2,"area_kitchen":11.0,"area_plot":null,"price_byn":229500,"price_m2":5426,"url":"https://bugrealt.by/260392-79795-p/","img":"https://bugrealt.by/upload/Sh/imageCache/724/5d7/83a41724d97a0a24713a55343635834f.jpg","desc":"Однокомнатная квартира в городе Бресте, северо-западной микрорайон г. Бреста, в доме 2025 года постройки.\nОбщая площадь с лоджией - 44,4 м2, жилая комната - 17,2 м2, просторная кухня - 11,0 м2.\nСовременный ремонт в светлых тонах: установлены стеклопакеты, панорамное остекление, потолки - снежка, полы - ламинат и плитка, входная дверь - металлическая, межкомнатные - из шпона дерева. Санузел облицован керамической плиткой. \nДом оборудован пандусом, грузопассажирский лифт. \nРядом с домом парковка для автомобилей. Хорошая инфраструктура.\nКвартира полностью готова к заселению.\nЗвоните, организую просмотр квартиры в удобное для вас время."},{"lot":"390030","type":"1к","rooms":1,"title":"Однокомнатная квартира, Космонавтов б-р.","street":"Космонавтов бул.","district":"Центр","floor":3,"floors":7,"year":2013,"area_total":43.3,"area_living":22.3,"area_kitchen":12.0,"area_plot":null,"price_byn":245352,"price_m2":5666,"url":"https://bugrealt.by/390030-55516-p/","img":"https://bugrealt.by/upload/Sh/imageCache/6ed/731/e46a39daa441bbb15933f15d74b93e36.jpg","desc":"1- комнатная квартира, г. Брест, Бульвар Космонавтов, 2013 г.п., 3/7 кирпичные, 43,9/43,3/22,3/12 кв.м., с/у совмещенный. Отличная, элитная, укомплектованная квартира в Центре города. Дизайнерский ремонт. Остается вся мебель и бытовая техника. Супер инфраструктура! Рядом рынок,автовокзал, продовольственный магазин Продтовары, Спорт и туризм, промтоварные магазины, аптеки, кафе,школа № 3, детсадики, остановки общественного транспорта. Недалеко пешеходная улица Советская и зеленая аллея Гоголя для прогулок и отдыха. Хорошее место для жизни и сдачи в наем."},{"lot":"250335","type":"1к","rooms":1,"title":"Однокомнатная квартира, Гоголя ул.","street":"Гоголя ул.","district":"Центр","floor":1,"floors":4,"year":1958,"area_total":41.6,"area_living":25.4,"area_kitchen":6.3,"area_plot":null,"price_byn":335115,"price_m2":8056,"url":"https://bugrealt.by/250335-69386-p/","img":"https://bugrealt.by/upload/Sh/imageCache/40f/e6e/116402ccbc7a7bc2d83050e854dfc8fd.jpg","desc":"Продается однокомнатная квартира в центральной части города Бреста, ул. Гоголя. Квартира расположена на 1-м этаже кирпичного 4-х этажного дома, 1958 года постройки. Общая площадь составляет 41,6 м2 жилая площадь 25,4 м2, кухня - 6,3 м2., совмещенный санузел - 3,2 м2. Высота потолков - 2,70 метра. \n Хорошая транспортная развязка, в шаговой доступности остановка общественного транспорта.\n Возможен вывод в нежилой фонд с перепрофилированием под коммерческую недвижимость.\nЗвоните!"},{"lot":"220653","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Героев обороны Бресткой крепости ул.","street":"ГОБК ул.","district":"Гобк","floor":4,"floors":5,"year":1966,"area_total":61.1,"area_living":45.6,"area_kitchen":6.2,"area_plot":null,"price_byn":194187,"price_m2":3178,"url":"https://bugrealt.by/220653-45018-p/","img":"https://bugrealt.by/upload/Sh/imageCache/76c/16f/3ea99af2f571b832105e66ee0a9659d7.jpg","desc":"Добротная, просторная трехкомнатная квартира в западной районе города Бреста по улице Героев обороны Бресткой крепости. Квартира расположена на четвертом этаже 5-этажного кирпичного дома 1966 года постройки. Установлены два стеклопакета. Входные двери двойные: наружная – металлическая, внутренняя дверь деревянная, межкомнатные двери деревянные под лак. Общая площадь 62,6 кв.м., жилая - 45,6 кв.м. В квартире три жилые комнаты, кухня площадью 6,2 кв.м., санузел раздельный и коридор. Два застекленных балкона из комнат, расположенных напротив друг друга. В квартире имеется подвальное помещение.\nКомнаты в жилом состоянии: полы – ламинат, потолки оштукатурены и частично окрашены краской, стены оклеены однотонными светлыми обоями. Санузел и ванная комната облицованы плиткой, установлена современная сантехника. Встроенный кухонный гарнитур. Телефонизация, домофон.\nВ шаговой доступности находятся Брестская крепость, парк, детский сад, школа-сад, школа, продовольственные магазины, остановки общественного транспорта. Звоните!"},{"lot":"230492","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Московская ул.","street":"Московская ул.","district":"Восток","floor":1,"floors":9,"year":1972,"area_total":61.8,"area_living":42.3,"area_kitchen":6.2,"area_plot":null,"price_byn":224408,"price_m2":3631,"url":"https://bugrealt.by/230492-49168-p/","img":"https://bugrealt.by/upload/Sh/imageCache/d3a/fc6/ac1cab887114518856c9383c89eca80c.jpg","desc":"Продается трехкомнатная квартира по ул. Московской в городе Бресте. Квартира расположена на 1-м этаже кирпичного 9-этажного дома, 1972 года постройки. Общая площадь квартиры с лоджией составляет 63,1 м2, жилая площадь - 42,3 м2, из которых гостиная площадью 18,6 м2, две спальни площадью 12,3 м2 и 11,4 м2 соответственно, а также кухня площадью 6,2 м2, раздельный санузел.\nКвартира в аккуратном жилом состоянии, но требует ремонта. В квартире установлены окна ПВХ, лоджия также застеклена. \nТихий, удаленный от проезжей части двор, где расположены продовольственные магазины, образовательные учреждения, в пешей доступности остановки общественного транспорта, а также все необходимое для комфортной жизни. Звоните!"},{"lot":"240696","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Машерова пр-т.","street":"Машерова пр-т","district":"Центр","floor":8,"floors":10,"year":1967,"area_total":53.3,"area_living":37.6,"area_kitchen":6.5,"area_plot":null,"price_byn":245352,"price_m2":4603,"url":"https://bugrealt.by/240696-61955-p/","img":"https://bugrealt.by/upload/Sh/imageCache/cea/c3b/a11301d101ae058f90f102c3622552b5.jpg","desc":"Продается трехкомнатная квартира в центре города Бреста по пр-ту Машерова. Квартира расположена на 8-м этаже кирпичного 10-этажного дома, 1967 года постройки. Общая площадь квартиры с лоджией составляет 55,7 м2, жилая площадь - 37,6 м2, из которых гостиная площадью 16,6 м2, две изолированные спальни площадью 10,7 м2 и 10,3 м2, из которых осуществляется выход на лоджию, кухня площадью 6,5 м2, раздельный санузел.\nКвартира светлая и теплая, готовая для проживания. В хорошем жилом состоянии: стены оклеены обоями, потолки побелены, на полу в комнатах доска, в коридоре ламинат; сантехника типовая, заменены сантехнические трубы. В кухне и гостиной установлены окна ПВХ, на лоджии - раздвижные рамы. Произведен капитальный ремонт дома. \nВ шаговой доступности находятся продовольственные магазины, образовательные учреждения, остановки общественного транспорта, а также все необходимое для комфортной жизни. Звоните!"},{"lot":"260192","type":"3к","rooms":3,"title":"Трехкомнатная квартира, ЖК Чайка","street":"Октябрьской Революции ул.","district":"Ковалево","floor":2,"floors":10,"year":2025,"area_total":61.5,"area_living":56.0,"area_kitchen":null,"area_plot":null,"price_byn":267793,"price_m2":4354,"url":"https://bugrealt.by/260192-76689-p/","img":"https://bugrealt.by/upload/Sh/imageCache/d51/5ac/a92fe83bc2e982395b909325dace100c.jpg","desc":"Квартира в новом доме без внутренней отделки. Современная планировка. Дом 2025 года постройки, 2/10 этаж, площадь квартиры СНБ 64,0 кв.м., с/у раздельный, лоджия из спальни. Чистый аккуратный подъезд, качественная отделка мест общего пользования. Благоустроенный двор с обустроенной детской площадкой, закрытая парковка, зеленая зона. Район с развитой инфраструктурой, рядом с домом находятся: продовольственный магазин, аптека, школа, детский садик. Хорошая транспортная развязка, в шаговой доступности остановка общественного транспорта."},{"lot":"260437","type":"3к","rooms":3,"title":"Трёхкомнатная квартира, Октябрьской революции ул.","street":"Октябрьской Революции ул.","district":"Ковалево","floor":8,"floors":10,"year":2026,"area_total":60.91,"area_living":29.97,"area_kitchen":17.85,"area_plot":null,"price_byn":272550,"price_m2":4475,"url":"https://bugrealt.by/260437-80440-p/","img":"https://bugrealt.by/upload/Sh/imageCache/80d/534/da313e408b40a1ab05ec9e6ce6625e81.jpg","desc":"Продается просторная 3-комнатная квартира в новом монолитном доме (2026 г.п.) в жилом комплексе «Чайка» по ул. Октябрьской Революции в г. Бресте.\nКвартира сдана «под чистовую отделку» — отличная возможность создать дизайн под себя. Удобная и функциональная планировка: просторная кухня-гостиная (17,85 кв.м.) и две изолированные комнаты. Раздельный санузел — большой плюс для семьи.\nЖК «Чайка» — это современный жилой комплекс с закрытой территорией, собственным двором без машин и продуманной инфраструктурой.\nИнфраструктура рядом:\nГребной канал+ набережная — в шаговой доступности (отличное место для прогулок и занятий спортом)\nСпортивный комплекс — рядом\nТихвинская церковь — в шаговой близости\nТорговые центры — множество магазинов и ТЦ\nКафе — есть где посидеть с друзьями\nБольшой рынок — свежие продукты всегда под рукой и обилие различных товаров на выбор, для дома, для семьи, одежда.\nЯсли-сад-начальная школа № 11, ясли-сад №82, детский сад № 81, школа №30 им. Гвишиани-и это всё у вас вшаговой доступности не более 5-10 минут пешком!!!\nРядом находятся и остановки общественного транспорта. Отличная транспортная развязка позволяет быстро добраться до центра города.\nСвободная продажа. Успейте стать первым и купить эту замечательную квартиру!"},{"lot":"240087","type":"3к","rooms":3,"title":"Трёхкомнатная квартира, Жукова ул.","street":"Жукова ул.","district":"Южный","floor":5,"floors":5,"year":2002,"area_total":89.6,"area_living":49.1,"area_kitchen":12.4,"area_plot":null,"price_byn":290234,"price_m2":3239,"url":"https://bugrealt.by/240087-52778-p/","img":"https://bugrealt.by/upload/Sh/imageCache/4cf/6e7/0d7eb5179af4fb416bf9e4fa16950a70.jpg","desc":"3- комнатная квартира, г. г.Брест, Жукова ул., 2002 г.п., 5/5 кирпичные, 93,3/89,6/49,1/12,4 кв.м., с/у раздельный. \n\nПредлагаем к покупке современную квартиру улучшенной планировки в самом экологически чистом и комфортном для жизни районе.\n\nТрехкомнатная квартира в 5-этажном кирпичном дома 2002 года постройки в микрорайоне Южный.\n\nОбщая площадь квартиры 93,3 кв.м, жилая 49,1 кв.м. Прихожая 18,7 кв.м. Просторный зал 19,5 кв.м, большая кухня 12,4 кв.м, две спальни 15,6 и 14 кв.м., санузел раздельный, обустроенная гардеробная. Две лоджии из кухни и из одной из спален застеклены, обустроены. \n\nВ квартире сделан качественный ремонт. Установлены деревянные стеклопакеты, окна выходят во двор на запад. Межкомнатные двери – шпонированные, входная дверь– металлическая. Напольное покрытие - плитка керамическая и ламинат. На стенах обои, в санузлах - плитка керамическая. Вся мебель и сантехника в отличном состоянии. Установлен кухонный гарнитур со всей необходимой встроенной техникой. \n\nКвартира очень светлая, тёплая и уютная."},{"lot":"240524","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Л-та Рябцева ул.","street":"Лт. Рябцева ул.","district":"Дубровка","floor":1,"floors":4,"year":2003,"area_total":113.7,"area_living":51.7,"area_kitchen":15.8,"area_plot":null,"price_byn":304895,"price_m2":2682,"url":"https://bugrealt.by/240524-58236-p/","img":"https://bugrealt.by/upload/Sh/imageCache/fb3/558/af83f6c6eacfd13cdf092c680be8bdc6.jpg","desc":"Продаётся просторная 3-комнатная квартира в Бресте, в доме 2003 года постройки, ул. Лт. Рябцева. \nКвартира находится на первом этаже четырехэтажного кирпичного дома, в зеленом районе. Высокий цоколь (окна высоко над землей).\nОбщая площадь квартиры с лоджией составляет 117 кв.м., жилые помещения 62 кв.м., кухня 15,8 кв.м. \nКвартира с высокими потолками и светлыми комнатами: полы - крашеная доска (в комнате), паркет (в зале), линолеум (в коридоре), стены оклеены обоями, потолки - снежка и натяжные, стеклопакеты, лоджия застеклена и утеплены, есть вместительный погреб.\nАккуратный подъезд. Тихий спокойный двор. Рядом с домом магазин. В 10 мин. школа. Большое количество общественного транспорта, до центра города 10 минут на авто. Большое количество парковочных мест рядом с домом. Детская площадка с качелями и горками."},{"lot":"260311","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Кооперативная ул.","street":"Кооперативная ул.","district":"Центр","floor":5,"floors":7,"year":1979,"area_total":67.6,"area_living":40.7,"area_kitchen":8.4,"area_plot":null,"price_byn":340000,"price_m2":5030,"url":"https://bugrealt.by/260311-78860-p/","img":"https://bugrealt.by/upload/Sh/imageCache/b19/6c5/089d58f7ae5b3be92859fa4c96c75ec0.jpg","desc":"3- комнатная квартира, г.Брест, Кооперативная ул., 1979 г.п., 5/7 кирпич, ЛИФТ, 73,4/67,6/40,7/8,4 кв.м., с/у раздельный, современная плитка. Просторная квартира выполнена в светлых тонах , ремонт делали для себя.\nЛаминат, стеклопакеты, потолки-снежка, межкомнатные двери- шпон, 2 лоджии- застеклены, встроенная кухня, газовая плита. Чистый подъезд, пандус.\nБлагоустроенный двор . Район с развитой инфраструктурой , много зелени, в шаговой доступности Парк 1 Мая . Квартира расположена на две стороны ."},{"lot":"260162","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Гоголя ул.","street":"Гоголя ул.","district":"Центр","floor":3,"floors":5,"year":1966,"area_total":56.2,"area_living":42.0,"area_kitchen":null,"area_plot":null,"price_byn":363540,"price_m2":6469,"url":"https://bugrealt.by/260162-76530-p/","img":"https://bugrealt.by/upload/Sh/imageCache/9d8/77a/c51f441f8076cce3df79175569001cea.jpg","desc":"Продается комфортная трехкомнатная квартира в самом центре г. Бресте. Квартира расположена на 3-м этаже 5-ти этажного кирпичного дома.\nОбщая площадь - 56,2 м2, жилая - 42,0, просторная кухня-гостиная. Санузел совмещенный.\nС хорошим ремонтом. На полу ламинат и плитка на стяжке. Потолки снежка. Окна пластиковые стеклопакеты. Стены оклеены обоями. Межкомнатные двери МДФ. В санузле плитка нового образца, акриловая ванна, заменены полотенцесушитель, сантехнические трубы. Газовая колонка в кухне. Кондиционер. Застеклённый балкон. \nАккуратный подъезд. Тихий двор. Рядом расположена стоянка для машин.\nРайон с развитой инфраструктурой, рядом с домом находятся: пешеходная улица Советская, Аллея фонарей, продовольственные магазины, торговые объекты, аптеки, кафе и рестораны."},{"lot":"260369","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Луцкая ул.","street":"Луцкая ул.","district":"Ковалево","floor":8,"floors":16,"year":2019,"area_total":76.1,"area_living":47.0,"area_kitchen":10.4,"area_plot":null,"price_byn":368500,"price_m2":4842,"url":"https://bugrealt.by/260369-79692-p/","img":"https://bugrealt.by/upload/Sh/imageCache/e69/d72/e945bf790f9a09b54fdd5f9c08f88aed.jpg","desc":"Видовая трехкомнатная квартира в новой застройке Бреста ул. Луцкая, микрорайон Ковалево.\nГод постройки - 2019. Материал стен - панель. 8-й этаж шестнадцатиэтажного дома.\nОписание квартиры:\nПлощадь общая с двумя лоджией - 80,7 м2, жилая площадь комнат - 47,0м2, кухня - 10,4м.2. Санузел раздельный. Две лоджии.\nКвартира с современным качественным ремонтом, выдержанном в едином стиле. На полу - ламинат, санузел плитка современного образдца, стены - обои, потолки - натяжные, окна ПВХ, заменены сантехника и полотенцесушитель. Проведена новая электропроводка. \nРайон с развитой инфраструктурой: рынок Лагуна, спортивный комплекс Брестский гребной канал, большое количество школ и детских садов, рядом церковь. В шаговой доступности все необходимое для комфортного, достойного проживания. Хорошая транспортная развязка. Во дворе дома предусмотрены парковочные места и детская площадка. \nЗвоните, лот 260369"},{"lot":"230082","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Карьерная ул.","street":"Карьерная ул.","district":"Ковалево","floor":4,"floors":5,"year":2005,"area_total":94.9,"area_living":55.0,"area_kitchen":12.2,"area_plot":null,"price_byn":418500,"price_m2":4410,"url":"https://bugrealt.by/230082-46614-p/","img":"https://bugrealt.by/upload/Sh/imageCache/ca7/1ed/cd5233c09b463bc99091743dc483ba30.jpg","desc":"Продажа эксклюзивной квартиры в Бресте с отделкой!\nПредлагаем приобрести 3-комнатную квартиру по ул. Карьерной в кирпичном доме 2005 г.п.\nКвартира находится на 4-м этаже 5-этажного дома. Площадь квартиры по СНБ 96,7, общая 94,9, жилая 55,0, кухня 12,2, санузел совмещенный, большая лоджия с нишей и подвальное помещение площадью 20 кв.м.\nКвартира с индивидуальной планировкой и дизайнерской отделкой: на полу уложен кленовый паркет, в коридоре и кухне плитка с вставками из натурального мрамора, потолки многоуровневые 2,9 м, стены воровнены под покраску, оклеяны обоями, частично с декоративной покраской и отделкой с применением декоративного камня, межкомнатные двери из натурального дерева, подоконники - натуральный мрамор, в санузле система теплого пола, ванна с гидромассажем, установлен элекрощиток, в гостинной - кондиционер. Квартира оборудована системой сигналиации и тревожной кнопкой. При продаже остается встроенная кухонная техника, кондиционер, мебель по договоренности.\nКвартира расположена в тихом месте вдали от оживленных улиц. Огороженный, благоустроенный двор с детской площадкой и парковкой, оборудованной видеонаблюдением и шлагбаумом. Тихий, зеленый район, рядом лес и 2 озера, остановка м/т № 23А, №25, строительный рынок, магазины.\nЗвоните, организую показ в удобное для вас время!"},{"lot":"240608","type":"3к","rooms":3,"title":"Трехкомнатная квартира, Гоголя ул.","street":"Гоголя ул.","district":"Центр","floor":9,"floors":10,"year":2024,"area_total":70.5,"area_living":47.2,"area_kitchen":22.9,"area_plot":null,"price_byn":535586,"price_m2":7597,"url":"https://bugrealt.by/240608-58687-p/","img":"https://bugrealt.by/upload/Sh/imageCache/702/b56/b7a20748c47cdf62d6cd01ee61d42d10.jpg","desc":"3- комнатная квартира, г.Брест, Гоголя ул., 2024 г.п., 9/10 монолит, 75,4/70,5/47,2/22,9 кв.м., с/у раздельный, Новая квартира современной планировки в центре Бреста. Дом клубного типа, современные отделочные материалы, закрытая придомовая территория, индивидуальное машино-место. Паноромный вид из окон на весь город. Квартира готова к проживанию. В стоимость входят: кухонный гарнитур по индивидуальному заказу, варочная панель Electrolux, духовой шкаф Bosch, кондиционер, шкаф-купе. Район с развитой инфраструктурой, хорошая транскортная развязка."},{"lot":"260391","type":"4к+","rooms":4,"title":"Четырехкомнатная квартира, Жукова ул.","street":"Жукова ул.","district":"Южный","floor":4,"floors":5,"year":1966,"area_total":60.7,"area_living":44.6,"area_kitchen":5.1,"area_plot":null,"price_byn":177000,"price_m2":2916,"url":"https://bugrealt.by/260391-79788-p/","img":"https://bugrealt.by/upload/Sh/imageCache/6f5/7ea/0efb46b74164ab6b3ce6c5e139d33113.jpg","desc":"Продается четырехкомнатная квартира в городе Бресте на улице Жукова. Дом 1966 года постройки, кирпичный, пятиэтажный, квартира расположена на четвертом этаже. Общая площадь составляет 61,4 квадратных метра, жилая — 44,6, кухня — 5,1, санузел совмещенный. Есть подвал.\n Район заслуживает особого внимания благодаря развитой инфраструктуре. Рядом находятся магазины, гимназия, детский сад, остановки общественного транспорта с множеством маршрутов. Все необходимое для комфортной жизни — в шаговой доступности.\n В квартире частично выполнен ремонт. В санузле уложена новая плитка и установлена новая с/т. Заменена электрика. Полы выполнены из ламината на стяжку, плитки и доски. Окна — стеклопакеты.\n Остается возможность доделать ремонт по своему усмотрению, создав пространство, полностью отвечающее вашим вкусам и потребностям. Отличный вариант для семьи, ценящей удобное расположение и готовой вложиться в финальную отделку."},{"lot":"260431","type":"4к+","rooms":4,"title":"Четырехкомнатная квартира, Кривошеина ул.","street":"Кривошеина ул.","district":"Восток","floor":5,"floors":9,"year":1977,"area_total":81.3,"area_living":52.8,"area_kitchen":9.36,"area_plot":null,"price_byn":244742,"price_m2":3010,"url":"https://bugrealt.by/260431-80418-p/","img":"https://bugrealt.by/upload/Sh/imageCache/162/d5f/3425fdd9360a1bcce33ca6215b273285.jpg","desc":"В продаже просторная 4-комнатная квартира в восточной части города Бреста по ул. Кривошеина.\nКвартира расположена на 5-м этаже 9-этажного панельного дома 1977 года постройки.\nОбщая площадь квартиры с лоджиями составляет - 88,1 м2, жилая площадь - 52,8 м2, кухня - 9,36 м2., санузел раздельный, три лоджии.\nФункциональная планировка на две стороны!\nВходные двери металлические, частично установлены окна-ПВХ, на полу устелен паркет, на стенах обои, межкомнатные двери деревянные, потолки окрашены снежкой, сантехника типовая.\nВ квартире требуется ремонт.\nВ шаговой доступности продовольственный магазин, аптека, школа, детский сад. \nУдобная транспортная развязка."},{"lot":"250287","type":"4к+","rooms":4,"title":"Четырехкомнатная квартира, Луцкая ул.","street":"Луцкая ул.","district":"Ковалево","floor":5,"floors":9,"year":1990,"area_total":79.2,"area_living":54.1,"area_kitchen":9.4,"area_plot":null,"price_byn":269289,"price_m2":3400,"url":"https://bugrealt.by/250287-69222-p/","img":"https://bugrealt.by/upload/Sh/imageCache/e2d/8da/97c607f0e7b902771660d3bac84634d2.jpg","desc":"4- комнатная квартира, г.Брест, Луцкая ул., 1990 г.п., 5/9 панель, 85,1/79,2/54,1/9,4 кв.м., с/у раздельный(современная плитка) стеклопакеты, полы- ламинат, плитка, потолки- снежка. Встроенная кухня с бытовой техникой и выходом на лоджию. В детской комнате встроенная мебель. \nЧистый подъезд, новый лифт. Благоустроенный двор. Район с развитой инфраструктурой - магазины, рынок, гипермаркет Материк. Хорошая транспортная развязка ."},{"lot":"260246","type":"4к+","rooms":4,"title":"Четырехкомнатная квартира, Горького ул.","street":"Горького ул.","district":"Центр","floor":5,"floors":5,"year":1971,"area_total":65.2,"area_living":43.0,"area_kitchen":7.2,"area_plot":null,"price_byn":377500,"price_m2":5790,"url":"https://bugrealt.by/260246-78286-p/","img":"https://bugrealt.by/upload/Sh/imageCache/655/fee/583d2bb22cc01101cf78035384727d68.jpg","desc":"Продается четырехкомнатная квартира в тихом центре города Бреста на улице Горького. Кирпичный дом, 5 этаж из 5. Общая площадь 68 кв.м., жилая 43 кв.м. Наличие подвала — дополнительное удобство для хранения сезонных вещей.\n ГЛАВНАЯ ЦЕННОСТЬ ЭТОЙ КВАРТИРЫ - ГОТОВЫЙ СОВРЕМЕННЫЙ РЕМОНТ, ВЫПОЛНЕННЫЙ В ЕДИНОМ СТИЛЕ. Вам не придется тратить время, деньги и нервы на строительные работы. Все уже сделано качественно и со вкусом.\n Кухня объединена с просторной гостиной — это удобное пространство для приема гостей и семейных ужинов. Три изолированные спальни позволяют каждому члену семьи иметь личное пространство.\nОбратите внимание на детали отделки:\n - Полы — износостойкий ламинат, не требующий сложного ухода.\n- Окна — стеклопакеты с хорошей шумоизоляцией, что особенно ценно в центре города.\n- Электропроводка полностью заменена — вы можете подключать мощную бытовую технику без риска перегрузки сети.\n- В санузле использована плитка последних коллекций, установлена новая сантехника — экономия на ремонте ванной составляет значительную сумму.\n- Потолки натяжные — идеально ровная поверхность, которая не требует покраски и выравнивания.\n- Межкомнатные двери современного дизайна, входная дверь — надежная металлическая.\n - Имеется лоджия — дополнительное светлое пространство.\n В квартире есть вся необходимая мебель, бытовая техника и предметы интерьера. Они остаются в подарок покупателю при продаже. Вы получаете полностью готовое для жизни пространство. \n Ремонт сделан так, чтобы в нем было комфортно жить долгие годы без вложений. Это экономит бюджет покупки и позволяет сразу наслаждаться новым домом.\n В пешей доступности вся инфраструктура: школа, детский сад, продуктовый рынок, магазины, остановки общественного транспорта. При этом сама улица тихая — редкое сочетание центра и покоя."},{"lot":"180495","type":"дом","rooms":null,"title":"Жилой дом на Киевке","street":"","district":"Киевка","floor":null,"floors":null,"year":1960,"area_total":71.3,"area_living":57.4,"area_kitchen":8.4,"area_plot":6,"price_byn":194486,"price_m2":2728,"url":"https://bugrealt.by/180495-5169-p/","img":"https://bugrealt.by/upload/Sh/imageCache/aa9/840/b5051b322cc87030148ed6b54395499f.jpg","desc":"Жилой дом. г. Брест. Брус / шифер. 1 этаж. Общ. - 71,3 м.кв., жил. - 57,4 м.кв. 5 комнат. Ообщ. СНБ -76,2 кв.м. Коммуникации: электричество, отопление - газовое, водоснабжение - центральное, канализация - центральная.\nУчасток площадью 5,75 сотки. \nВ шаговой доступности остановка общественного транспорта, 2-е школы, 3-и садика и магазины. Отличный вариант для жизни Вашей семьи."},{"lot":"260027","type":"дом","rooms":null,"title":"Жилой дом, район Киевка","street":"","district":"Киевка","floor":null,"floors":null,"year":2000,"area_total":94.9,"area_living":55.3,"area_kitchen":10.1,"area_plot":5,"price_byn":273300,"price_m2":2880,"url":"https://bugrealt.by/260027-75936-p/","img":"https://bugrealt.by/upload/Sh/imageCache/0e5/919/70a3eb711e0c40ef89dcc1033858dc28.jpg","desc":"Дом жилой, г. Брест, район Киевка. Дом одноэтажный деревянный, обложен кирпичем, крыша - шифер. Реконструкция - 2000 года. Общая площадь 94,9 кв.м., жилая 55,3 кв.м. Электроснабжение - центральное, водоснабжение - центральное. Канализация - центральная. Отопление - газовое. Участок - 0,0469 га благоустроен (частная собственность)."},{"lot":"260374","type":"дом","rooms":null,"title":"Жилой дом на Волынке в городе Бресте","street":"","district":"Волынка","floor":null,"floors":null,"year":2026,"area_total":110.0,"area_living":43.9,"area_kitchen":13.5,"area_plot":7,"price_byn":426850,"price_m2":3880,"url":"https://bugrealt.by/260374-79718-p/","img":"https://bugrealt.by/upload/Sh/imageCache/e2d/406/21b8414d7e96b95f587f866dd33fd81a.jpg","desc":"Продается жилой дом в городе Бресте, район Волынка. Это готовое к проживанию жилье, в котором можно сразу поселиться, не тратя время и силы на ремонт. Дом реконструирован в 2026 году, находится в отличном жилом состоянии. Одноэтажный дом (брус/блок), облицован красным кирпичем с крышей из металлочерепицы. Общая площадь составляет 110 кв.м., жилая — 43,9 кв.м. Есть подвал. Участок 0,0661 га (пожизненное наследуемое владение), угловой, огорожен, есть ворота для въезда машин. На участке есть гараж. Все коммуникации в порядке: центральное электричество, водоснабжение от скважины, автономная канализация, газовое отопление.\n Ремонт в доме выполнен качественно и с вниманием к деталям. Установлены стеклопакеты, натяжные потолки, полы — плитка и ламинат, современные двери, входная дверь металлическая. Кухня остается с бытовой техникой: варочная поверхность, духовой шкаф, холодильник. В доме остается вся мебель, так что покупателю не нужно думать о дополнительных расходах на обстановку.\n Особое внимание стоит уделить шикарному местоположению. Район Волынка — это удобная и востребованная часть Бреста с развитой инфраструктурой. Рядом находятся школа, магазины, кафе и ресторан, остановки общественного транспорта. Транспортное сообщение налажено, что позволяет быстро добраться до любой точки города. \n Дом полностью жилой, со всем необходимым для комфортной жизни. Подходит как для семьи, так и для тех, кто ценит готовое жилье в хорошем районе с удобной транспортной доступностью."},{"lot":"250176","type":"дом","rooms":null,"title":"Просторный жилой дом в Бресте, м-н Волынка","street":"","district":"Волынка","floor":null,"floors":null,"year":2002,"area_total":178.8,"area_living":112.5,"area_kitchen":17.3,"area_plot":13,"price_byn":448815,"price_m2":2510,"url":"https://bugrealt.by/250176-68788-p/","img":"https://bugrealt.by/upload/Sh/imageCache/5fa/7e6/1c2b6c5af774bf272393a0bf37b9fa76.jpg","desc":"Просторный жилой дом на благоустроенном участке в г. Бресте.\nОбщ.площадь - 178,8 кв.м., жилая - 112,5 кв.м. Расположен на земельном участке правильной формы площадью 0,1320 га.\nВ доме четыре жилые комнаты, гостиная 50,8 кв.м., кухня - 17,3 кв.м., большая ванная комната 12,1 кв.м. Коммуникации: электричество, отопление - газовое, водоснабжение - центральное, канализация - местная. \nДополнительные постройки: гараж, баня и беседка - идеальные места для отдыха и уединения.\nРайон с развитой инфраструктурой, в шаговой доступности остановка общественного транспорта. \nИДЕАЛЬНЫЙ ДОМ ДЛЯ СЕМЬИ, ЦЕНЯЩЕЙ КОМФОРТ.\nЗВОНИТЕ"},{"lot":"250400","type":"дом","rooms":null,"title":"Коттедж в самом престижном районе города","street":"","district":"Красный Двор","floor":null,"floors":null,"year":2005,"area_total":257.6,"area_living":86.0,"area_kitchen":22.4,"area_plot":15,"price_byn":715112,"price_m2":2776,"url":"https://bugrealt.by/250400-69614-p/","img":"https://bugrealt.by/upload/Sh/imageCache/51b/6cb/f5dbfe25bec38d893d3a535a15bb789b.jpg","desc":"Продаётся роскошный пятикомнатный коттедж в Бресте!\n- Год постройки: 2005\n- Этажность: Цоколь + 2 этажа\n- Общая площадь: 257,6 кв.м.\n- Жилая площадь: 164,8 кв.м.\n- Площадь участка: 0,15 га в городской черте- особенность этого объекта\n- Материал стен: Качественный керамический кирпич (полностью кирпичный)\n- Кровля: Металлочерепица\n- Санузлы: 2 и более\n- Количество этажей: 3 (включая цоколь)\n- Отличная теплоизоляция благодаря качественной кладке кирпича\n- Грамотное зонирование территории: отдых, сад, огород, барбекю, парковочная зона\n- Полностью автономный банный комплекс\n- Современная эргономичная планировка\n- Все помещения отделаны качественными материалами\n- Просторные светлые комнаты\n- Великолепная кухня-столовая с выходом на террасу\n- Уютная большая настоящая ванная комната\n- Удобный гараж в цоколе с помещениями для хранения\n- Всё сделано по принципу мой дом — моя крепость\nПреимущества расположения:\n- Красивый зелёный район с развитой инфраструктурой\n- Идеальное место для комфортной семейной жизни\n- Тихое и спокойное окружение\n- Возможность наслаждаться природой и собственным пространством каждый день\nЭтот особенный коттедж привлекает внимание своим качеством строительства, комфортом проживания и атмосферой семейного счастья. Здесь царит тепло и уют, ощущается гармония и спокойствие. Вы сможете насладиться каждым моментом пребывания в этом прекрасном месте.\nЧтобы оценить всю прелесть и уникальность этого жилища, свяжитесь с нами и назначьте показ.\nСделайте первый шаг навстречу своему новому дому своей мечты!"},{"lot":"550047","type":"дом","rooms":null,"title":"Элитный жилой дом в Бресте","street":"","district":"Гершоны","floor":null,"floors":null,"year":2008,"area_total":204.8,"area_living":185.8,"area_kitchen":103.1,"area_plot":14,"price_byn":1555892,"price_m2":7597,"url":"https://bugrealt.by/550047-11952-p/","img":"https://bugrealt.by/upload/Sh/imageCache/731/3ce/a1c7d7230dd697af4b461c14a2ba8a09.jpg","desc":"Великолепный полутораэтажный жилой дом с высочайшим уровнем отделки и уникальным ландшафтным дизайном с пятью комнатами, в южной части города Бреста. Год постройки дома 2008. Общая площадь дома - 185.8 м2, жилая площадь - 103.1 м2. Стены - газосиликатный блок утеплен и оштукатурен, кровля - натуральная черепица, окна - деревянные стеклопакеты. Эксклюзивный ремонт: на полу лежит немецкий ламинат, в санузлах итальянская плитка, потолок - подшит гипсокартонном, стены - шёлковые обои, межкомнатные двери - массив дуба, сантехника - итальянская, бытовая техника - Gorenije дизайнерской студии Pininfarin, лестница - массив дуба с кованными перилами, вся мебель в доме также выполнена из массива дуба, особое место в интерьере дома занимают люстры, выполненные из хрусталя. В доме все коммуникации: электричество, отопление - газовое, камин из мрамора, также имеется 2 кондиционера; водоснабжение - водопровод + 2 скважины, канализация - местная. Дом находится под охранной сигнализацией. Дополнительно имеется: чердачное помещение для детей, гараж на 2 автомобиля с подогревом полов, финская сауна, беседка, дровница. Участок площадью 14.2 сотки правильной прямоугольной формы с благоустройством: сад пряных трав, ручей, высажены ценные и редкие породы растений. Ограждение по периметру забором из кованной стали. Подъезд - грунтовая дорога, до асфальта 200 метров. Не упустите этот вариант. С вопросами пишите в Viber, WhatsApp, Telegram."},{"lot":"260167","type":"2к","rooms":2,"title":"Двухкомнатная квартира в доме","street":"Сосновая ул.","district":"Дубровка","floor":1,"floors":1,"year":1970,"area_total":58.9,"area_living":28.9,"area_kitchen":10.1,"area_plot":null,"price_byn":164266,"price_m2":2789,"url":"https://bugrealt.by/260167-76548-p/","img":"https://bugrealt.by/upload/Sh/imageCache/4ee/cc7/c15ccceb1317f47301268402c79cb456.jpg","desc":"2- комнатная квартира, г.Брест, район Дубровка, 1970 г.п., 1/1 кирпич, 58,9/58,9/28,9/10,1 кв.м. С/у совмещенный (новая плитка и с/т). КВАРТИРА В ХОРОШЕМ ЖИЛОМ СОСТОЯНИИ. Окна - стеклопакеты. Современные двери, входная - металлическая. Газовое отопление. Автономнная канализация. Водоснабжение - скважина. В квартире остается кухонный гарнитур, шкаф-купе. Тихий спокойный 0двор, придомовая территория. Сарай."},{"lot":"260041","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Брестских Дивизий ул.","street":"Брестских Дивизий ул.","district":"Граевка","floor":1,"floors":5,"year":1969,"area_total":39.1,"area_living":25.7,"area_kitchen":5.8,"area_plot":null,"price_byn":184014,"price_m2":4706,"url":"https://bugrealt.by/260041-75986-p/","img":"https://bugrealt.by/upload/Sh/imageCache/68a/34e/a4074a834bc18a18439baf8a47c49b3c.jpg","desc":"2- комнатная квартира, г.Брест, Брестских Дивизий ул., 1969 г.п., 1/5 кирпич, 39,1/39,1/25,7/5,8 кв.м. С/у раздельный. Окна - стеклопакеты. Входная - металлическая. КВАРТИРА В ЖИЛОМ СОСТОЯНИИ. Чистый аккуратный подъезд. Благоустроенный двор со стоянкой для автомобилей, зеленой зоной. Район с развитой инфраструктурой, в шаговой доступности остановка общественного транспорта. Из окон открывается живописный вид на зеленую зону."},{"lot":"260453","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Московская ул.","street":"Московская ул.","district":"Восток","floor":3,"floors":5,"year":1970,"area_total":47.2,"area_living":31.7,"area_kitchen":5.4,"area_plot":null,"price_byn":194700,"price_m2":4125,"url":"https://bugrealt.by/260453-80491-p/","img":"https://bugrealt.by/upload/Sh/imageCache/1f7/3dd/7e73a6ed552584eeee535f2b3338c0c8.jpg","desc":"Продается двухкомнатная квартира в Бресте по улице Московская — и это именно тот вариант, когда можно просто переступить порог и остаться жить! \r\n Дом 1970 года, панельный, третий этаж из пяти. Общая площадь 48,1 кв.м, жилая 37,1 кв.м, кухня 5,4 кв.м. Санузел раздельный — свежая плитка и новая сантехника радуют глаз. Разноуровневые потолки добавляют интерьеру характера, современные двери и металлическая входная дверь — надежность и стиль. На полу ламинат и плитка.\r\n Квартира в отличном жилом состоянии — здесь уже всё продумано для комфортной жизни, никаких ремонтов и лишних хлопот. Остается мебель и бытовая техника: шкаф-купе, кухонный гарнитур с духовым шкафом, варочной поверхностью и вытяжкой, мебель в гостиной и детской. \r\n Подъезд чистый и аккуратный. Двор тихий и спокойный — со стоянкой для автомобилей и зеленой зоной, где так приятно гулять. А инфраструктура — просто мечта: продовольственный магазин, аптека, школа, гимназия, детский садик и рынок прямо рядом с домом. Хорошая транспортная развязка, остановка общественного транспорта в шаговой доступности."},{"lot":"250518","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Кирова ул.","street":"Кирова ул.","district":"Центр","floor":1,"floors":9,"year":1981,"area_total":47.4,"area_living":27.8,"area_kitchen":9.5,"area_plot":null,"price_byn":207900,"price_m2":4386,"url":"https://bugrealt.by/250518-70087-p/","img":"https://bugrealt.by/upload/Sh/imageCache/184/3f2/76bafc58c0a33e5ead94a53f9f272376.jpg","desc":"Продаётся двухкомнатная квартира на 1 этаже 9 этажного кирпичного дома 1981 года постройки в самом центре города Бреста. Общая площадь 44,4 кв.м, жилая 27,8 кв.м., кухня 9,5 кв.м, санузел совмещенный и коридор.\nОкна - стеклопакеты, на полу в одной комнате ковровое покрытие, в остальных-ламинат, на стенах- обои, потолок-снежка, межкомнатные и входная двери- деревянные.\nВ доме есть подвал.\nКвартира продается с мебелью и техникой, полностью готова к проживанию. \nВсе в шаговой доступности: магазины, аптека, школа, садик, поликлиника, банк. Удобная транспортная доступность.\nВозможен вывод в нежилой фонд с перепрофилированием под коммерческую недвижимость."},{"lot":"230467","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Машерова пр-т.","street":"Машерова пр-т","district":"Центр","floor":2,"floors":5,"year":1960,"area_total":42.1,"area_living":31.3,"area_kitchen":5.7,"area_plot":null,"price_byn":209148,"price_m2":4968,"url":"https://bugrealt.by/230467-48981-p/","img":"https://bugrealt.by/upload/Sh/imageCache/ca1/dc2/cfb75b38d8aba782266de8d956d46766.jpg","desc":"В продаже двухкомнатная квартира в самом центре города Бреста по пр-ту Машерова. Квартира расположена на 2-м этаже кирпичного 5-этажного дома, 1960 года постройки. Общая площадь квартиры составляет 42,1 м2, жилая площадь - 31,3 м2, кухня площадью 5,7 м2, совмещенный санузел.\n\nВ квартире аккуратно и светло: стены оклеены обоями, потолки в комнатах окрашены Снежной, на полу устелен ламинат. В санузле стены облицованы современной керамической плиткой, в ходе ремонта произведена замена сантехники. В квартире установлены окна ПВХ, современные межкомнатные двери, металлическая входная дверь.\n\nПодъезд дома аккуратный, тихий и спокойный двор. В шаговой доступности находятся продовольственные магазины, образовательные учреждения, остановки общественного транспорта, а также все необходимое для комфортной жизни. Для организации просмотра звоните в любое время!"},{"lot":"260401","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Интернациональная ул.","street":"Интернациональная ул.","district":"Центр","floor":3,"floors":5,"year":1965,"area_total":38.6,"area_living":23.8,"area_kitchen":6.3,"area_plot":null,"price_byn":220130,"price_m2":5703,"url":"https://bugrealt.by/260401-79831-p/","img":"https://bugrealt.by/upload/Sh/imageCache/9c2/27b/26eebd2b7a4ae2a7e048fc9e82441bc8.jpg","desc":"2- комнатная квартира полностью готова к проживанию, г.Брест, Интернациональная ул., 1965 г.п., 3/5 панель , подвал, 39,4/38,6/23,8/6,3 кв.м., с/у раздельный, стеклопакеты, балкон из комнаты. \nНатяжные потолки 2,5 м, полы – ламинат, в коридоре и кухне – плитка . Санузел облицован современной керамической плиткой, инсталляция, душевая кабина и бойлер на 60 л, функциональная мебель. Кондиционер. Встроенная мебель из натурального дерева. Кухонный гарнитур с варочной поверхностью , в коридоре - два встроенных шкафа .\nЧистый аккуратный подъезд. Благоустроенный двор . Район с развитой инфраструктурой . В шаговой доступности ЦУМ, рынок, благоустроенная Набережная."},{"lot":"240252","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Брестских дивизий пер.","street":"Брестских Дивизий пер.","district":"Граевка","floor":8,"floors":9,"year":2011,"area_total":62.1,"area_living":30.2,"area_kitchen":12.1,"area_plot":null,"price_byn":239368,"price_m2":3855,"url":"https://bugrealt.by/240252-55661-p/","img":"https://bugrealt.by/upload/Sh/imageCache/295/047/513308e455b92a1ae2749dd9fc3f2a8a.jpg","desc":"2- комнатная квартира, г. г.Брест, Брестских Дивизий пер., 2011 г.п., 8/9 кирпичные, 65,5/62,1/30,2/12,1 кв.м., с/у раздельный, стеклопакеты, паркет, межкомнатные двери деревянные, входная металлическая, потолки снежка, современная плитка и с/т (ванна и душевая кабига), встроенный кухонный гарнитур, шкаф-купе. Благоустроенный двор, облагороженная придомовая территория с обустроенной детской площадкой, со стоянкой для автомобилей. Район с развитой инфраструктурой, шаговой доступности остановка общественного транспорта."},{"lot":"250362","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Франциска Скорины наб.","street":"Франциска Скорины наб.","district":"Центр","floor":1,"floors":5,"year":1978,"area_total":49.6,"area_living":30.7,"area_kitchen":7.2,"area_plot":null,"price_byn":254328,"price_m2":5128,"url":"https://bugrealt.by/250362-69480-p/","img":"https://bugrealt.by/upload/Sh/imageCache/4f5/a56/c3ad0042d1d359664e8137ca7286777b.jpg","desc":"Двухкомнатная квартира, г.Брест, Франциска Скорины наб., 1978 г.п., 1/5 кирпич, 51,1/49,6/30,7/7,2 кв.м. С/у раздельный (плитка нового образца, новая с/т). Окна - стеклопакеты. Полы - ламинат, плитка. Современные двери, входная - металлическая. Есть подвал. Лоджия застеклена. ПРОДАЖА СО ВСЕЙ МЕБЕЛЬЮ, БЫТОВОЙ ТЕХНИКОЙ, ПРЕДМЕТАМИ ИНТЕРЬЕРА. \n Чистый аккуратный подъезд. Благоустроенный двор с зеленой зоной. Район с развитой инфраструктурой, рядом с домом находятся: продовольственный магазин, аптека, школа, детский садик. ИЗ ОКОН ОТКРЫВАЕТСЯ ЖИВОПИСНЫЙ ВИД НА ЗЕЛЕНУЮ ЗОНУ."},{"lot":"240566","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Советская ул.","street":"Советская ул.","district":"Центр","floor":3,"floors":3,"year":1925,"area_total":46.3,"area_living":30.3,"area_kitchen":7.8,"area_plot":null,"price_byn":268990,"price_m2":5810,"url":"https://bugrealt.by/240566-58480-p/","img":"https://bugrealt.by/upload/Sh/imageCache/6bc/5ac/0774dffa6ddc1dfc2c023925a45484aa.jpg","desc":"В продаже эксклюзивная 2-комнатная квартира в кирпичном доме по ул. Советской!\nКвартира расположе на 3-м этаже 3-этажного дома 1925 года постройки, который имеет статус памятника историко-культурного наследия.\nРеконструкция и 3-й этаж были достроены в 1970 году.\nОбщая площадь квартиры составляет 46,3 кв.м, жилая площадь 30,3 кв.м, площадь кухни 7,8 кв.м, санузел совмещённый, перекрытия - железобетонные панели.\nВ квартире выполнен ремонт: установлены стеклопакеты, входная дверь металлическая, на полу устелен ламинат, стены оклеены обоями, установлен кухонный гарнитур и встроенная бытовая техника, санузел облицован керамической плиткой современного образца, заменено сантехническое оборудование.\nОтличный варинат для ценителей исторических объектов в самом центре города!\nКвартира полностью готова к проживанию!"},{"lot":"260078","type":"2к","rooms":2,"title":"Двухкомная квартира, Карбышева ул.","street":"Карбышева ул.","district":"Центр","floor":5,"floors":5,"year":1972,"area_total":52.6,"area_living":32.2,"area_kitchen":8.0,"area_plot":null,"price_byn":281257,"price_m2":5347,"url":"https://bugrealt.by/260078-76165-p/","img":"https://bugrealt.by/upload/Sh/imageCache/994/6bf/cff01e6ef57947797847ef37f1d9b3d2.jpg","desc":"Продаётся уютная 2-комнатная квартира в самом сердце Бреста!\nКвартира расположена на 5-м этаже 5-этажного кирпичного дома 1972 года постройки.\nОбщая площадь квартиры составляет 55,9 кв.м, жилая площадь 32,2 кв.м, площадь кухни 8,0 кв.м, санузел раздельный.\nУстановлены современные стеклопакеты ПВХ. Напольное покрытие – ламинат, керамическая плитка. Потолоки: в спальне - гипсокартон, кухня, зал, коридор, санузел, ванна – натяжной потолок с точечными энергосберегающими светильниками. Стены выровнены и оклеены качественными немецкими обоями. Произведена шумоизоляция стены со смежной квартирой. Установлена новая входная, межкомнатные двери. Заменены трубы, установлена новая сантехника. Лоджия застеклена и утеплена, на полу - ламинат. На балконе установлен шкаф для хранения вещей. Во всей квартире установлены новые розетки. Два кондиционера.\nВ доме произведен капитальный ремонт крыши в 2022 году. Чистый, аккуратный подъезд, большой благоустроенный двор, облагороженная придомовая территория, имеется много стояночных мест. Есть подвальное помещение.\nИдеальное расположение: Советская улица, самый центр города. В шаге от набережной, пешеходной зоны, кафе, достопримечательностей.\nКвартира полностью готова к проживанию!"},{"lot":"250499","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Машерова пр-т.","street":"Машерова пр-т","district":"Центр","floor":1,"floors":5,"year":1963,"area_total":55.4,"area_living":null,"area_kitchen":null,"area_plot":null,"price_byn":298911,"price_m2":5396,"url":null,"img":"https://bugrealt.by/upload/Sh/imageCache/a66/78a/b16358053ec8b002373b1457523bb3cd.jpg","desc":"Изолированное помещение в собственность в центральной части г. Бреста, общей площадью 55,4 кв.м. Расположено на первом этаже жилого дома. Назначение: помещение, не относящееся к жилищному фонду. Район с развитой инфраструктурой , рядом с домом находятся: продовольственный магазин, аптека. В шаговой доступности остановка общественного транспорта с удобной транспортной развязкой. Технические характеристики и месторасположение дома дают возможность перепрофилирования объекта с целью дальнейшего использования под разные виды деятельности (торговля, офис, сфера услуг и т. д.) Парковка перед домом."},{"lot":"210087","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Гоголя ул.","street":"Гоголя ул.","district":"Центр","floor":8,"floors":11,"year":2020,"area_total":56.6,"area_living":null,"area_kitchen":null,"area_plot":null,"price_byn":314170,"price_m2":5551,"url":"https://bugrealt.by/210087-33592-p/","img":"https://bugrealt.by/upload/Sh/imageCache/488/878/ea36dfa4e08dcdb5293f1bd8372187a3.jpg","desc":"Современная двухкомнатная квартира в центральной части города Бреста, ул.Гоголя. Квартира расположена на 8-м этаже нового кирпичного 11-тиэтажного дома, 2020 года постройки.\nОбщая площадь квартиры с лоджией составляет 60 м2. В квартире выполнен ремонт с использованием качественных отделочных материалов: входные двери металлические, на полу лежит ламинат и плитка, на стенах обои, межкомнатные двери из экошпона покрыты эмалью, потолок - натяжной с продуманной системой точечного освещения, новая сантехника. Квартира продается со всей мебелью и бытовой техникой: холодильником, варочной поверностью. Чистый подъезд. Благоустроенный двор с обустроенной детской площадкой, со стоянкой для автомобилей. Рядом с домом расположены супемаркеты, кафе, центральный рынок, школы, детские сады. В шаговой доступности остановка общественного транспорта. Живописный вид из окон."},{"lot":"260067","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Октябрьской революции ул.","street":"Октябрьской Революции ул.","district":"Ковалево","floor":6,"floors":10,"year":2025,"area_total":41.2,"area_living":28.3,"area_kitchen":null,"area_plot":null,"price_byn":368028,"price_m2":8933,"url":"https://bugrealt.by/260067-76091-p/","img":"https://bugrealt.by/upload/Sh/imageCache/589/22d/ae830fb7ddd786ebce2da8834ebab090.jpg","desc":"2- комнатная квартира, г.Брест, Октябрьской Революции ул., 2025 г.п., 6/10 монолит, 43,8/41,2/28,3/ кв.м., с/у совмещенный, современный новый ремонт, никто не жил в квартире. \nПолы- кварцвинил, стеклопакеты (большие в пол), лоджия застеклена ( из спальни),натяжные потолки с элементами подсветки. Кухня-столовая 17 кв.м. , остается вся мебель ( диван, телевизор, кухонный стол и стулья) Спальня- 11,1 кв.м. ,остается двухспальная кровать(новая).\nВстроенная современная угловая кухня, духовой шкаф и СВЧ maunfeld . МОЩНАЯ ВЫТЯЖКА. ВСТРОЕННЫЙ ХОЛОДИЛЬНИК. ВАРОЧНАЯ ИНДУКЦИОННАЯ ПАНЕЛЬ.\nВ ванне плитка керамогранит, душевая кабина, гигиенический душ,электробойлер на 80 л, умывальник с тумбой. В прихожей большой встроенный шкаф.\nЧистый подъезд (камеры), видеодомофон, грузовой лифт. Благоустроенный двор , много места для парковки. Район с развитой инфраструктурой. Хорошая транспортная развязка ."},{"lot":"260365","type":"2к","rooms":2,"title":"Двухкомнатная квартира, Стафеева ул.","street":"Стафеева ул.","district":"Восток","floor":7,"floors":7,"year":2004,"area_total":55.9,"area_living":29.7,"area_kitchen":9.8,"area_plot":null,"price_byn":288800,"price_m2":5166,"url":"https://bugrealt.by/260365-79675-p/","img":"https://bugrealt.by/upload/Sh/imageCache/1ec/ac6/f65b4c99d8fb64e356ca6abfbbf8d3c9.jpg","desc":"В продаже двухкомнатная квартира на 7 этаже 7-этажного кирпичного дома 2004 года постройки в микрорайоне Восток. Полноценный технический этаж.\nФункциональная и удобная планировка: две просторные жилые комнаты 17,5 м2 и 12,2 м2, вместительная кухня 9,8 м2 с выходом на лоджию, санузел раздельный и коридор. Большая видовая лоджия.\nСветлая квартира с новым ремонтом: полы - плитка и ламинат, потолки - натяжные/снежка, стены оклеены обоями светлых тонов, установлены стеклопакеты, входная дверь -металлическая. Санузел и ванная комната облицованы керамической плиткой нового образца. Функциональный кухонный гарнитур с бытовой техникой. Окна выходят на парковую зону. \nЧистое аккуратное состояние подъезда. Во дворе обустроены игровая детская площадка, парковка для автомобилей. Поблизости расположен Парк Воинов, хорошо развита социальная и транспортная инфраструктура.\nКвартира полностью готова к проживанию. Звоните!"}];
+const $=(s,e=document)=>e.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf=n=>Math.round(n).toLocaleString('ru-RU').replace(/\u00a0|\u202f/g,' ');
+const m2=n=>String(n).replace('.',',');
+const now=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const ROOM=['','Однокомнатная','Двухкомнатная','Трёхкомнатная','Четырёхкомнатная'];
+const title=o=>o.type==='дом'?o.title:(ROOM[o.rooms]||'Квартира')+' квартира';
+const place=o=>o.street?o.street.replace(/\bул\.$/,'ул.'):('район '+o.district);
+const sentences=t=>(t||'').replace(/\s*\n+\s*/g,' ').split(/(?<=[.!?])\s+/).filter(Boolean);
+const IC={
+  ext:'<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px;margin-left:4px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+  ok:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  clock:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+};
+let toastT;
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2400)}
+
+/* ---------- состояние ---------- */
+const S={lot:null,qa:[],botSent:[],pending:[],lead:null,tab:'client',busy:false};
+const MAIN=DATA.find(x=>x.lot==='260365')||DATA[0];
+
+/* ---------- чат клиента ---------- */
+const chat=$('#chat');
+function toBottom(){chat.scrollTop=chat.scrollHeight}
+function addMsg(who,inner,cls=''){
+  const w=document.createElement('div');w.className='msg '+who;
+  w.innerHTML=`<div class="bub ${cls}">${inner}<span class="tm">${now()}</span></div>`;
+  chat.appendChild(w);toBottom();return w;
+}
+function userSay(t){addMsg('me','<p>'+esc(t)+'</p>')}
+async function typing(ms){
+  const w=document.createElement('div');w.className='msg bot';w.innerHTML='<div class="typing" aria-label="Консультант печатает"><i></i><i></i><i></i></div>';
+  chat.appendChild(w);toBottom();await sleep(RM?80:ms);w.remove();
+}
+function addKb(host,rows,cls=''){
+  chat.querySelectorAll('.kb:not(.done)').forEach(k=>k.classList.add('done'));
+  const k=document.createElement('div');k.className='kb '+cls;
+  rows.forEach(r=>{const b=document.createElement('button');b.type='button';b.textContent=r.t;if(r.pri)b.className='pri';
+    b.onclick=()=>{k.classList.add('done');userSay(r.say||r.t);r.f()};k.appendChild(b)});
+  host.appendChild(k);toBottom();
+}
+async function bot(inner,rows,opts={}){
+  await typing(opts.wait||550);
+  const m=addMsg('bot',inner,opts.cls||'');
+  if(rows)addKb(m,rows,opts.kbcls||'');
+  return m;
+}
+function cardHTML(o){
+  const f=[];
+  if(o.type==='дом'){f.push(`${m2(o.area_total)} м²`);if(o.area_plot)f.push(`участок ${o.area_plot} сот.`);if(o.year)f.push(`${o.year} г.`)}
+  else{f.push(`${m2(o.area_total)} м²`);if(o.area_kitchen)f.push(`кухня ${m2(o.area_kitchen)} м²`);if(o.floor)f.push(`${o.floor} этаж из ${o.floors}`);if(o.year)f.push(`${o.year} г.`)}
+  return `<a class="ph" href="${esc(o.url)}" target="_blank" rel="noopener" aria-label="Открыть фото на сайте"><img src="${esc(o.img)}" alt="${esc(title(o))}, ${esc(place(o))}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('bad')"><span class="miss">Фото – на странице объекта на сайте</span></a>
+  <div class="body"><span class="lot">Лот ${esc(o.lot)}</span><h3>${esc(title(o))}</h3><p class="adr">Брест, ${esc(place(o))}${o.type!=='дом'&&o.district?' · '+esc(o.district):''}</p>
+  <ul class="facts">${f.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>
+  <div class="price">${nf(o.price_byn)} BYN${o.price_m2&&o.type!=='дом'?`<small>${nf(o.price_m2)} за м²</small>`:''}</div>
+  <a class="lnk" href="${esc(o.url)}" target="_blank" rel="noopener">Карточка на сайте${IC.ext}</a></div>`;
+}
+function mainKb(){
+  return [
+    {t:'Задать вопрос по объекту',f:()=>askMenu()},
+    {t:'Показать похожие',f:()=>similar()},
+    {t:'Записаться на просмотр',pri:true,f:()=>book()}
+  ];
+}
+async function showObject(o,again){
+  S.lot=o;
+  await bot(`<p>${again?'Фото и карточка ещё раз.':'Нашёл. Это актуальный объект из каталога на сайте.'}</p>`);
+  const m=addMsg('bot',cardHTML(o),'card');
+  S.botSent.push(`Фото и карточка лота ${o.lot}`);
+  await sleep(RM?0:250);
+  await bot('<p>Что сделать дальше?</p>',mainKb());
+}
+async function askMenu(){
+  await bot('<p>Спросите своими словами или выберите вопрос. Отвечаю только по тому, что есть в карточке.</p>',[
+    {t:'Что остаётся в квартире?',f:()=>answer('Что остаётся в квартире?')},
+    {t:'В каком состоянии?',f:()=>answer('В каком состоянии?')},
+    {t:'Что рядом, какой двор?',f:()=>answer('Что рядом, какой двор?')},
+    {t:'Можно ли договориться о цене?',f:()=>answer('Можно ли договориться о цене?')},
+    {t:'Назад',f:()=>bot('<p>Что сделать дальше?</p>',mainKb())}
+  ]);
+}
+const TOPICS=[
+  {re:/остаётся|остается|мебел|техник|гарнитур|оставляют/i,s:/(остаются|остается|остаётся|гарнитур|техник|мебел|шкаф)/i},
+  {re:/состояни|ремонт|отделк|окна|стеклопакет/i,s:/(ремонт|состояни|отделк|стеклопакет|ламинат|плитк|окна)/i},
+  {re:/двор|рядом|район|инфраструктур|школ|парк|остановк|подъезд/i,s:/(двор|район|инфраструктур|рядом|поблизости|остановк|парк|подъезд)/i}
+];
+async function answer(q){
+  const o=S.lot; if(!o) return fallback();
+  if(/цен|торг|скидк|договор.*цен|ипотек|рассрочк/i.test(q)){
+    S.qa.push({q:'Можно ли договориться о цене?',a:'Передал риэлтору: цену обсуждает он',known:false});S.pending.push(q);
+    await bot(`<p>Цена в карточке – ${nf(o.price_byn)} BYN. Условия цены обсуждает риэлтор, я их не назову. Добавил вопрос в вашу заявку.</p>`,mainKb());return;
+  }
+  if(/этаж|год|постро|площад|кухн|сколько м/i.test(q)){
+    const parts=[];
+    if(o.floor)parts.push(`${o.floor} этаж из ${o.floors}`);if(o.year)parts.push(`дом ${o.year} года`);
+    parts.push(`общая площадь ${m2(o.area_total)} м²`);if(o.area_living)parts.push(`жилая ${m2(o.area_living)} м²`);if(o.area_kitchen)parts.push(`кухня ${m2(o.area_kitchen)} м²`);
+    S.qa.push({q:'Этаж, год, площадь',a:parts.join(', '),known:true});
+    await bot(`<p>${esc(parts.join(', '))}.</p><p class="sub" style="font-size:12px;color:var(--muted)">Из карточки на сайте</p>`,mainKb());return;
+  }
+  const sents=sentences(o.desc);
+  for(const t of TOPICS){
+    if(t.re.test(q)){
+      const hit=sents.filter(s=>t.s.test(s)).slice(0,2);
+      if(hit.length){
+        S.qa.push({q,a:hit.join(' '),known:true});
+        await bot(`<p>${esc(hit.join(' '))}</p><p style="font-size:12px;color:var(--muted)">Из описания лота ${esc(o.lot)} на сайте</p>`,mainKb());return;
+      }
+    }
+  }
+  S.qa.push({q,a:'В карточке нет: уточнит риэлтор',known:false});S.pending.push(q);
+  await bot('<p>В карточке этого нет, гадать не буду. Передал вопрос риэлтору – ответ придёт вам в тот же мессенджер.</p>',mainKb());
+}
+function afterList(m,canBook){
+  const rows=[];if(canBook)rows.push({t:'Записаться на просмотр',pri:true,f:()=>book()});
+  rows.push({t:'Другой объект',f:()=>bot('<p>Напишите номер лота или выберите:</p>',startKb())});
+  addKb(m,rows);
+}
+async function similar(){
+  const o=S.lot||MAIN;
+  const c=DATA.filter(x=>x!==o&&x.type===o.type).sort((a,b)=>Math.abs(a.price_byn-o.price_byn)-Math.abs(b.price_byn-o.price_byn)).slice(0,3);
+  const html='<p>Похожие по типу и цене:</p>'+c.map(x=>`<button type="button" class="mini" data-lot="${esc(x.lot)}"><span class="th"><img src="${esc(x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'"></span><span><b>${esc(title(x).replace(' квартира',''))}, ${esc(place(x))}</b><span>${m2(x.area_total)} м² · ${esc(x.district||'')}</span></span><span class="p">${nf(x.price_byn)}</span></button>`).join('');
+  await typing(500);
+  const m=addMsg('bot',html);
+  m.querySelectorAll('.mini').forEach(b=>b.onclick=()=>{userSay('Лот '+b.dataset.lot);showObject(DATA.find(x=>x.lot===b.dataset.lot))});
+  S.botSent.push('Показал 3 похожих объекта');
+  afterList(m,true);
+}
+async function notFound(n){
+  S.lot=null;
+  await bot(`<p>Лот ${esc(n)} сейчас не найден среди действующих объектов Бреста. Возможно, он снят с продажи или относится к другому городу (Минск, Гродно, Пинск).</p><p>Не буду обещать то, чего уже нет. Могу показать то, что продаётся сейчас, или передать вопрос риэлтору.</p>`,[
+    {t:'Показать актуальные 1–2-комнатные',f:()=>pickType(2)},
+    {t:'Уточнить у риэлтора про лот '+n,f:()=>{S.pending.push('Лот '+n+': актуален ли?');book()}}
+  ]);
+}
+async function pickType(n){
+  const c=DATA.filter(x=>x.rooms&&x.rooms<=n).sort((a,b)=>a.price_byn-b.price_byn);
+  const step=Math.floor(c.length/3);
+  const three=[c[2],c[step+2],c[2*step+2]].filter(Boolean);
+  S.lot=null;
+  await typing(500);
+  const m=addMsg('bot','<p>Вот три варианта в Бресте, все в каталоге на сегодня:</p>'+three.map(x=>`<button type="button" class="mini" data-lot="${esc(x.lot)}"><span class="th"><img src="${esc(x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'"></span><span><b>${esc(title(x).replace(' квартира',''))}, ${esc(place(x))}</b><span>${m2(x.area_total)} м² · ${esc(x.district||'')}</span></span><span class="p">${nf(x.price_byn)}</span></button>`).join(''));
+  m.querySelectorAll('.mini').forEach(b=>b.onclick=()=>{userSay('Лот '+b.dataset.lot);showObject(DATA.find(x=>x.lot===b.dataset.lot))});
+  afterList(m,false);
+}
+async function pickFlow(){
+  await bot('<p>Сколько комнат нужно?</p>',[
+    {t:'1 комната',f:()=>pickTypeN(1)},{t:'2 комнаты',f:()=>pickTypeN(2)},{t:'3 комнаты',f:()=>pickTypeN(3)},{t:'4 и больше',f:()=>pickTypeN(4)}
+  ],{kbcls:'row2'});
+}
+async function pickTypeN(n){
+  const c=DATA.filter(x=>x.rooms===n).sort((a,b)=>a.price_byn-b.price_byn);
+  const step=Math.max(1,Math.floor(c.length/3));
+  const three=[c[0],c[Math.min(step,c.length-1)],c[Math.min(2*step,c.length-1)]].filter((x,i,a)=>x&&a.indexOf(x)===i);
+  await typing(500);
+  const m=addMsg('bot','<p>Из того, что продаётся сейчас:</p>'+three.map(x=>`<button type="button" class="mini" data-lot="${esc(x.lot)}"><span class="th"><img src="${esc(x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'"></span><span><b>${esc(title(x).replace(' квартира',''))}, ${esc(place(x))}</b><span>${m2(x.area_total)} м² · ${esc(x.district||'')}</span></span><span class="p">${nf(x.price_byn)}</span></button>`).join(''));
+  m.querySelectorAll('.mini').forEach(b=>b.onclick=()=>{userSay('Лот '+b.dataset.lot);showObject(DATA.find(x=>x.lot===b.dataset.lot))});
+  afterList(m,false);
+}
+async function fallback(){
+  await bot('<p>Не уверен, что понял. Напишите номер лота с сайта или выберите, с чего начать.</p>',startKb());
+}
+function startKb(){return [
+  {t:'Интересует лот '+MAIN.lot+', скиньте фото',f:()=>showObject(MAIN)},
+  {t:'Лот 65: он ещё продаётся?',f:()=>notFound('65')},
+  {t:'Подобрать квартиру',f:()=>pickFlow()}
+]}
+const DAYS=['Завтра','Послезавтра','Суббота'],TIMES=['10:00','14:00','18:30'];
+async function book(){
+  if(!S.lot&&!S.pending.length)S.pending.push('Подбор квартиры');
+  await bot('<p>Выберите день для просмотра:</p>',DAYS.map(d=>({t:d,f:()=>bookTime(d)})),{kbcls:'row2'});
+}
+async function bookTime(d){
+  await bot('<p>Какое время удобно?</p>',TIMES.map(t=>({t,say:d+', '+t,f:()=>bookChannel(d+', '+t)})),{kbcls:'row2'});
+}
+async function bookChannel(when){
+  S.when=when;
+  await bot('<p>Риэлтор Ирина (пример) свяжется в течение 15 минут. Как вам удобнее: написать или позвонить?</p>',[
+    {t:'Написать в Telegram',f:()=>done('Telegram')},
+    {t:'Написать в Viber',f:()=>done('Viber')},
+    {t:'Позвонить',f:()=>done('звонок')}
+  ]);
+}
+async function done(ch){
+  S.channel=ch;
+  S.lead={id:Date.now(),at:Date.now(),skip:0,lot:S.lot,when:S.when,channel:ch,qa:S.qa.slice(),pending:S.pending.slice(),bot:S.botSent.slice(),sample:false,taken:null,viewing:null,esc:false};
+  staffReset();
+  await typing(600);
+  addMsg('bot',`<div class="okcard">${IC.ok}<span>Заявка передана. Ирина (пример) свяжется ${esc(ch==='звонок'?'звонком':'в '+ch)} в течение 15 минут. Просмотр: ${esc(S.when)}.</span></div>`);
+  const m=addMsg('bot','<p>Если нужна другая квартира – напишите номер лота.</p>');
+  addKb(m,[{t:'Посмотреть, что получит риэлтор',pri:true,say:'Показать, что получит риэлтор',f:()=>setTab('staff')},{t:'Другой объект',f:()=>bot('<p>Напишите номер лота или выберите:</p>',startKb())}]);
+}
+function route(t){
+  const num=t.match(/\d{2,7}/);
+  if(num){const o=DATA.find(x=>x.lot===num[0]);return o?showObject(o,/фото/i.test(t)&&S.lot&&S.lot.lot===o.lot):notFound(num[0])}
+  if(/похож|аналог|другие|ещё вариант/i.test(t))return similar();
+  if(/просмотр|записат|посмотреть/i.test(t))return book();
+  if(/фото/i.test(t)&&S.lot)return showObject(S.lot,true);
+  if(S.lot&&/\?|что|как|есть|можно|сколько|какой|какая|цен|торг/i.test(t))return answer(t);
+  if(/подобр|ищу|нужна|купить|квартир/i.test(t))return pickFlow();
+  return fallback();
+}
+$('#form').addEventListener('submit',e=>{
+  e.preventDefault();const i=$('#inp'),t=i.value.trim();if(!t)return;
+  i.value='';userSay(t);route(t);
+});
+async function startChat(){
+  [...chat.children].forEach(c=>{if(!c.classList.contains('why'))c.remove()});
+  Object.assign(S,{lot:null,qa:[],botSent:[],pending:[],lead:null,when:null,channel:null});
+  staffReset();
+  await bot('<p>Здравствуйте! Я консультант агентства «Бугриэлт». Отвечаю сразу, днём и ночью, по объектам с нашего сайта. Напишите номер лота или выберите:</p>',startKb(),{wait:300});
+}
+$('#restart').onclick=startChat;
+
+/* ---------- сотрудник ---------- */
+const staff=$('#staff');
+let tick=null;
+function sampleLead(){return {id:'sample',at:0,skip:0,lot:MAIN,when:'Завтра, 14:00',channel:'Telegram',qa:[
+  {q:'Что остаётся в квартире?',a:'Остаётся кухонный гарнитур с бытовой техникой.',known:true},
+  {q:'Можно ли договориться о цене?',a:'Передал риэлтору: цену обсуждает он',known:false}],pending:['Можно ли договориться о цене?'],bot:['Фото и карточка лота '+MAIN.lot,'Показал 3 похожих объекта'],sample:true,taken:null,viewing:null,esc:false}}
+function staffReset(){if(S.tab==='staff')renderStaff();else staff.dataset.dirty='1'}
+function remaining(L){return Math.max(0,900-Math.floor((Date.now()-L.at)/1000)-L.skip)}
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function renderStaff(){
+  delete staff.dataset.dirty;
+  let L=S.lead;if(!L){L=S.sample||(S.sample=sampleLead());if(!L.at)L.at=Date.now()}
+  const o=L.lot;
+  const objHTML=o?`<b>Лот ${esc(o.lot)}</b> · ${esc(title(o).replace(' квартира',''))}, ${esc(place(o))} · ${m2(o.area_total)} м² · ${nf(o.price_byn)} BYN`:`<b>Лот не выбран.</b> ${esc(L.pending[0]||'Подбор квартиры')}`;
+  const kn=L.qa.length?'<ul>'+L.qa.map(x=>`<li>${esc(x.q)}</li>`).join('')+'</ul>':'Вопросов не было';
+  const sent=L.bot.length?'<ul>'+L.bot.concat(L.qa.filter(x=>x.known).map(x=>'Ответил: '+x.a)).map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':'—';
+  staff.innerHTML=`<p class="note">${L.sample?'Пример заявки. Пройдите сценарий во вкладке «Клиент» – здесь появится ваша.':'Новая заявка из вкладки «Клиент».'}</p>
+  <div class="lead" id="lead">
+    <h3>Тёплая заявка${L.sample?'<span class="tag ex">пример</span>':'<span class="tag">новая</span>'}</h3>
+    <dl class="dl">
+      <dt>Объект</dt><dd>${objHTML}</dd>
+      <dt>Клиент</dt><dd>Покупатель (пример) · пишет из ${esc(L.channel==='звонок'?'Telegram':L.channel)}</dd>
+      <dt>Просмотр</dt><dd id="lv">${esc(L.viewing||L.when)}${L.viewing?' · назначен':' · пожелание клиента'}</dd>
+      <dt>Связаться</dt><dd>${esc(L.channel==='звонок'?'позвонить':'написать в '+L.channel)}</dd>
+      <dt>Вопросы клиента</dt><dd>${kn}</dd>
+      <dt>Бот уже сделал</dt><dd>${sent}</dd>
+    </dl>
+    <div class="timer" id="timer"></div>
+    <div class="kb row2" id="skb"></div>
+  </div>
+  <div id="feed" class="stack"></div>
+  <button class="sm" id="skip" type="button">Демо: пропустить 15 минут</button>`;
+  drawLeadState();
+  $('#skip').onclick=()=>{if(L.taken||L.esc)return;L.skip=900;drawLeadState();escalate(L)};
+  clearInterval(tick);tick=setInterval(()=>{if(S.tab==='staff')drawTimer()},1000);
+}
+function drawTimer(){
+  const L=S.lead||S.sample;const t=$('#timer');if(!L||!t)return;
+  if(L.taken){t.className='timer ok';t.innerHTML=IC.ok+`<span>Вы взяли заявку за <b>${esc(L.taken)}</b>. Клиент уведомлён.</span>`;return}
+  const r=remaining(L);
+  if(r<=0&&!L.esc){escalate(L);return}
+  if(L.esc){t.className='timer late';t.innerHTML=IC.clock+`<span><b>00:00</b> · не взята. Ушла руководителю офиса (пример).</span>`;return}
+  t.className='timer';t.innerHTML=IC.clock+`<span>На ответ осталось <b>${fmt(r)}</b>. Потом заявка уйдёт руководителю офиса.</span>`;
+}
+function drawLeadState(){
+  const L=S.lead||S.sample;drawTimer();
+  const k=$('#skb');if(!k)return;k.innerHTML='';
+  const take=document.createElement('button');take.type='button';take.className='pri';take.textContent='Беру';
+  const sch=document.createElement('button');sch.type='button';sch.textContent='Назначить просмотр';
+  take.onclick=()=>takeLead(L);sch.onclick=()=>scheduleLead(L);
+  if(L.taken||L.esc){take.disabled=true;take.style.opacity=.5;if(L.esc&&!L.taken){take.textContent='Взять поздно';take.disabled=false;take.style.opacity=1}}
+  k.append(take,sch);
+}
+function feedAdd(html){const f=$('#feed');const d=document.createElement('div');d.className='sys';d.innerHTML=html;f.appendChild(d);d.scrollIntoView({block:'nearest'})}
+function takeLead(L){
+  if(L.taken)return;
+  const sec=Math.min(900,Math.floor((Date.now()-L.at)/1000)+L.skip);
+  L.taken=sec<60?sec+' с':Math.floor(sec/60)+' мин '+(sec%60)+' с';
+  if(L.esc)L.taken+=' (после эскалации)';
+  drawLeadState();
+  feedAdd(`<b>Заявка ваша.</b> Клиенту ушло: «Ирина (пример) взяла вашу заявку и скоро ${L.channel==='звонок'?'позвонит':'напишет'}».`);
+  if(!L.sample)addMsgSafe('Ирина (пример) взяла вашу заявку и скоро '+(L.channel==='звонок'?'позвонит':'напишет')+' в '+(L.channel==='звонок'?'течение нескольких минут':L.channel)+'.');
+}
+function scheduleLead(L){
+  const base=['Завтра, 10:00','Завтра, 14:00','Завтра, 18:30'];
+  if(L.when&&!base.includes(L.when))base.unshift(L.when);
+  const el=document.createElement('div');el.className='sys';
+  el.innerHTML='<div style="margin-bottom:6px"><b>Когда показываем?</b></div><div class="kb"></div>';
+  const k=$('.kb',el);
+  base.slice(0,4).forEach(w=>{const b=document.createElement('button');b.type='button';b.textContent=w;b.onclick=()=>{
+    L.viewing=w;if(!L.taken){L.taken='сразу';}
+    el.innerHTML=`<b>Просмотр назначен: ${esc(w)}.</b> Клиенту ушло подтверждение, в календарь риэлтора добавлено.`;
+    const lv=$('#lv');if(lv)lv.textContent=w+' · назначен';
+    drawLeadState();
+    if(!L.sample)addMsgSafe('Просмотр подтверждён: '+w+'. Адрес и контакт риэлтора пришлём за час до встречи.');
+  };k.appendChild(b)});
+  $('#feed').appendChild(el);el.scrollIntoView({block:'nearest'});
+}
+function escalate(L){
+  if(L.esc||L.taken)return;L.esc=true;drawLeadState();
+  feedAdd('<b>Риэлтору Ирине (пример):</b> заявка не взята 15 минут, напоминание отправлено.');
+  const d=document.createElement('div');d.className='lead';
+  d.innerHTML=`<h3>Руководителю офиса (пример)<span class="tag">просрочена</span></h3><p style="margin:0 0 8px;font-size:15px">Заявка ${L.lot?'по лоту '+esc(L.lot.lot):''} не взята риэлтором за 15 минут. Клиент ждёт.</p><div class="kb row2"><button type="button" class="pri">Взять себе</button><button type="button">Назначить другого</button></div>`;
+  d.querySelectorAll('button').forEach(b=>b.onclick=()=>toast('В демо кнопка ничего не отправляет'));
+  $('#feed').appendChild(d);d.scrollIntoView({block:'nearest'});
+}
+function addMsgSafe(t){addMsg('bot','<p>'+esc(t)+'</p>')}
+
+/* ---------- владелец ---------- */
+const CITY=[['Брест',64,41,36,5],['Минск',38,26,22,4],['Гродно',27,19,15,4],['Пинск',14,9,8,1]];
+const AGENTS=[['Ирина',12,11,1,4],['Андрей',9,6,3,11],['Мария',8,8,0,3],['Павел',7,6,1,7],['Ольга',5,5,0,2]];
+const WAIT=[['260412','2-комн., Вулька','Андрей','1 ч 40 мин'],['260350','3-комн., Центр','Павел','1 ч 15 мин'],['250999','1-комн., Восток','Андрей','1 ч 05 мин']];
+let city='Все';
+function renderOwner(){
+  const rows=CITY.filter(c=>city==='Все'||c[0]===city);
+  const T=rows.reduce((a,c)=>[a[0]+c[1],a[1]+c[2],a[2]+c[3],a[3]+c[4]],[0,0,0,0]);
+  const bar=(n,t)=>`<div class="bars" role="img" aria-label="Взято вовремя ${n[2]}, просрочено ${n[3]} из ${n[1]} переданных"><i style="width:${n[2]/n[1]*100}%;background:var(--ok)"></i><i style="width:${n[3]/n[1]*100}%;background:var(--warn)"></i></div>`;
+  $('#owner').innerHTML=`
+  <div class="seg" role="group" aria-label="Город">${['Все',...CITY.map(c=>c[0])].map(c=>`<button type="button" aria-pressed="${c===city}">${c}</button>`).join('')}</div>
+  <div class="sec"><h2>Обращения по городам <span class="pill">пример</span></h2><p class="sub">Бот отвечает на каждое сразу. Дальше важно, взял ли риэлтор.</p>
+    <table><thead><tr><th>Город</th><th>Обращений</th><th>Передано</th><th>Вовремя</th><th>Просрочено</th></tr></thead><tbody>
+    ${rows.map(c=>`<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3]}</td><td class="${c[4]>3?'late-n':''}">${c[4]}</td></tr>`).join('')}
+    ${rows.length>1?`<tr class="tot"><td>Всего</td><td>${T[0]}</td><td>${T[1]}</td><td>${T[2]}</td><td class="late-n">${T[3]}</td></tr>`:''}
+    </tbody></table>
+    ${bar([0,T[1],T[2],T[3]])}
+    <div class="legend"><span style="--c:var(--ok)">Взято за 15 минут: ${T[2]}</span><span style="--c:var(--warn)">Просрочено: ${T[3]}</span></div>
+  </div>
+  <div class="sec"><h2>По риэлторам, Брест <span class="pill">пример</span></h2><p class="sub">Имена вымышленные.</p>
+    <table><thead><tr><th>Риэлтор</th><th>Заявок</th><th>Вовремя</th><th>Просрочено</th><th>Реакция</th></tr></thead><tbody>
+    ${AGENTS.map(a=>`<tr><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td class="${a[3]>1?'late-n':''}">${a[3]}</td><td>${a[4]} мин</td></tr>`).join('')}
+    </tbody></table>
+  </div>
+  <div class="sec"><h2>Без ответа больше часа <span class="pill">пример</span></h2><p class="sub">Эти заявки ждут риэлтора прямо сейчас.</p>
+    ${WAIT.map(w=>`<div class="wait"><div class="m"><b>Лот ${w[0]}</b>${w[1]} · ${w[2]} (пример)</div><div class="t">${w[3]}</div><button type="button">Напомнить</button></div>`).join('')}
+  </div>
+  <button class="big" id="next" type="button">Что дальше<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
+  $('#owner').querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{city=b.textContent;const y=$('#owner').scrollTop;renderOwner();$('#owner').scrollTop=y});
+  $('#owner').querySelectorAll('.wait button').forEach(b=>b.onclick=()=>toast('В демо напоминание не отправляется'));
+  $('#next').onclick=()=>{$('#final').hidden=false};
+}
+$('#back').onclick=()=>{$('#final').hidden=true};
+
+/* ---------- вкладки ---------- */
+function setTab(t){
+  S.tab=t;
+  ['client','staff','owner'].forEach(k=>{
+    const on=k===t;$('#tab-'+k).setAttribute('aria-selected',on);$('#v-'+k).hidden=!on;
+  });
+  if(t==='staff')renderStaff();
+  if(t==='owner')renderOwner();
+  if(t==='client')toBottom();
+}
+['client','staff','owner'].forEach(k=>$('#tab-'+k).onclick=()=>setTab(k));
+startChat();
+</script>
+</body>
+</html>
