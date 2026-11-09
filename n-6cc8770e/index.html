@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#12535c">
+<title>Демо-концепт: «Цена до кресла» для NICA MEDICA</title>
+<style>
+:root{
+  --ink:#16282c; --muted:#4f6468; --petrol:#12535c; --petrol-d:#0c3a41; --petrol-t:#dfeceb; --petrol-m:#bcd6d4;
+  --paper:#f5f3ee; --chat:#e6ebe8; --white:#fff; --line:#d7ddda;
+  --amber:#7b4f00; --amber-t:#fdf0cf; --red:#9d2a20; --red-t:#fbe5e1; --green:#17633f; --green-t:#dbf0e3;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);color:var(--ink);background:#c9d3cf;font-size:16px;line-height:1.4;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--petrol);color:#fff}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:inherit}
+:focus-visible{outline:3px solid #f0b429;outline-offset:2px;box-shadow:0 0 0 5px var(--petrol-d)}
+*{scrollbar-width:thin;scrollbar-color:#9db3b0 transparent}
+.num{font-variant-numeric:tabular-nums}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.app{position:relative;display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:430px;margin:0 auto;background:var(--paper);overflow:hidden;box-shadow:0 0 0 1px rgba(12,58,65,.1),0 16px 48px rgba(12,58,65,.2)}
+.note{background:var(--ink);color:#e3ecea;font-size:12px;line-height:1.3;padding:5px 12px;text-align:center}
+.top{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--petrol);color:#fff}
+.ava{flex:none;width:40px;height:40px;border-radius:50%;background:#fff;color:var(--petrol);display:grid;place-items:center;font-weight:800;font-size:17px}
+.brand{min-width:0;flex:1}
+.brand b{display:block;font-size:16px;line-height:1.15}
+.brand small{display:block;font-size:12.5px;color:#cfe3e1;line-height:1.2;margin-top:2px}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px 8px;background:var(--petrol-d)}
+.roles button{min-height:44px;border-radius:10px;font-weight:600;font-size:15px;color:#cfe3e1;transition:background .2s,color .2s}
+.roles button:hover{background:rgba(255,255,255,.08)}
+.roles button[aria-selected="true"]{background:#fff;color:var(--petrol-d)}
+
+.panel{flex:1;display:none;flex-direction:column;min-height:0}
+.panel.on{display:flex}
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px 12px 20px}
+.chat{background:var(--chat)}
+
+/* dock */
+.dock{background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;min-height:74px}
+.dock .hint{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.opt{min-height:56px;padding:8px 12px;border-radius:14px;border:1.5px solid var(--petrol-m);background:#fff;text-align:left;font-weight:600;font-size:15.5px;line-height:1.2;transition:background .15s,border-color .15s,transform .15s var(--ease)}
+.opt small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+.opt:hover{background:var(--petrol-t);border-color:var(--petrol)}
+.opt:active{transform:scale(.97)}
+.opt[disabled]{background:#f0f2f1;color:#8a9a9d;border-color:#e0e5e3;cursor:default;transform:none}
+.opt.c{text-align:center}
+.btn{min-height:52px;width:100%;border-radius:14px;background:var(--petrol);color:#fff;font-weight:700;font-size:16.5px;padding:0 16px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:background .15s,transform .15s var(--ease)}
+.btn:hover{background:var(--petrol-d)}
+.btn:active{transform:scale(.985)}
+.btn.sec{background:#fff;color:var(--petrol-d);border:1.5px solid var(--petrol)}
+.btn.sec:hover{background:var(--petrol-t)}
+.btn.sm{min-height:44px;font-size:15px;width:auto;padding:0 14px}
+.btn[disabled]{background:var(--green-t);color:var(--green);cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 auto}
+.star{min-height:52px;border-radius:12px;border:1.5px solid var(--petrol-m);background:#fff;display:grid;place-items:center;color:var(--petrol);transition:background .15s,transform .15s var(--ease)}
+.star svg{width:26px;height:26px}
+.star:hover{background:var(--petrol-t)}
+.star:active{transform:scale(.95)}
+
+/* chat bubbles */
+.msg{display:flex;margin:0 0 8px;animation:rise .34s var(--ease) both}
+.msg.me{justify-content:flex-end}
+.bub{max-width:92%;padding:10px 14px;border-radius:4px 18px 18px 18px;background:#fff;box-shadow:0 1px 2px rgba(12,58,65,.14)}
+.me .bub{background:var(--petrol);color:#fff;border-radius:18px 4px 18px 18px}
+.bub p+p{margin-top:6px}
+.small{font-size:13.5px;color:var(--muted)}
+.divider{text-align:center;margin:12px 0 10px;font-size:12.5px;color:var(--muted)}
+.divider span{background:rgba(255,255,255,.75);padding:4px 12px;border-radius:12px}
+.typing{display:inline-flex;gap:4px;padding:6px 2px}
+.typing i{width:7px;height:7px;border-radius:50%;background:#8aa2a4;animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.sheet{width:100%;max-width:100%;padding:0;overflow:hidden}
+.sheet header{padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+.sheet h3{font-size:17px;line-height:1.2}
+.sheet header p{font-size:13.5px;color:var(--muted);margin-top:3px}
+.prow{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid #eaeeec;font-size:15px}
+.prow:last-of-type{border-bottom:0}
+.prow .p{font-weight:700;white-space:nowrap;text-align:right}
+.prow .p small{display:block;font-weight:500;font-size:12px;margin-top:1px}
+.tag-real{color:var(--green)}
+.tag-ex{color:var(--amber)}
+.incl{padding:10px 14px 4px;background:#f7f9f8;border-top:1px solid var(--line)}
+.incl h4{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.incl li{list-style:none;display:flex;gap:8px;font-size:14.5px;margin-bottom:6px;align-items:flex-start}
+.incl li svg{width:18px;height:18px;margin-top:1px;color:var(--green)}
+.legal{padding:10px 14px 12px;font-size:13.5px;background:var(--amber-t);color:#4d3200}
+.legal b{font-weight:700}
+.done{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--green-t);color:var(--green);font-weight:700}
+.done svg{width:24px;height:24px}
+.kv{padding:6px 14px 4px}
+.kv div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #eaeeec;font-size:15px}
+.kv div:last-child{border-bottom:0}
+.kv span:first-child{color:var(--muted)}
+.kv span:last-child{text-align:right;font-weight:600}
+
+/* staff */
+.light{background:var(--paper)}
+.h{font-size:19px;font-weight:700;line-height:1.2}
+.sub{font-size:13.5px;color:var(--muted);margin-top:3px}
+.count{display:flex;gap:8px;margin:12px 0 14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:5px 11px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.pill.warn{background:var(--amber-t);border-color:#ecd48f;color:var(--amber)}
+.pill.ok{background:var(--green-t);border-color:#b9dec9;color:var(--green)}
+.lh{font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 6px}
+.list{list-style:none;background:#fff;border-radius:14px;border:1px solid var(--line);overflow:hidden}
+.list>li{border-bottom:1px solid #eaeeec}
+.list>li:last-child{border-bottom:0}
+.it{width:100%;display:flex;gap:12px;padding:12px 14px;text-align:left;align-items:flex-start;min-height:64px}
+.it:hover{background:#f7faf9}
+.when{flex:none;width:58px;font-weight:700;font-size:15px;line-height:1.2}
+.when small{display:block;font-weight:500;font-size:12.5px;color:var(--muted)}
+.who{flex:1;min-width:0}
+.who b{display:block;font-size:15.5px;line-height:1.25}
+.who span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.chev{margin-top:2px;color:#7e9396;transition:transform .2s var(--ease)}
+.it[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.det{display:none;padding:0 14px 14px 84px}
+.det.on{display:block}
+.det p{font-size:14.5px;margin-bottom:10px}
+.conf{display:flex;gap:10px;align-items:flex-start;background:var(--amber-t);color:#4d3200;padding:10px 12px;border-radius:12px;font-size:14px;margin:0 14px 12px;margin-left:84px}
+.conf svg{color:var(--amber);margin-top:1px}
+li.is-conflict>.it{background:#fffaf0}
+.who span.st{display:inline-block;width:auto;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;margin-top:6px}
+.st.new{background:var(--petrol-t);color:var(--petrol-d)}
+.st.bad{background:var(--amber-t);color:var(--amber)}
+.st.ok{background:var(--green-t);color:var(--green)}
+.empty{padding:16px 14px;font-size:14.5px;color:var(--muted);background:#fff;border:1px dashed var(--petrol-m);border-radius:14px}
+.sent{margin-top:4px;padding:10px 12px;background:var(--chat);border-radius:12px;font-size:14px}
+
+/* owner */
+.fun{list-style:none;margin-top:10px}
+.fun li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 0}
+.fun .l{font-size:15px}
+.fun .v{font-weight:700;font-size:15px}
+.fun .bar{grid-column:1/3;height:10px;border-radius:5px;background:#e5ebe9;overflow:hidden}
+.fun .bar i{display:block;height:100%;background:var(--petrol);border-radius:5px;width:0;transition:width .8s var(--ease)}
+.fun .bar i.lo{background:#7aa3a6}
+.leaks{list-style:none;margin-top:6px}
+.leaks li{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:7px 0;border-top:1px solid #eaeeec}
+.sec{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.sec h3{font-size:16.5px;line-height:1.25}
+.sec>p{font-size:14px;color:var(--muted);margin-top:3px}
+.take{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--petrol-t);font-size:14.5px;color:var(--petrol-d)}
+.fb{padding:12px 0;border-top:1px solid #eaeeec}
+.fb:first-of-type{border-top:0}
+.fb .top2{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.fb .top2 b{font-weight:700}
+.fb p{font-size:15px;margin:4px 0 8px}
+.stars{display:inline-flex;gap:1px;color:#b4761a;vertical-align:-3px}
+.stars svg{width:15px;height:15px;stroke-width:1.6}
+.stars .off{color:#c9d2d0}
+.quote{padding:10px 0;border-top:1px solid #eaeeec;font-size:14.5px}
+.quote:first-of-type{border-top:0}
+.quote q{display:block;quotes:"«" "»";margin:3px 0 5px}
+.quote .m{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.quote .m.cl{flex-wrap:nowrap;align-items:flex-start}
+.quote .m.cl svg{width:18px;height:18px;color:var(--green)}
+.ag{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;margin-top:10px}
+.ag span b{font-weight:700}
+.tiny{font-size:12.5px;color:var(--muted);margin-top:8px}
+.draft{margin-top:8px;background:var(--chat);padding:10px 12px;border-radius:12px;font-size:14.5px}
+
+/* end */
+.end{padding:28px 18px 24px;display:flex;flex-direction:column;gap:14px;flex:1;background:var(--petrol-d);color:#fff;overflow-y:auto}
+.end h2{font-size:30px;line-height:1.1;letter-spacing:-.01em;text-wrap:balance}
+.end p{font-size:17px;color:#d5e6e4;max-width:34ch}
+.end .who2{font-size:20px;font-weight:700;margin-top:4px}
+.end .btn{background:#fff;color:var(--petrol-d)}
+.end .btn:hover{background:var(--petrol-t)}
+.end .btn.line{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55)}
+.end .btn.line:hover{background:rgba(255,255,255,.1)}
+.end .gap{flex:1}
+.end ul{list-style:none;display:flex;flex-direction:column;gap:8px;font-size:15.5px;color:#e6f0ef}
+.end li{display:flex;gap:10px;align-items:flex-start}
+.end li svg{margin-top:2px;color:#8fd0bf}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:359px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="note">Демо-концепт. Не официальный сайт компании. Данные – из открытых источников на 09.11.2026</div>
+  <div class="top">
+    <div class="ava" aria-hidden="true">N</div>
+    <div class="brand"><b>NICA MEDICA</b><small>помощник в Telegram · демо</small></div>
+  </div>
+  <div class="roles" role="tablist" aria-label="Роли">
+    <button role="tab" aria-selected="true" data-tab="client" id="t-client">Клиент</button>
+    <button role="tab" aria-selected="false" data-tab="staff" id="t-staff">Сотрудник</button>
+    <button role="tab" aria-selected="false" data-tab="owner" id="t-owner">Владелец</button>
+  </div>
+
+  <section class="panel on" id="p-client" role="tabpanel" aria-labelledby="t-client">
+    <div class="scroll chat" id="chat" aria-live="polite"></div>
+    <div class="dock" id="dock"></div>
+  </section>
+
+  <section class="panel" id="p-staff" role="tabpanel" aria-labelledby="t-staff">
+    <div class="scroll light" id="staff"></div>
+  </section>
+
+  <section class="panel" id="p-owner" role="tabpanel" aria-labelledby="t-owner">
+    <div class="scroll light" id="owner"></div>
+  </section>
+
+  <section class="panel" id="p-end" aria-label="Итог">
+    <div class="end">
+      <h2>Так может работать у вас</h2>
+      <p>Внедрение – 2–4 недели, дальше сопровождение.</p>
+      <ul>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Пациент видит ориентир по цене до записи</li>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Администратор видит заявку, ожидание по цене и конфликт времени</li>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Владелец видит, где уходят люди, и недовольство до отзыва на Картах</li>
+      </ul>
+      <div class="gap"></div>
+      <div class="who2">Роман Благов</div>
+      <a class="btn" href="https://t.me/blagov369" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M21 4L3 11l6 2.2L11 20l3.2-4.6L19 19z"/><path d="M9 13.2L21 4"/></svg>Telegram @blagov369</a>
+      <a class="btn line" href="tel:+375298611029"><svg class="i" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>+375 29 861-10-29</a>
+      <button class="btn line" data-go="client">Вернуться к демо</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)};
+var RM=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+/* ---------- иконки ---------- */
+var IC={
+ check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+ alert:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/>',
+ chev:'<path d="M9 6l6 6-6 6"/>',
+ arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+ phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
+ circle:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+ star:'<path d="M12 3.8l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.6 6.9 19.5 8 13.8l-4.3-4 5.8-.7z"/>'
+};
+function ico(n,c){return '<svg class="i '+(c||'')+'" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</svg>'}
+function stars(n){var s='';for(var i=1;i<=5;i++){s+='<svg class="i '+(i>n?'off':'')+'" viewBox="0 0 24 24" aria-hidden="true" '+(i<=n?'style="fill:currentColor"':'')+'>'+IC.star+'</svg>'}
+ return '<span class="stars" role="img" aria-label="'+n+' из 5">'+s+'</span>'}
+
+/* ---------- данные ---------- */
+var SRC="Цены «по прайсу» – с nicamedica.by/stoimost/ на 09.11.2026. «Пример» – выдуманные значения для демо.";
+var SERV=[
+ {id:"cure",t:"Лечение зуба",s:"кариес, каналы",doc:"Врач-стоматолог-терапевт",
+  head:"Консультация – 34,54 р., лечение – от 375 р.",expect:"до 500 р.",
+  rows:[["Консультация стоматолога-терапевта","34,54 р.","real"],["Лечение кариеса под микроскопом","от 375 р.","real"],["Лечение каналов под микроскопом","от 500 р.","real"]],
+  inc:["Осмотр и план лечения","Цену врач называет до начала лечения","Снимок зуба, если нужен: 15,19 р. за 1 зуб"]},
+ {id:"crown",t:"Коронка",s:"протезирование",doc:"Врач-стоматолог-ортопед",
+  head:"Консультация – 38 р., коронка – от 1 200 р.",expect:"от 1 200 р.",
+  rows:[["Консультация стоматолога-ортопеда","38 р.","real"],["Циркониевая коронка","от 1 200 р.","real"],["Коронка по технологии CEREC","от 1 700 р.","real"],["3D-снимок челюсти (если назначит врач)","84,62 р.","real"]],
+  inc:["Осмотр и варианты лечения","План и цену врач согласует с вами до начала","Снимок – только если врач его назначит"]},
+ {id:"implant",t:"Имплант",s:"имплантация",doc:"Врач челюстно-лицевой хирург",
+  head:"Точная цена – после снимка и осмотра",expect:"2 500–4 500 р. (пример)",
+  rows:[["3D-снимок челюсти","84,62 р.","real"],["Установка имплантата","2 500–4 500 р.","ex"],["Коронка на имплант (цирконий)","от 2 000 р.","real"]],
+  inc:["Осмотр и 3D-снимок","План по этапам и цена каждого этапа","На сайте клиники цена установки – «по запросу»"]},
+ {id:"clean",t:"Чистка",s:"гигиена полости рта",doc:"Врач-стоматолог-терапевт",
+  head:"Профессиональная гигиена – от 300 р.",expect:"от 300 р.",
+  rows:[["Гигиена: УЗ-скейлер и PROPHYFLEX","от 300 р.","real"],["Консультация терапевта, если нужен осмотр","34,54 р.","real"]],
+  inc:["Удаление налёта и зубного камня","Полировка","Покрытие реминерализирующим гелем или лаком"]},
+ {id:"white",t:"Отбеливание",s:"эстетика",doc:"Врач-стоматолог-терапевт",
+  head:"Цену отбеливания врач называет после осмотра",expect:"900–1 500 р. (пример)",
+  rows:[["Отбеливание (BEYOND или лазерное EPIC 10)","900–1 500 р.","ex"],["Гигиена перед отбеливанием","от 300 р.","real"]],
+  inc:["Осмотр: подходит ли вам отбеливание, решает врач","Чаще всего первым этапом идёт гигиена","На сайте клиники цена отбеливания – «по запросу»"]},
+ {id:"cosm",t:"Косметология",s:"консультация врача",doc:"Врач-дерматокосметолог",
+  head:"Стоимость процедур называет врач после консультации",expect:"40–70 р. (пример)",
+  rows:[["Консультация дерматокосметолога","40–70 р.","ex"],["Процедуры (лазер, инъекции, аппаратные)","после консультации","ex"]],
+  inc:["Осмотр и беседа с врачом","Процедуры подбирает врач","На сайте клиники цены на консультацию нет"]}
+];
+(function(){function nb(x){return x.replace(/(\d) (?=\d)/g,"$1\u00a0").replace(/ р\./g,"\u00a0р.").replace(/(^|[ (])от (?=\d)/g,"$1от\u00a0").replace(/ (?=[–-]\d)/g,"\u00a0")}
+ SERV.forEach(function(s){s.head=nb(s.head);s.expect=nb(s.expect);s.rows.forEach(function(r){r[1]=nb(r[1])})});
+ })();
+var DAYS=[["вт","10 ноября"],["ср","11 ноября"],["чт","12 ноября"],["пт","13 ноября"],["сб","14 ноября"]];
+var SLOTS=["08:30","10:00","11:30","14:00","15:30","17:00","18:30","20:00"];
+var S={svc:null,day:null,time:null,rating:null,booking:null,rescheduled:false};
+var FEED=[]; // отзывы из клиентского потока
+
+function svcById(id){for(var i=0;i<SERV.length;i++)if(SERV[i].id===id)return SERV[i]}
+function busy(d,i){return (i*3+d)%5===0}
+
+/* ---------- чат ---------- */
+var chat=$("#chat"),dock=$("#dock");
+function later(ms){return new Promise(function(r){setTimeout(r,RM?0:ms)})}
+function scroll(){chat.scrollTo({top:chat.scrollHeight,behavior:RM?"auto":"smooth"})}
+function add(html,cls){var m=document.createElement("div");m.className="msg "+(cls||"");m.innerHTML=html;chat.appendChild(m);scroll();return m}
+function me(t){add('<div class="bub">'+t+'</div>',"me")}
+function div(t){var d=document.createElement("div");d.className="divider";d.innerHTML="<span>"+t+"</span>";chat.appendChild(d);scroll()}
+async function bot(html,ms){
+  var t=add('<div class="bub"><span class="typing" aria-label="Печатает"><i></i><i></i><i></i></span></div>');
+  await later(ms==null?520:ms);
+  t.querySelector(".bub").innerHTML=html;scroll();
+}
+async function botSheet(html,ms){
+  var t=add('<div class="bub"><span class="typing" aria-label="Печатает"><i></i><i></i><i></i></span></div>');
+  await later(ms==null?650:ms);
+  t.querySelector(".bub").className="bub sheet";t.querySelector(".bub").innerHTML=html;scroll();
+}
+function setDock(html){dock.innerHTML=html;}
+function opt(t,act,arg,extra){return '<button class="opt'+(extra||"")+'" data-act="'+act+'"'+(arg!=null?' data-arg="'+arg+'"':'')+'>'+t+'</button>'}
+function btn(t,act,cls,arg){return '<button class="btn '+(cls||"")+'" data-act="'+act+'"'+(arg!=null?' data-arg="'+arg+'"':'')+'>'+t+'</button>'}
+
+function servicesDock(){
+  setDock('<div class="hint">Выберите, что беспокоит</div><div class="grid2">'+SERV.map(function(s){return opt(s.t+'<small>'+s.s+'</small>',"svc",s.id)}).join("")+'</div>');
+}
+async function start(){
+  chat.innerHTML="";S={svc:null,day:null,time:null,rating:null,booking:null,rescheduled:false};
+  setDock("");
+  div("Сегодня, понедельник, 9 ноября");
+  await bot('<p><b>Здравствуйте! Я помощник NICA MEDICA.</b></p><p>Подскажу ориентир по цене и запишу на консультацию. Врач называет окончательную цену после осмотра.</p><p>Что беспокоит?</p>',300);
+  servicesDock();
+}
+var H={
+ svc:async function(id){
+  var s=svcById(id);S.svc=s;setDock("");me(s.t);
+  var rows=s.rows.map(function(r){
+    var tag=r[2]==="real"?'<small class="tag-real">по прайсу клиники</small>':'<small class="tag-ex">пример</small>';
+    return '<div class="prow"><span>'+r[0]+'</span><span class="p num">'+r[1]+tag+'</span></div>';}).join("");
+  var inc=s.inc.map(function(x){return '<li>'+ico("check")+'<span>'+x+'</span></li>'}).join("");
+  await botSheet('<header><h3>'+s.t+': ориентир по цене</h3><p>'+s.head+'</p></header>'+rows+
+    '<div class="incl"><h4>Что входит</h4><ul>'+inc+'</ul></div>'+
+    '<div class="legal"><b>Окончательная стоимость – после осмотра врача.</b> Это ориентир, а не диагноз.</div>');
+  setDock('<div class="hint">'+SRC+'</div>'+btn("Записаться на консультацию","book")+btn("Выбрать другую услугу","again","sec"));
+ },
+ again:function(){me("Другая услуга");servicesDock()},
+ book:async function(){
+  setDock("");me("Записаться на консультацию");
+  await bot("<p>Выберите день. Принимаем с понедельника по субботу, с 8:00 до 21:00.</p>",420);
+  setDock('<div class="hint">День приёма</div><div class="grid2">'+DAYS.map(function(d,i){return opt(d[0]+", "+d[1],"day",i,"")}).join("")+'</div>');
+ },
+ day:async function(i){
+  S.day=+i;setDock("");me(DAYS[i][0]+", "+DAYS[i][1]);
+  await bot("<p>Выберите время. Занятые окна отмечены серым.</p>",400);
+  timeDock("time");
+ },
+ time:async function(t){
+  S.time=t;setDock("");me(t);
+  await bot('<p>Оставьте номер, чтобы администратор мог связаться, если что-то изменится.</p><p class="small">Номер берём из вашего Telegram. Ничего не отправляется: это демо.</p>',450);
+  setDock(btn(ico("phone")+"Поделиться номером из Telegram","phone"));
+ },
+ phone:async function(){
+  setDock("");me("+375 ** *** ** 42 (пример)");
+  var s=S.svc,d=DAYS[S.day];
+  S.booking={svc:s,day:S.day,time:S.time};
+  await botSheet('<div class="done">'+ico("circle")+'Вы записаны</div><div class="kv">'+
+   '<div><span>Услуга</span><span>'+s.t+' (консультация)</span></div>'+
+   '<div><span>Дата</span><span>'+d[0]+", "+d[1]+'</span></div>'+
+   '<div><span>Время</span><span class="num">'+S.time+'</span></div>'+
+   '<div><span>Врач</span><span>'+s.doc+' <small class="tag-ex">(пример)</small></span></div>'+
+   '<div><span>Адрес</span><span>ул. Гоголя, 1В</span></div>'+
+   '<div><span>Ориентир по цене</span><span>'+s.expect+'</span></div></div>'+
+   '<div class="legal"><b>Окончательная стоимость – после осмотра врача.</b></div>',700);
+  await bot('<p>Напомню накануне. Если планы изменятся, нажмите «Перенести».</p>',400);
+  setDock('<div class="hint">Демо: перемотаем время вперёд</div>'+btn("Показать напоминание накануне","remind")+btn("Посмотреть, что получил администратор","toStaff","sec"));
+ },
+ remind:async function(){
+  setDock("");div("Накануне, 18:00");var s=S.svc,d=DAYS[S.day];
+  await bot('<p><b>Напоминаем о визите.</b></p><p>'+d[0]+", "+d[1]+" в "+S.time+', '+s.t.toLowerCase()+', консультация. Ориентир по цене: '+s.expect+'</p><p class="small">Окончательная стоимость – после осмотра врача.</p>',500);
+  setDock('<div class="row">'+btn("Приду","come","sm")+btn("Перенести","resched","sec sm")+'</div>');
+ },
+ come:async function(){
+  setDock("");me("Приду");await bot("<p>Ждём вас. Вход с улицы Гоголя, администратор встретит.</p>",350);
+  setDock('<div class="hint">Демо: перемотаем время вперёд</div>'+btn("Показать сообщение после визита","visit"));
+ },
+ resched:async function(){
+  setDock("");me("Перенести");await bot("<p>Выберите новое время в тот же день. Администратор увидит изменение сразу.</p>",350);
+  timeDock("retime");
+ },
+ retime:async function(t){
+  S.time=t;S.rescheduled=true;setDock("");me(t);
+  await bot('<p>Перенесли на <b class="num">'+t+'</b>. Администратор получил сообщение, старое время освобождено.</p>',450);
+  setDock('<div class="hint">Демо: перемотаем время вперёд</div>'+btn("Показать сообщение после визита","visit"));
+ },
+ visit:async function(){
+  setDock("");div("После визита");
+  await bot("<p><b>Как всё прошло?</b></p><p>Оцените визит. Ответ увидит администратор, а не посторонние.</p>",500);
+  var b="";for(var i=1;i<=5;i++){b+='<button class="star" data-act="rate" data-arg="'+i+'" aria-label="Оценка '+i+' из 5"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor">'+IC.star+'</svg><span class="small" style="font-size:12px">'+i+'</span></button>'}
+  setDock('<div class="hint">Оценка от 1 до 5</div><div class="grid4" style="grid-template-columns:repeat(5,1fr)">'+b+'</div>');
+ },
+ rate:async function(n){
+  n=+n;S.rating=n;setDock("");me(n+" из 5");
+  if(n<=3){
+   await bot("<p>Спасибо, что сказали. Что было не так?</p>",450);
+   setDock('<div class="hint">Выберите причину</div><div class="grid2">'+["Долго ждал(а)","Цена оказалась другой","Время записи перепутали","Другое"].map(function(r){return opt(r,"why",r,"")}).join("")+'</div>');
+  }else{
+   await bot("<p>Спасибо! Рады, что всё прошло хорошо. Если не сложно, оставьте отзыв: это помогает другим пациентам.</p>",450);
+   FEED.push({r:n,t:"Всё хорошо, спасибо.",why:null});
+   finalDock();
+  }
+ },
+ why:async function(r){
+  setDock("");me(r);FEED.push({r:S.rating,t:r,why:r});
+  await bot("<p>Передали администратору. С вами свяжутся сегодня, чтобы разобраться, – до того, как вы решите писать на Яндекс Картах.</p>",500);
+  finalDock();
+ },
+ toStaff:function(){go("staff")},
+ restart:function(){start()},
+ stf:function(){go("staff")},
+ own:function(){go("owner")}
+};
+function finalDock(){
+  setDock('<div class="hint">Так видит клиент. Дальше – кто и что получает внутри клиники.</div>'+btn("Что получил администратор","stf")+btn("Что видит владелец","own","sec")+'<button class="btn sec sm" data-act="restart" style="align-self:flex-start">Пройти сначала</button>');
+}
+function timeDock(act){
+  var d=S.day||0;
+  setDock('<div class="hint">Время приёма</div><div class="grid4">'+SLOTS.map(function(t,i){
+   var b=busy(d,i)&&t!==S.time;
+   return '<button class="opt c num" '+(b?'disabled aria-label="'+t+', занято"':'data-act="'+act+'" data-arg="'+t+'"')+'>'+t+'</button>';}).join("")+'</div>');
+}
+dock.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");if(!b||b.disabled)return;
+  var f=H[b.getAttribute("data-act")];if(f)f(b.getAttribute("data-arg"));
+});
+
+/* ---------- сотрудник ---------- */
+var staffRows=[
+ {id:"a",time:"16:00",day:"вт, 10 ноября",name:"Ирина (пример)",svc:"Коронка · консультация",expect:"Ждёт цену: от 1 200 р.",conflict:"В журнале записана на 16:00 (звонок), в боте выбрала 17:30. Нужно оставить одно время.",state:"bad",opts:["16:00","17:30"]},
+ {id:"b",time:"11:00",day:"вт, 10 ноября",name:"Павел (пример)",svc:"Чистка",expect:"Ждёт цену: от 300 р.",state:"new"},
+ {id:"c",time:"09:30",day:"ср, 11 ноября",name:"Мария (пример)",svc:"Имплант · консультация",expect:"Ждёт цену: 2 500–4 500 р. (пример)",note:"На сайте цена «по запросу». Пациент пришёл с ожиданием по диапазону. Скажите на консультации, что это ориентир.",state:"new"}
+];
+var openId=null,staffDone={};
+function renderStaff(){
+  var rows=staffRows.slice();
+  var mine=null;
+  if(S.booking){var b=S.booking;mine={id:"me",time:S.time,day:DAYS[b.day][0]+", "+DAYS[b.day][1],name:"Пациент из бота (пример)",svc:b.svc.t+" · консультация",expect:"Ждёт цену: "+b.svc.expect,state:"new",live:true,doc:b.svc.doc}}
+  var all=(mine?[mine]:[]).concat(rows);
+  var need=0,conf=0,ok=0;
+  all.forEach(function(r){var st=staffDone[r.id]?"ok":r.state;if(st==="ok")ok++;else need++;if(st==="bad")conf++});
+  var h='<div class="h">Заявки из бота</div><div class="sub">Понедельник, 9 ноября · все записи – пример</div>'+
+   '<div class="count"><span class="pill">Нужно подтвердить: '+need+'</span>'+(conf?'<span class="pill warn">'+ico("alert")+'Конфликт времени: '+conf+'</span>':'')+'<span class="pill ok">Подтверждено: '+ok+'</span></div>';
+  if(!mine)h+='<div class="empty" style="margin-bottom:12px">Пройдите вкладку «Клиент» до записи: ваша заявка появится здесь первой.</div>';
+  h+='<ul class="list">'+all.map(function(r){
+   var st=staffDone[r.id]?"ok":r.state,isOpen=openId===r.id;
+   var stTxt=st==="ok"?"Подтверждено":st==="bad"?"Конфликт времени":(r.live?"Новая, только что":"Новая");
+   var t=staffDone[r.id]&&staffDone[r.id].time||r.time;
+   var body="";
+   if(st==="ok"){
+     body='<div class="sent"><b>Пациенту отправлено:</b> «Ждём вас '+r.day+' в '+t+'. Окончательная стоимость – после осмотра врача.»</div>';
+   }else{
+     if(r.conflict)body+='<div class="conf" style="margin:0 0 10px">'+ico("alert")+'<span>'+r.conflict+'</span></div>';
+     if(r.note)body+='<p>'+r.note+'</p>';
+     if(r.doc)body+='<p>Врач: '+r.doc+' (пример подбора).</p>';
+     body+=r.opts?'<div class="row">'+r.opts.map(function(o){return '<button class="btn sm" data-st="fix" data-id="'+r.id+'" data-t="'+o+'">Оставить '+o+'</button>'}).join("")+'</div>'
+          :'<button class="btn sm" data-st="ok" data-id="'+r.id+'">Подтвердить запись</button>';
+   }
+   return '<li class="'+(st==="bad"?"is-conflict":"")+'"><button class="it" data-st="open" data-id="'+r.id+'" aria-expanded="'+isOpen+'">'+
+     '<span class="when num">'+t+'<small>'+r.day.split(",")[0]+'</small></span>'+
+     '<span class="who"><b>'+r.name+'</b><span>'+r.svc+'</span><span>'+r.expect+'</span><span class="st '+(st==="ok"?"ok":st==="bad"?"bad":"new")+'">'+stTxt+'</span></span>'+
+     ico("chev","chev")+'</button><div class="det'+(isOpen?" on":"")+'">'+body+'</div></li>';
+  }).join("")+'</ul><p class="tiny">В заявке сразу видно услугу и то, какую цену пациент ожидает. Имена и записи вымышлены.</p>';
+  $("#staff").innerHTML=h;
+}
+$("#staff").addEventListener("click",function(e){
+  var b=e.target.closest("[data-st]");if(!b)return;
+  var id=b.getAttribute("data-id"),k=b.getAttribute("data-st");
+  if(k==="open"){openId=openId===id?null:id}
+  else if(k==="ok"){staffDone[id]={};openId=id}
+  else if(k==="fix"){staffDone[id]={time:b.getAttribute("data-t")};openId=id}
+  renderStaff();
+});
+
+/* ---------- владелец ---------- */
+var replied={};
+function renderOwner(){
+  var f=[["Спросили цену",212,100,0],["Выбрали день и время",131,62,0],["Записались",94,44,0],["Пришли на приём",81,38,1]];
+  var h='<div class="h">Сводка за неделю</div><div class="sub">2–7 ноября · цифры – пример</div>'+
+  '<div class="sec" style="margin-top:12px"><h3>Откуда уходят пациенты</h3><p>От вопроса о цене до визита</p><ul class="fun">'+
+  f.map(function(r){return '<li><span class="l">'+r[0]+'</span><span class="v num">'+r[1]+'</span><div class="bar"><i class="'+(r[3]?"lo":"")+'" data-w="'+r[2]+'"></i></div></li>'}).join("")+'</ul>'+
+  '<ul class="leaks"><li><span>Ушли после цены</span><b class="num">81</b></li><li><span>Не выбрали время</span><b class="num">37</b></li><li><span>Не пришли после записи</span><b class="num">13</b></li></ul>'+
+  '<div class="take">Больше всего уходят после цены на имплантацию: на сайте она «по запросу». Показывайте диапазон и этапы.</div></div>';
+
+  var fb=[{r:2,t:"Ждали дольше, чем сказали при записи",d:"вчера, 19:40",id:"f1",ex:true},{r:3,t:"Цена оказалась выше названной",d:"сб, 7 ноября",id:"f2",ex:true}];
+  var live=FEED.filter(function(x){return x.r<=3}).map(function(x,i){return {r:x.r,t:x.t+" (из вашего прохода)",d:"только что",id:"l"+i}});
+  var all=live.concat(fb);
+  h+='<div class="sec"><h3>Недовольство до отзыва на Картах</h3><p>Оценки 1–3 из бота видны только вам и администратору. Пример.</p>'+
+   all.map(function(x){
+     return '<div class="fb"><div class="top2"><span>'+stars(x.r)+'</span><span class="small">'+x.d+'</span></div><p>'+x.t+'</p>'+
+      (replied[x.id]?'<div class="draft"><b>Ответ пациенту:</b> «Спасибо, что написали. Администратор позвонит сегодня и разберётся. Приносим извинения за неудобство.»</div>'
+       :'<button class="btn sm sec" data-ow="reply" data-id="'+x.id+'">Ответить до отзыва</button>')+'</div>';}).join("")+'</div>';
+
+  h+='<div class="sec"><h3>Что уже написали на Яндекс Картах</h3><p>Рейтинг 4.8, 258 оценок. Администрация отвечает почти на все отзывы.</p>'+
+   '<div class="ag"><span>Отношение к клиентам: <b class="num">+35 / −15</b></span><span>Время ожидания: <b class="num">+6 / −4</b></span></div>'+
+   [
+    {s:1,d:"01.10.2025",q:"При записи не говорят стоимость процедуры. Первый раз я услышала стоимость в кресле у врача.",c:"Закрывает ориентир по цене до записи"},
+    {s:1,d:"11.03.2026",q:"Записывают на одно время, а на приём попадаешь почти через час, оказывается, ты записан на другое время.",c:"Закрывает подсветка конфликта времени"},
+    {s:2,d:"04.10.2026",q:"Приехал проконсультироваться по поводу стоимости коронки… нагнали жути.",c:"Закрывает диапазон цены и «окончательная цена после осмотра»"}
+   ].map(function(x){return '<div class="quote"><div class="m">'+stars(x.s)+'<span class="num">'+x.d+'</span></div><q>'+x.q+'</q><div class="m cl">'+ico("check")+'<span>'+x.c+'</span></div></div>'}).join("")+
+   '<p class="tiny">Источник: Яндекс Карты, карточка организации, 09.11.2026.</p></div>';
+  h+='<button class="btn" data-ow="end">Как это внедрить у вас'+ico("arrow")+'</button><div style="height:6px"></div>';
+  $("#owner").innerHTML=h;
+  requestAnimationFrame(function(){requestAnimationFrame(function(){document.querySelectorAll("#owner .bar i").forEach(function(i){i.style.width=i.getAttribute("data-w")+"%"})})});
+}
+$("#owner").addEventListener("click",function(e){
+  var b=e.target.closest("[data-ow]");if(!b)return;
+  if(b.getAttribute("data-ow")==="reply"){replied[b.getAttribute("data-id")]=1;var y=$("#owner").scrollTop;renderOwner();$("#owner").scrollTop=y}
+  else go("end");
+});
+
+/* ---------- вкладки ---------- */
+function go(name){
+  document.querySelectorAll(".roles button").forEach(function(b){b.setAttribute("aria-selected",b.getAttribute("data-tab")===name)});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="p-"+name)});
+  if(name==="staff")renderStaff();
+  if(name==="owner")renderOwner();
+}
+document.querySelectorAll(".roles button").forEach(function(b){b.addEventListener("click",function(){go(b.getAttribute("data-tab"))})});
+document.addEventListener("click",function(e){var g=e.target.closest("[data-go]");if(g)go(g.getAttribute("data-go"))});
+
+start();
+})();
+</script>
+</body>
+</html>
