@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f4f4b">
+<title>Демо-концепт: подбор недвижимости для «Гарант успеха»</title>
+<style>
+:root{
+  --ink:#12201e; --muted:#53655f; --teal:#1f4f4b; --teal-d:#143531; --teal-t:#e3efe9;
+  --paper:#f4f6f3; --chat:#e6ede8; --white:#fff; --line:#d5ddd8;
+  --accent:#ffc40d; --accent-d:#e8b000;
+  --red:#9b2c20; --red-t:#fbe6e2; --amber:#7a5200; --amber-t:#fff0c9; --green:#1b6a45; --green-t:#dcf0e5;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);color:var(--ink);background:#cfd8d2;font-size:16px;line-height:1.4;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--accent);color:var(--ink)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 5px var(--teal)}
+.num{font-variant-numeric:tabular-nums}
+*{scrollbar-width:thin;scrollbar-color:#a9b8b1 transparent}
+
+.app{position:relative;display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:430px;margin:0 auto;background:var(--paper);overflow:hidden;box-shadow:0 0 0 1px rgba(18,32,30,.08),0 12px 40px rgba(18,32,30,.18)}
+.note{background:var(--ink);color:#e4ece8;font-size:12px;line-height:1.25;padding:4px 12px;text-align:center}
+.top{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--teal);color:#fff}
+.mark{flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:14px;letter-spacing:-.01em}
+.brand{min-width:0;flex:1}
+.brand b{display:block;font-size:16px;line-height:1.15}
+.brand small{display:block;font-size:12.5px;color:#c9ddd5;line-height:1.2;margin-top:2px}
+.howto{flex:none;color:#fff;font-size:13px;font-weight:600;padding:8px 10px;min-height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.35)}
+.howto:hover{background:rgba(255,255,255,.12)}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px 8px;background:var(--teal-d)}
+.roles button{min-height:44px;border-radius:10px;font-weight:600;font-size:15px;color:#cfe2da;transition:background .2s,color .2s}
+.roles button:hover{background:rgba(255,255,255,.08)}
+.roles button[aria-selected="true"]{background:#fff;color:var(--teal-d)}
+
+.panel{flex:1;display:none;flex-direction:column;min-height:0}
+.panel.on{display:flex}
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px 12px 18px;scroll-behavior:smooth}
+.chat{background:var(--chat)}
+.dock{background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px}
+.dock .step{font-size:13px;color:var(--muted)}
+.qr{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:46px;padding:0 18px;border-radius:23px;border:1.5px solid var(--teal);color:var(--teal-d);background:#fff;font-weight:600;font-size:16px;transition:background .15s,transform .15s var(--ease)}
+.chip:hover{background:var(--teal-t)}
+.chip:active{transform:scale(.97)}
+.btn{min-height:52px;width:100%;border-radius:14px;background:var(--accent);color:var(--ink);font-weight:700;font-size:16.5px;padding:0 16px;transition:background .15s,transform .15s var(--ease)}
+.btn:hover{background:var(--accent-d)}
+.btn:active{transform:scale(.985)}
+.btn.sec{background:#fff;border:1.5px solid var(--teal);color:var(--teal-d);font-weight:600}
+.btn.sec:hover{background:var(--teal-t)}
+.btn.sm{min-height:44px;font-size:15px;width:auto;padding:0 16px}
+.btn[disabled]{background:var(--teal-t);color:var(--green);cursor:default;border:0}
+.link{min-height:44px;color:var(--teal);font-weight:600;font-size:15px;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* chat */
+.msg{display:flex;margin:0 0 8px;animation:rise .32s var(--ease) both}
+.msg.me{justify-content:flex-end}
+.bub{max-width:90%;padding:10px 14px;border-radius:4px 18px 18px 18px;background:#fff;box-shadow:0 1px 2px rgba(18,32,30,.14)}
+.me .bub{background:var(--teal);color:#fff;border-radius:18px 4px 18px 18px}
+.bub p+p{margin-top:6px}
+.bub .small{font-size:13.5px;color:var(--muted)}
+.wide{width:100%;max-width:100%}
+.stack{display:flex;flex-direction:column;gap:8px;margin:0 0 10px;animation:rise .32s var(--ease) both}
+.divider{align-self:center;text-align:center;margin:10px 0;font-size:12.5px;color:var(--muted)}
+.divider span{background:rgba(255,255,255,.7);padding:4px 12px;border-radius:12px}
+.typing{display:inline-flex;gap:4px;padding:14px 16px}
+.typing i{width:7px;height:7px;border-radius:50%;background:#8aa097;animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* lot card */
+.lot{display:grid;grid-template-columns:96px 1fr;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(18,32,30,.14)}
+.lot .ph{position:relative;background:var(--teal-t);min-height:96px;display:grid;place-items:center;color:#7fa497}
+.lot .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lot .in{padding:9px 12px 4px;min-width:0}
+.lot .pr{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.lot .t{font-size:14.5px;line-height:1.3;margin-top:1px}
+.lot .ad{font-size:13px;color:var(--muted);margin-top:1px}
+.lot .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:8px;background:var(--teal-t);color:var(--teal-d)}
+.tag.w{background:var(--amber-t);color:var(--amber)}
+.tag.h{background:var(--accent);color:var(--ink)}
+.lot .go{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 12px;min-height:40px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--teal);text-decoration:none}
+.lot .go:hover{background:var(--teal-t)}
+.lot .go small{font-weight:400;color:var(--muted);font-size:12.5px}
+svg.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+.req{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:15px;margin:6px 0}
+.req dt{color:var(--muted)}.req dd{font-weight:600}
+.bell{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--teal-d);margin-bottom:6px}
+.bell .i{color:#b88700}
+
+/* staff / owner */
+.light{background:var(--paper)}
+.sub{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:8px 12px 0;background:var(--paper)}
+.sub button{min-height:44px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent}
+.sub button[aria-selected="true"]{color:var(--teal-d);border-color:var(--teal)}
+.alert{background:#fff;border-radius:16px;padding:12px;box-shadow:0 1px 2px rgba(18,32,30,.14);margin-bottom:12px;animation:rise .32s var(--ease) both}
+.alert h3{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--amber);margin-bottom:6px}
+.alert p{margin-bottom:8px}
+.alert .stack{margin:0 0 10px;animation:none}
+.ok{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:var(--green-t);color:var(--green);font-weight:600;font-size:15px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:10px;background:var(--teal-t);color:var(--teal-d);white-space:nowrap}
+.pill.r{background:var(--red-t);color:var(--red)}.pill.a{background:var(--amber-t);color:var(--amber)}.pill.g{background:var(--green-t);color:var(--green)}
+.pill.ex{background:#ece9df;color:#5a4f2a}
+.buyers{list-style:none;display:flex;flex-direction:column;gap:8px}
+.buyer{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;text-align:left;background:#fff;border-radius:14px;padding:12px;min-height:64px;box-shadow:0 1px 2px rgba(18,32,30,.14)}
+.buyer:hover{background:#fbfcfb}
+.buyer b{font-size:16px}.buyer span.s{font-size:13.5px;color:var(--muted);grid-column:1}
+.buyer .pill{align-self:start;grid-row:1/3;grid-column:2}
+.back{display:flex;align-items:center;gap:4px;min-height:44px;color:var(--teal);font-weight:600;margin-bottom:4px}
+.sheet{background:#fff;border-radius:16px;padding:14px;box-shadow:0 1px 2px rgba(18,32,30,.14);margin-bottom:12px}
+.sheet h2{font-size:20px;line-height:1.2}
+.sheet h4{font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 6px}
+.tl{list-style:none;position:relative;margin-left:6px}
+.tl li{position:relative;padding:0 0 12px 18px;font-size:15px}
+.tl li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.tl li::after{content:"";position:absolute;left:3.5px;top:16px;bottom:-4px;width:1px;background:var(--line)}
+.tl li:last-child::after{display:none}
+.tl li.now::before{background:var(--red);box-shadow:0 0 0 4px var(--red-t)}
+.tl li.done::before{background:var(--green)}
+.tl .d{display:block;font-size:12.5px;color:var(--muted)}
+
+.sec-t{font-size:13px;font-weight:600;color:var(--muted);margin:18px 0 8px}
+.sec-t:first-child{margin-top:0}
+.big{font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;margin:10px 0 8px}
+.bar i{display:block;height:100%}
+.leg{list-style:none;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.leg li{display:flex;align-items:center;gap:8px}
+.leg em{flex:none;width:10px;height:10px;border-radius:3px}
+.leg b{margin-left:auto}
+.ag{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ag li{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center}
+.ag .nm{font-weight:600}
+.ag .tr{grid-column:1/-1;height:8px;border-radius:4px;background:var(--teal-t);overflow:hidden}
+.ag .tr i{display:block;height:100%;background:var(--teal);border-radius:4px}
+.ag .tr i.hot{background:#b8472f}
+
+/* outro */
+.outro{position:absolute;left:0;right:0;bottom:0;top:var(--noteh,0px);background:var(--teal-d);color:#fff;display:none;flex-direction:column;padding:0 20px 24px;z-index:5}
+.outro.on{display:flex}
+.outro .back{color:#fff;margin:12px -6px 0}
+.outro .cnt{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;overflow-y:auto;padding:12px 0}
+.outro h1{font-size:34px;line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+.outro .lead{font-size:20px;line-height:1.3}
+.outro .who a{color:inherit;text-underline-offset:3px}
+.outro .who{font-size:20px;font-weight:700;padding:14px 16px;border-radius:14px;background:var(--accent);color:var(--ink)}
+.outro ul{list-style:none;display:flex;flex-direction:column;gap:10px;font-size:16px;color:#d6e6df}
+.outro li{display:flex;gap:10px}
+.outro li .i{margin-top:3px;color:var(--accent)}
+.outro .fine{font-size:13px;color:#aac4ba}
+
+@media (max-width:360px){.lot{grid-template-columns:84px 1fr}.big{font-size:20px}.outro h1{font-size:30px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<noscript>Для демо нужен JavaScript.</noscript>
+<div class="app" id="app">
+  <div class="note">Демо-концепт. Не официальный сайт компании. Данные – из открытых источников на 09.11.2026</div>
+  <header class="top">
+    <span class="mark" aria-hidden="true">ГУ</span>
+    <div class="brand"><b>Гарант успеха</b><small id="sub">Подбор недвижимости · бот</small></div>
+    <button class="howto" id="howto">Внедрение</button>
+  </header>
+  <nav class="roles" role="tablist" aria-label="Роль">
+    <button role="tab" aria-selected="true" data-role="client">Клиент</button>
+    <button role="tab" aria-selected="false" data-role="staff">Сотрудник</button>
+    <button role="tab" aria-selected="false" data-role="owner">Владелец</button>
+  </nav>
+
+  <section class="panel on chat" id="p-client" aria-label="Клиент">
+    <div class="scroll" id="chat" role="log" aria-live="polite"></div>
+    <div class="dock" id="dock"></div>
+  </section>
+
+  <section class="panel light" id="p-staff" aria-label="Сотрудник">
+    <div class="sub" role="tablist">
+      <button role="tab" aria-selected="true" data-st="today">Сегодня</button>
+      <button role="tab" aria-selected="false" data-st="buyers" id="st-buyers">Покупатели</button>
+    </div>
+    <div class="scroll" id="staff"></div>
+  </section>
+
+  <section class="panel light" id="p-owner" aria-label="Владелец">
+    <div class="scroll" id="owner"></div>
+  </section>
+
+  <section class="outro" id="outro" aria-label="Внедрение">
+    <button class="back" id="outro-back"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Назад к демо</button>
+    <div class="cnt">
+      <h1>Так может работать у вас</h1>
+      <p class="lead">Внедрение – 2–4 недели, дальше сопровождение.</p>
+      <p class="who">Роман Благов, <a href="https://t.me/blagov369" target="_blank" rel="noopener">Telegram @blagov369</a>, <a href="tel:+375298611029">+375 29 861-10-29</a></p>
+      <ul>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg>Покупатель оставляет запрос один раз и получает подходящие объекты сам</li>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg>Агент видит, кому давно ничего не отправлял, и отправляет варианты в одно касание</li>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></svg>Владелец каждое утро видит заявки и покупателей без касания</li>
+      </ul>
+      <p class="fine">В демо объекты и цены – из открытого каталога garantus.by на 09.11.2026. Клиенты, агенты и цифры в сводке – примеры.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const DATA = [{"id":8638,"k":"biz","r":0,"a":564.0,"d":"","l":"Орехово","p":21543,"u":"https://garantus.by/catalog/commercial/lot-8638-prodaza-zdaniya-v-ag-orexovo-a32a277b-8e0f-4680-a3a6-33eac2e99aa0","i":"ffc6f4a39e26132ba6b46690ced2add9","t":"Здание","s":false,"n":false},{"id":8639,"k":"biz","r":0,"a":521.0,"d":"","l":"Орехово","p":96944,"u":"https://garantus.by/catalog/commercial/lot-8639-prodaza-zdaniya-v-ag-orexovo-d6794c7a-eb68-4c55-96e6-f8cc254d7578","i":"172d67fabcd272ac7213ba903e0cfb36","t":"Здание","s":false,"n":false},{"id":9639,"k":"biz","r":0,"a":133.3,"d":"","l":"Жабинка","p":176534,"u":"https://garantus.by/catalog/commercial/lot-9639-prodaza-zdaniya-v-zabinke-1f4eaff5-46ce-409a-9015-89f1f1c448ab","i":"eeb678b2f9e54e780805eb08313f76ee","t":"Здание","s":false,"n":false},{"id":6756,"k":"biz","r":0,"a":39.0,"d":"Центр","l":"Брест","p":224408,"u":"https://garantus.by/catalog/commercial/lot-6756-prodaza-kommerceskoi-nedvizimosti-39-m2-9e7cbf54-e983-44d8-8bbe-186b5b32442a","i":"5ff319071ad915516e7e3f8407.jpg","t":"Офис","s":false,"n":false},{"id":9464,"k":"biz","r":0,"a":147.5,"d":"","l":"Огородникский с/с","p":745033,"u":"https://garantus.by/catalog/house/lot-8770-prodaza-doma-usadby-v-vidomlyanskom-ss-b2abc93d-d44a-428b-9d49-30b59f014d99","i":"8c1267eeb4a6b3c03e8b41bf33d6402d","t":"Коммерческое помещение","s":false,"n":false},{"id":6306,"k":"dacha","r":0,"a":46.0,"d":"","l":"Мухавецкий с/с","p":104424,"u":"https://garantus.by/catalog/dacha/prodaza-daci-46-m2-ebf923e4-9a2f-59ac-9bc3-5a3686fe0b5f","i":"d1fbbe659f24a37a4db1fb62feae48a4","t":"Дом на участке","s":false,"n":false},{"id":9818,"k":"dacha","r":0,"a":110.0,"d":"Красный двор","l":"Мухавецкий с/с","p":220500,"u":"https://garantus.by/catalog/dacha/lot-9818-prodaza-korobki-sovremennoi-ziloi-daci-ee88fb39-ccbc-4223-94d7-ee35ca1bb733","i":"4043d2748e6c66785194457f3338f235","t":"Дом на участке","s":false,"n":false},{"id":9646,"k":"dacha","r":0,"a":96.0,"d":"Красный двор","l":"Мухавецкий с/с","p":257500,"u":"https://garantus.by/catalog/dacha/lot-9646-prodaza-doma-v-sadovom-tovarishhestve-napr-kamenica-ziroveckaya-6d1f894a-b5b7-44a6-ab23-e5c0e345236c","i":"dc5a5bc7125672dfdcea97ca6eb158a5","t":"Дом на участке","s":false,"n":false},{"id":9297,"k":"dacha","r":0,"a":143.0,"d":"Дубровка","l":"Брест","p":445823,"u":"https://garantus.by/catalog/dacha/lot-9297-prodaza-sovremennogo-doma-v-st-na-dubrovke-98bddf98-0200-42bd-a200-b9086ba9bb57","i":"7a39bb3c03a7984c114e60b6b9d8c2fe","t":"Дом на участке","s":false,"n":false},{"id":8824,"k":"dacha","r":0,"a":131.7,"d":"Красный двор","l":"Мухавецкий с/с","p":748025,"u":"https://garantus.by/catalog/dacha/lot-8824-prodaza-kottedza-s-remontom-u-lesa-v-st-8d8b94ff-6da2-5890-96ae-a75e4c82d570","i":"f71e421aa0e5413096a81ecc2bbea80f","t":"Дом на участке","s":false,"n":false},{"id":9992,"k":"flat","r":1,"a":20.4,"d":"Восток","l":"ул. Молодогвардейская","p":105900,"u":"https://garantus.by/catalog/apartment/lot-9992-brest-ul-molodogvardeiskaya-prodaza-1-komnatnoi-kvartiry-5fb80359-2b1a-5882-8274-2c0b1fc5d138","i":"d82e82e5d70550ac5d070984ad55438f","t":"1-комн. квартира","s":false,"n":false},{"id":9621,"k":"flat","r":1,"a":41.6,"d":"Речица","l":"ул. Писателя Смирнова","p":151500,"u":"https://garantus.by/catalog/apartment/lot-9621-brest-ul-pisatelya-smirnova-prodaza-1-komnatnoi-kvartiry-e363478d-f3fd-42d0-bca8-193732e41ec9","i":"951d425cdb53675cccd71a6b70620545","t":"1-комн. квартира","s":false,"n":false},{"id":9864,"k":"flat","r":1,"a":37.2,"d":"Восток","l":"ул. Орловская","p":156200,"u":"https://garantus.by/catalog/apartment/lot-9864-brest-ul-orlovskaya-prodaza-1-komnatnoi-kvartiry-85efbb81-1f14-4672-adb3-10434fb1c141","i":"15873b00d2179df9b84e1121de6b7696","t":"1-комн. квартира","s":false,"n":false},{"id":8610,"k":"flat","r":1,"a":29.2,"d":"Центр","l":"ул. Машерова","p":164566,"u":"https://garantus.by/catalog/apartment/lot-8610-brest-pr-t-maserova-prodaza-1-komnatnoi-kvartiry-73523712-1950-44a5-b1fa-ba1081c75807","i":"82611496dcf0073d0cae22a287936b7f","t":"1-комн. квартира","s":false,"n":false},{"id":9467,"k":"flat","r":1,"a":37.1,"d":"Речица","l":"ул. Писателя Смирнова","p":168000,"u":"https://garantus.by/catalog/apartment/lot-9467-brest-ul-pis-smirnova-prodaza-1-komnatnoi-kvartiry-29e089b4-871a-44ad-b114-aa3cd376c3a0","i":"45cd62c3fbb08a56f8d02ca27c285f79","t":"1-комн. квартира","s":false,"n":false},{"id":9109,"k":"flat","r":1,"a":33.4,"d":"Центр","l":"ул. Кирова","p":175038,"u":"https://garantus.by/catalog/apartment/lot-9109-brest-ul-kirova-prodaza-1-komnatnoi-kvartiry-dc79bc74-f449-4560-8672-22e54c7cc113","i":"96ae5c3dc2c4daa7c34fd1c95c286df7","t":"1-комн. квартира","s":false,"n":false},{"id":9946,"k":"flat","r":1,"a":42.5,"d":"Восток","l":"ул. Советской Конституции","p":177300,"u":"https://garantus.by/catalog/apartment/lot-9946-brest-ul-sov-konstitucii-prodaza-1-komnatnoi-kvartiry-04cf24fb-d454-5939-90df-3129833a136e","i":"c65861ae1be750e3f4d182c24b126a09","t":"1-комн. квартира","s":false,"n":false},{"id":6109,"k":"flat","r":1,"a":30.4,"d":"Центр","l":"ул. бульвар Космонавтов","p":177600,"u":"https://garantus.by/catalog/apartment/lot-6109-brest-b-r-kosmonavtov-prodaza-1-komnatnoi-kvartiry-67a459f7-f9be-5a4d-bdd3-9b48925b6174","i":"8d9da90437d4795c2bb441d72bbc7ad2","t":"1-комн. квартира","s":false,"n":false},{"id":9905,"k":"flat","r":1,"a":43.2,"d":"Речица","l":"ул. Адамковская","p":196500,"u":"https://garantus.by/catalog/apartment/lot-9905-brest-ul-adamkovskaya-prodaza-1-komnatnoi-kvartiry-68469455-0215-5b72-8ca4-ac7b30873aa6","i":"0fc369fd93dffd0a9cf3d4f8b857c7c7","t":"1-комн. квартира","s":false,"n":false},{"id":10003,"k":"flat","r":1,"a":44.1,"d":"Ковалёво","l":"ул. Карьерная","p":199500,"u":"https://garantus.by/catalog/apartment/lot-10003-brest-ul-karernaya-prodaza-1-komnatnoi-kvartiry-25ca5190-c353-4683-82d2-1ac65e22c7d9","i":"22420c47b6f016df212db23c4e2df5d8","t":"1-комн. квартира","s":false,"n":false},{"id":9312,"k":"flat","r":1,"a":44.7,"d":"Юго-запад","l":"ул. Мытная","p":211600,"u":"https://garantus.by/catalog/apartment/lot-9312-brest-ul-mytnaya-prodaza-1-komnatnoi-kvartiry-0237ae90-47c6-4ce9-a370-f354bfbb112c","i":"d1b939e4102fe706c4e37a6a6ec0aa33","t":"1-комн. квартира","s":false,"n":true},{"id":9996,"k":"flat","r":1,"a":35.1,"d":"Ковалёво","l":"ул. Октябрьской Революции","p":212000,"u":"https://garantus.by/catalog/apartment/lot-9996-brest-ul-okt-revolyucii-prodaza-1-komnatnoi-kvartiry-a95356d5-9ce3-4411-9839-ab8d480e8f52","i":"18d2ee492374ed6074ed6eea98fd633b","t":"1-комн. квартира","s":false,"n":true},{"id":9836,"k":"flat","r":1,"a":43.2,"d":"Юго-запад","l":"ул. Махновича","p":220900,"u":"https://garantus.by/catalog/apartment/lot-9836-brest-ul-maxnovica-prodaza-1-komnatnoi-kvartiry-b5b230bb-7fe2-4b1f-8455-ba4c69e2a415","i":"d83f17cd05e525fa63cfe000a90c0a53","t":"1-комн. квартира","s":false,"n":true},{"id":6336,"k":"flat","r":1,"a":34.3,"d":"Центр","l":"ул. набережная Франциска Скорины","p":227000,"u":"https://garantus.by/catalog/apartment/lot-6336-brest-nab-f-skoriny-prodaza-1-komnatnoi-kvartiry-9ebcbd7d-fc81-4c1c-8260-1a4af0bf518d","i":"fbfff11d2a4c9776500cabd65f13a24b","t":"1-комн. квартира","s":false,"n":false},{"id":9625,"k":"flat","r":1,"a":44.6,"d":"Юго-запад","l":"ул. Махновича","p":239100,"u":"https://garantus.by/catalog/apartment/lot-9625-brest-ul-maxnovica-prodaza-1-komnatnoi-kvartiry-a9045d0a-2473-4ff5-9c85-f2dbb39d71d9","i":"96342183763b80e534c0db3848566f5f","t":"1-комн. квартира","s":false,"n":true},{"id":9982,"k":"flat","r":1,"a":42.0,"d":"Ковалёво","l":"ул. Октябрьской Революции","p":301500,"u":"https://garantus.by/catalog/apartment/lot-9982-brest-ul-okt-revolyucii-prodaza-1-komnatnoi-kvartiry-47399556-bc95-435d-96e3-cad6da585e98","i":"82feecac8a975411d45a34225d1da74f","t":"1-комн. квартира","s":true,"n":true},{"id":9729,"k":"flat","r":1,"a":40.3,"d":"Центр","l":"ул. Машерова","p":371000,"u":"https://garantus.by/catalog/apartment/lot-9729-brest-pr-t-maserova-prodaza-1-komnatnoi-kvartiry-f8fef998-2e9d-5de1-bbb3-0ad4b8ac4af4","i":"99b6eaefce5511dc408f49997871a7b0","t":"1-комн. квартира","s":false,"n":true},{"id":9972,"k":"flat","r":2,"a":48.1,"d":"Заводской","l":"ул. Янки Купалы","p":168000,"u":"https://garantus.by/catalog/apartment/lot-9972-brest-ul-ya-kupaly-prodaza-2-komnatnoi-kvartiry-9d6bafeb-e382-424c-8e06-e8ae90997f45","i":"9c22d11d497185ae2159056335d0a831","t":"2-комн. квартира","s":false,"n":false},{"id":9848,"k":"flat","r":2,"a":60.6,"d":"Ковалёво","l":"ул. Суворова","p":184200,"u":"https://garantus.by/catalog/apartment/lot-9848-brest-ul-suvorova-prodaza-2-komnatnoi-kvartiry-896ae73f-eef9-4524-83c5-5169bd0b6f05","i":"163a3076bc43c4bf5214a0235ee24fc3","t":"2-комн. квартира","s":false,"n":false},{"id":9833,"k":"flat","r":2,"a":51.6,"d":"Заводской","l":"ул. Пионерская","p":185800,"u":"https://garantus.by/catalog/apartment/lot-9833-brest-ul-pionerskaya-prodaza-2-komnatnoi-kvartiry-52efa496-8eca-4be0-b471-d29dd75a6062","i":"c71704f0cacf0f5b0b66854fb12370ae","t":"2-комн. квартира","s":false,"n":false},{"id":9747,"k":"flat","r":2,"a":39.2,"d":"Заводской","l":"ул. Янки Купалы","p":191900,"u":"https://garantus.by/catalog/apartment/lot-9747-brest-ul-ya-kupaly-prodaza-2-komnatnoi-kvartiry-bf0141d5-456a-529a-9359-5f3f1850205c","i":"aa6d728f37aa57e168c5f7ae05e05131","t":"2-комн. квартира","s":false,"n":false},{"id":9952,"k":"flat","r":2,"a":46.9,"d":"Восток","l":"ул. Московская","p":192000,"u":"https://garantus.by/catalog/apartment/lot-9952-brest-ul-moskovskaya-prodaza-2-komnatnoi-kvartiry-d6fc92ba-c14c-5b90-8e7f-ac29fbcb1fc3","i":"e0aa76a4a6fe3ebf167a573aa9181d5a","t":"2-комн. квартира","s":false,"n":false},{"id":9880,"k":"flat","r":2,"a":52.3,"d":"Центр","l":"ул. Кирова","p":230000,"u":"https://garantus.by/catalog/apartment/lot-9880-brest-ul-kirova-prodaza-2-komnatnoi-kvartiry-5fa5e904-accc-42cd-8a8c-e1454fbc5b17","i":"ea6060669b87b4e2d86421da130aec8f","t":"2-комн. квартира","s":false,"n":false},{"id":9993,"k":"flat","r":2,"a":55.1,"d":"Восток","l":"ул. Гродненская","p":240000,"u":"https://garantus.by/catalog/apartment/lot-9993-brest-ul-grodnenskaya-prodaza-2-komnatnoi-kvartiry-abdcf69e-70e9-540c-ba61-bc7f6521e70d","i":"e5a6cd29b9f528a6a9ff0baeb5360937","t":"2-комн. квартира","s":false,"n":false},{"id":9922,"k":"flat","r":2,"a":54.1,"d":"Ковалёво","l":"ул. Луцкая","p":246500,"u":"https://garantus.by/catalog/apartment/lot-9922-brest-ul-luckaya-prodaza-2-komnatnoi-kvartiry-a61a5c02-5a94-4cd5-8b1d-a386afd97e9d","i":"282509ba09e3992f35659b4883a8e7bd","t":"2-комн. квартира","s":false,"n":false},{"id":9607,"k":"flat","r":2,"a":61.9,"d":"Юго-запад","l":"ул. Бориса Маслова","p":276769,"u":"https://garantus.by/catalog/apartment/lot-9607-brest-ul-b-maslova-prodaza-2-komnatnoi-kvartiry-a38c99c8-72a0-506b-b46f-2501d75df864","i":"e277f45521592360977056ec54c47d25","t":"2-комн. квартира","s":false,"n":true},{"id":9866,"k":"flat","r":2,"a":59.6,"d":"Юго-запад","l":"ул. Махновича","p":300000,"u":"https://garantus.by/catalog/apartment/lot-9866-brest-ul-maxnovica-prodaza-2-komnatnoi-kvartiry-357e2691-4f9a-44f6-b136-f8b44dca25ed","i":"75ec7bb2b785040e50f061c4cb2556e2","t":"2-комн. квартира","s":false,"n":false},{"id":9665,"k":"flat","r":2,"a":59.9,"d":"Центр","l":"ул. Фомина","p":336900,"u":"https://garantus.by/catalog/apartment/lot-9665-brest-ul-fomina-prodaza-2-komnatnoi-kvartiry-ab0671c4-03bf-532f-8286-44107df801b9","i":"6d56d6d7ad14ae23afbab5c10b361256","t":"2-комн. квартира","s":true,"n":false},{"id":9870,"k":"flat","r":2,"a":66.4,"d":"Центр","l":"ул. Гоголя","p":340700,"u":"https://garantus.by/catalog/apartment/lot-9870-brest-ul-gogolya-prodaza-2-komnatnoi-kvartiry-72fe6d02-bcf0-4c18-b9c4-0dd40c37df35","i":"2cd15ed8b627db25062ad08e78f4a624","t":"2-комн. квартира","s":false,"n":false},{"id":9985,"k":"flat","r":2,"a":62.0,"d":"Восток","l":"ул. Московская","p":346200,"u":"https://garantus.by/catalog/apartment/lot-9985-brest-ul-moskovskaya-prodaza-2-komnatnoi-kvartiry-b95755e0-8267-45f5-ba09-9d449bb4c1c4","i":"d77896d65f0de4f8ebdb8cc4dbb990c9","t":"2-комн. квартира","s":false,"n":false},{"id":8353,"k":"flat","r":2,"a":67.2,"d":"Юго-запад","l":"ул. Морозова","p":359052,"u":"https://garantus.by/catalog/apartment/lot-8353-brest-ul-morozova-prodaza-2-komnatnoi-kvartiry-87b4d979-36a8-4952-9f2c-e10ef3071208","i":"7c0581691f260af5ad32629e7c53c2e1","t":"2-комн. квартира","s":true,"n":true},{"id":9902,"k":"flat","r":2,"a":60.9,"d":"Ковалёво","l":"ул. Октябрьской Революции","p":378000,"u":"https://garantus.by/catalog/apartment/lot-9902-brest-ul-okt-revolyucii-prodaza-2-komnatnoi-kvartiry-42e918f7-2911-5ab4-bb4b-f622d1191780","i":"bee601b9fcb8bfbb76a7b27ff63206dc","t":"2-комн. квартира","s":false,"n":true},{"id":9687,"k":"flat","r":2,"a":60.3,"d":"Центр","l":"ул. Гоголя","p":409000,"u":"https://garantus.by/catalog/apartment/lot-9687-brest-ul-gogolya-prodaza-2-komnatnoi-kvartiry-cc820071-0934-4b88-ab3c-d3a91ec415a5","i":"dd4436ab2cc049e4dfd3eb9d6c9cb47e","t":"2-комн. квартира","s":true,"n":true},{"id":9612,"k":"flat","r":2,"a":55.9,"d":"Центр","l":"ул. Папанина","p":486200,"u":"https://garantus.by/catalog/apartment/lot-9612-brest-ul-papanina-prodaza-2-komnatnoi-kvartiry-f6882cca-9326-5a1b-b762-04cf452eacd0","i":"201b58a94ae3807380c95a01910c173f","t":"2-комн. квартира","s":false,"n":true},{"id":9734,"k":"flat","r":3,"a":69.1,"d":"Восток","l":"ул. Партизанский","p":203000,"u":"https://garantus.by/catalog/apartment/lot-9734-brest-partizanskii-pr-t-prodaza-doli-v-kvartire-a8ff8701-f7ec-43fc-9274-401e5edb53bc","i":"27cc4d6f834b926dc6c3ea7abe479040","t":"3-комн. квартира","s":false,"n":false},{"id":9863,"k":"flat","r":3,"a":58.3,"d":"Центр","l":"ул. Интернациональная","p":215000,"u":"https://garantus.by/catalog/apartment/lot-9863-brest-ul-internacionalnaya-prodaza-3-komnatnoi-kvartiry-28b339a4-0389-4e05-aeed-a3d151d5f1fc","i":"cd18bbc42b0a9648689ccb21e922e697","t":"3-комн. квартира","s":false,"n":false},{"id":9966,"k":"flat","r":3,"a":70.8,"d":"Заводской","l":"ул. Пионерская","p":216000,"u":"https://garantus.by/catalog/apartment/lot-9966-brest-ul-pionerskaya-prodaza-3-komnatnoi-kvartiry-eb24130a-8b58-434b-8267-a5dd7691b4f6","i":"614a8f162239620fca8c6d7367b76afd","t":"3-комн. квартира","s":true,"n":false},{"id":9361,"k":"flat","r":3,"a":68.6,"d":"Заводской","l":"ул. Якуба Коласа","p":221116,"u":"https://garantus.by/catalog/apartment/lot-9361-brest-ul-ya-kolasa-prodaza-3-komnatnoi-kvartiry-2d951c14-4871-496a-a56d-6a3bb2579516","i":"61211f8ed0663cee2c5d8e9ad6b2c4da","t":"3-комн. квартира","s":false,"n":false},{"id":9709,"k":"flat","r":3,"a":72.2,"d":"Дубровка","l":"ул. Сосновый","p":224900,"u":"https://garantus.by/catalog/apartment/lot-9709-brest-per-sosnovyi-prodaza-3-komnatnoi-kvartiry-9c14d6f8-666e-41bf-82d9-804f24ed98eb","i":"3f17b8b610f5f6f95a1532bcbcc3ed84","t":"3-комн. квартира","s":false,"n":false},{"id":10011,"k":"flat","r":3,"a":74.2,"d":"Дубровка","l":"ул. Дубровская","p":230300,"u":"https://garantus.by/catalog/apartment/lot-10011-brest-ul-dubrovskaya-prodaza-3-komnatnoi-kvartiry-381aa253-b1b1-57b4-ab53-083088d16f4d","i":"0d3340d765352f3d631374682aff6482","t":"3-комн. квартира","s":false,"n":false},{"id":10002,"k":"flat","r":3,"a":69.2,"d":"Центр","l":"ул. Космонавтов","p":262000,"u":"https://garantus.by/catalog/apartment/lot-10002-brest-b-r-kosmonavtov-prodaza-3-komnatnoi-kvartiry-e61aafec-1c57-5fd3-b24e-d62539017864","i":"2afd21e10b0d9620e613007f203b1428","t":"3-комн. квартира","s":false,"n":false},{"id":7846,"k":"flat","r":3,"a":74.0,"d":"Ковалёво","l":"ул. Карьерная","p":267500,"u":"https://garantus.by/catalog/apartment/lot-7846-brest-ul-karernaya-prodaza-3-komnatnoi-kvartiry-03a3f405-315f-5f18-8239-394e7af22dda","i":"64a1ae22ac8a6a299a7429078c8e2a43","t":"3-комн. квартира","s":false,"n":false},{"id":9698,"k":"flat","r":3,"a":83.6,"d":"Восток","l":"ул. Гаврилова","p":300000,"u":"https://garantus.by/catalog/apartment/lot-9698-brest-ul-gavrilova-prodaza-3-komnatnoi-kvartiry-03013e94-d43a-446e-873a-4529d836c6ba","i":"ccfebf3db066848ac5fd33be03e0b5ce","t":"3-комн. квартира","s":false,"n":false},{"id":9798,"k":"flat","r":3,"a":86.0,"d":"Ковалёво","l":"ул. Карьерная","p":310000,"u":"https://garantus.by/catalog/apartment/lot-9798-brest-ul-karernaya-prodaza-3-komnatnoi-kvartiry-afbaf579-8314-4ba9-857a-c8e132712fa4","i":"4ba5b67bad15d5d0bb6b7a8412dcdb59","t":"3-комн. квартира","s":false,"n":false},{"id":9815,"k":"flat","r":3,"a":88.7,"d":"Центр","l":"ул. Горького","p":354800,"u":"https://garantus.by/catalog/apartment/lot-9815-brest-ul-gorkogo-prodaza-3-komnatnoi-kvartiry-6e1a07f8-e486-4e54-8cb7-4a2e15c165dd","i":"9571e11fdbef4855c15087c17e7da574","t":"3-комн. квартира","s":false,"n":false},{"id":9228,"k":"flat","r":3,"a":93.0,"d":"Центр","l":"ул. Халтурина","p":374013,"u":"https://garantus.by/catalog/apartment/lot-9228-brest-ul-xalturina-prodaza-3-komnatnoi-kvartiry-b0ddf074-1a1b-4a66-92cc-24dbfbe6bceb","i":"312641c3f40d728390bd3b570aac574e","t":"3-комн. квартира","s":false,"n":false},{"id":9366,"k":"flat","r":3,"a":72.9,"d":"Ковалёво","l":"ул. Суворова","p":448815,"u":"https://garantus.by/catalog/apartment/lot-9366-brest-ul-suvorova-prodaza-3-komnatnoi-kvartiry-23ca8d56-5b51-472f-896c-834498f66b6c","i":"b00e960a931c479f2e7890ffdfed58a9","t":"3-комн. квартира","s":false,"n":false},{"id":9949,"k":"flat","r":3,"a":79.5,"d":"Центр","l":"ул. Фомина","p":456000,"u":"https://garantus.by/catalog/apartment/lot-9949-brest-ul-fomina-prodaza-3-komnatnoi-kvartiry-9d1a409c-3ed9-5b8e-b135-4f7c30a7f513","i":"2189a81c454b94d60b6d924d0374cc41","t":"3-комн. квартира","s":false,"n":true},{"id":9976,"k":"flat","r":3,"a":77.8,"d":"Восток","l":"ул. Московская","p":615000,"u":"https://garantus.by/catalog/apartment/lot-9976-brest-ul-moskovskaya-prodaza-3-komnatnoi-kvartiry-7cac869f-7742-5876-b22d-5d1453396e44","i":"e5dfd724f96b64f41e5338c66188c182","t":"3-комн. квартира","s":true,"n":false},{"id":9715,"k":"house","r":0,"a":58.0,"d":"Речица","l":"Брест","p":100000,"u":"https://garantus.by/catalog/house/lot-9715-prodaza-casti-doma-v-raione-recicy-a5bf6e05-b366-46b4-98c4-0dfd15a6ad53","i":"73354aac124a163b8916b744a07e8595","t":"1-этажный дом","s":false,"n":false},{"id":9988,"k":"house","r":0,"a":121.3,"d":"Киевка","l":"Брест","p":177000,"u":"https://garantus.by/catalog/house/lot-9988-prodaza-doma-v-g-breste-0c2d2deb-6bd3-4701-8417-ca919de0c476","i":"43807582f4c84a4a1ae1aa2b2586bda1","t":"2-этажный дом","s":false,"n":false},{"id":9359,"k":"house","r":0,"a":48.2,"d":"Центр","l":"Брест","p":284250,"u":"https://garantus.by/catalog/house/lot-9359-prodaza-kvartiry-v-castnom-dome-v-centre-bresta-21fc6333-8a88-414e-8ef6-ee5331d05739","i":"6c5a0cd646eaf493f7c26e20348ecf4e","t":"1-этажный дом","s":false,"n":false},{"id":9783,"k":"house","r":0,"a":178.1,"d":"Плоска","l":"Брест","p":356830,"u":"https://garantus.by/catalog/house/lot-9783-prodaza-korobki-zilogo-doma-2f4304c4-b0f8-4b07-b713-3a144d165607","i":"2ae4096643ee37fb8dfe58719bf815f8","t":"1-этажный дом","s":false,"n":false},{"id":9651,"k":"house","r":0,"a":192.7,"d":"Дубровка","l":"Брест","p":399000,"u":"https://garantus.by/catalog/house/lot-9651-prodaza-zilogo-doma-v-3-km-ot-centra-bresta-7d9c3b76-b378-4b29-89f4-f910cae277ed","i":"4cd8c84b93ac0de0f0280b3ab3a66f16","t":"2-этажный дом","s":false,"n":false},{"id":9959,"k":"house","r":0,"a":445.6,"d":"Берёзовка","l":"Брест","p":452000,"u":"https://garantus.by/catalog/house/prodaza-bolsogo-doma-mkrn-beryozovka-c5e1d95a-61f9-4ba1-b413-23efd38f525a","i":"e223bde31d24ffbc786d5ca89d6c3678","t":"2-этажный дом","s":false,"n":false},{"id":9891,"k":"house","r":0,"a":225.0,"d":"Ковалёво","l":"Брест","p":599000,"u":"https://garantus.by/catalog/house/lot-9891-prodaza-zilogo-doma-v-raione-pugacevo-d191efb4-d8d3-4a45-a80b-70db38266764","i":"55297e6c6c1743dadf6d87661cd35de5","t":"2-этажный дом","s":false,"n":false},{"id":9381,"k":"house","r":0,"a":172.5,"d":"Задворцы","l":"Брест","p":748025,"u":"https://garantus.by/catalog/house/lot-9381-prodaza-sovremennogo-doma-v-novyx-zadvorcax-98864c45-5006-5c03-b9e8-2a1d022c69d4","i":"f7046f7b11ea4c9c5d5ffd61bc742deb","t":"1-этажный дом","s":false,"n":false},{"id":9990,"k":"house","r":0,"a":199.3,"d":"Дубровка","l":"Брест","p":884000,"u":"https://garantus.by/catalog/house/lot-9990-prodaza-kottedza-na-dubrovke-bd7b5ad1-92ee-5b62-bd5f-f93760008f22","i":"1f7f7fa9b9d0552575cfc631ebfa9767","t":"2-этажный дом","s":false,"n":false}];
+</script>
+<script>
+(function(){
+"use strict";
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const IC = {
+  ext:'<path d="M7 17L17 7M9 7h8v8"/>',
+  check:'<path d="M5 12l4.5 4.5L19 7"/>',
+  bell:'<path d="M6 16v-5a6 6 0 0112 0v5l1.5 2h-15L6 16zM10 21h4"/>',
+  home:'<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>'
+};
+const ic = (n,cls='')=>`<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+const money = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+const plural = (n,a,b,c)=>{const m=n%100,d=n%10;return (m>10&&m<20)?c:d===1?a:(d>1&&d<5)?b:c};
+DATA.forEach(o=>{o.g=o.d||o.l;});
+
+/* ---------- lot card ---------- */
+function lotHTML(o,tags=[]){
+  const tg = [];
+  if(o.s) tg.push('<span class="tag h">Срочная продажа</span>');
+  if(o.n) tg.push('<span class="tag">Новостройка</span>');
+  tags.forEach(t=>tg.push(`<span class="tag w">${t}</span>`));
+  const area = Number.isInteger(o.a)?o.a:String(o.a).replace('.',',');
+  const place = o.d && o.l!==o.d ? `${o.l}, ${o.d}` : (o.d||o.l);
+  return `<article class="lot">
+    <div class="ph">${ic('home')}<img src="https://media.ilvo.pro/image/300x300/${o.i}" alt="" loading="lazy" onerror="this.remove()"></div>
+    <div class="in">
+      <div class="pr num">${money(o.p)} BYN</div>
+      <div class="t">${o.t}, ${area}\u00a0м²</div>
+      <div class="ad">${place}</div>
+      ${tg.length?`<div class="tags">${tg.join('')}</div>`:''}
+    </div>
+    <a class="go" href="${o.u}" target="_blank" rel="noopener noreferrer"><span>Открыть на garantus.by <small>· лот ${o.id}</small></span>${ic('ext')}</a>
+  </article>`;
+}
+
+/* ---------- matching ---------- */
+const BUDGETS = {flat:[150000,250000,350000],house:[200000,350000,500000],dacha:[150000,250000,400000],biz:[100000,200000,500000]};
+const AREAS = {house:[60,120],dacha:[60,120],biz:[100,300]};
+const KIND_NAME = {flat:'Квартира',house:'Дом',dacha:'Дача',biz:'Коммерческая'};
+function inArea(a,cls,k){const [x,y]=AREAS[k];return cls==='s'?a<x:cls==='m'?(a>=x&&a<y):cls==='l'?a>=y:true}
+function match(req){
+  const base = DATA.filter(o=>o.k===req.k && (req.k!=='flat'||!req.r||(req.r===3?o.r>=3:o.r===req.r)) && (req.k==='flat'||inArea(o.a,req.ar,req.k)));
+  const tier = o=>{
+    const dOk=!req.g||o.g===req.g, bOk=!req.b||o.p<=req.b, near=req.b&&o.p<=req.b*1.15;
+    if(dOk&&bOk) return [0,null];
+    if(bOk) return [1,'Другой район'];
+    if(dOk&&near) return [2,'+'+Math.round((o.p/req.b-1)*100)+'% к бюджету'];
+    if(near) return [3,'Другой район, выше бюджета'];
+    return [9,null];
+  };
+  const sc = base.map(o=>{const [t,l]=tier(o);return {o,t,l}}).filter(x=>x.t<9).sort((a,b)=>a.t-b.t||b.o.id-a.o.id);
+  let res = sc.slice(0,6);
+  if(res.length<3){ // добираем ближайшие по цене того же типа
+    const have=new Set(res.map(x=>x.o.id));
+    base.filter(o=>!have.has(o.id)).sort((a,b)=>Math.abs(a.p-(req.b||a.p))-Math.abs(b.p-(req.b||b.p))).slice(0,3-res.length).forEach(o=>res.push({o,t:4,l:'Ближайший по типу'}));
+  }
+  return {res,exact:res.filter(x=>x.t===0).length,rest:sc.slice(6)};
+}
+
+/* ---------- client chat ---------- */
+const chat=$('#chat'), dock=$('#dock');
+let req, shown, results;
+function scrollDown(){chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'})}
+function add(html,cls='msg'){const d=document.createElement('div');d.className=cls;d.innerHTML=html;chat.appendChild(d);scrollDown();return d}
+const bot = t=>add(`<div class="bub">${t}</div>`);
+const me = t=>add(`<div class="bub">${t}</div>`,'msg me');
+async function botSay(parts,ms=520){
+  for(const p of parts){
+    const t=add('<div class="bub typing" aria-hidden="true"><i></i><i></i><i></i></div>');
+    await wait(ms); t.remove(); bot(p);
+  }
+}
+function setDock(html){dock.innerHTML=html}
+function chips(opts,step,total=5){
+  setDock(`<div class="step">Вопрос ${step} из ${total}</div><div class="qr">${opts.map((o,i)=>`<button class="chip" data-i="${i}">${o.label}</button>`).join('')}</div>`);
+  $$('.chip',dock).forEach(b=>b.addEventListener('click',()=>{
+    const o=opts[+b.dataset.i]; setDock(''); me(o.label); o.go();
+  }));
+}
+async function start(){
+  chat.innerHTML=''; setDock(''); req={}; shown=[];
+  await botSay(['Здравствуйте! Это бот подбора агентства «Гарант успеха». Подберу объекты из каталога на сайте (сейчас их 472) и сам пришлю новые под ваш запрос.','Задам 5 коротких вопросов. Регистрация не нужна.'],450);
+  q1();
+}
+async function q1(){
+  await botSay(['<b>Что ищете?</b>'],350);
+  chips(Object.keys(KIND_NAME).map(k=>({label:{flat:'Квартиру',house:'Дом',dacha:'Дачу',biz:'Коммерческую недвижимость'}[k],go:()=>{req.k=k;q2()}})),1);
+}
+async function q2(){
+  await botSay(['<b>В каком районе?</b>'],350);
+  const cnt={}; DATA.filter(o=>o.k===req.k).forEach(o=>cnt[o.g]=(cnt[o.g]||0)+1);
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>e[0]);
+  const opts=top.map(g=>({label:g,go:()=>{req.g=g;q3()}}));
+  opts.push({label:'Любой',go:()=>{req.g='';q3()}});
+  chips(opts,2);
+}
+async function q3(){
+  if(req.k==='flat'){
+    await botSay(['<b>Сколько комнат?</b>'],350);
+    chips([[1,'1'],[2,'2'],[3,'3 и больше']].map(([r,l])=>({label:l,go:()=>{req.r=r;q4()}})),3);
+  }else{
+    await botSay(['<b>Какая площадь нужна?</b>'],350);
+    const [x,y]=AREAS[req.k];
+    chips([{label:`до ${x}\u00a0м²`,go:()=>{req.ar='s';q4()}},{label:`${x}–${y}\u00a0м²`,go:()=>{req.ar='m';q4()}},{label:`от ${y}\u00a0м²`,go:()=>{req.ar='l';q4()}},{label:'Любая',go:()=>{req.ar='';q4()}}],3);
+  }
+}
+async function q4(){
+  await botSay(['<b>Какой бюджет?</b>'],350);
+  const o=BUDGETS[req.k].map(b=>({label:`до ${money(b)}\u00a0BYN`,go:()=>{req.b=b;q5()}}));
+  o.push({label:'Без ограничений',go:()=>{req.b=0;q5()}});
+  chips(o,4);
+}
+async function q5(){
+  await botSay(['<b>Когда нужно?</b>'],350);
+  chips([{label:'Срочно, в этом месяце',go:()=>{req.w='now';done()}},{label:'В ближайшие 1–3 месяца',go:()=>{req.w='soon';done()}},{label:'Пока присматриваюсь',go:()=>{req.w='look';done()}}],5);
+}
+function reqSummary(){
+  const rows=[['Что ищете',KIND_NAME[req.k]==='Коммерческая'?'Коммерческая недвижимость':KIND_NAME[req.k]]];
+  rows.push(['Район',req.g||'любой']);
+  if(req.k==='flat') rows.push(['Комнат',req.r===3?'3 и больше':String(req.r)]);
+  else rows.push(['Площадь',req.ar?{s:'небольшая',m:'средняя',l:'большая'}[req.ar]:'любая']);
+  rows.push(['Бюджет',req.b?`до ${money(req.b)}\u00a0BYN`:'без ограничений']);
+  rows.push(['Срок',{now:'срочно',soon:'1–3 месяца',look:'присматриваюсь'}[req.w]]);
+  return rows;
+}
+async function done(){
+  const r=match(req); results=r;
+  await botSay(['Подбираю объекты…'],500);
+  const n=r.res.length, ex=r.exact;
+  let txt = ex===n ? `Нашёл ${n} ${plural(n,'объект',"объекта",'объектов')} точно по запросу.`
+    : ex>0 ? `Нашёл ${n} ${plural(n,'объект',"объекта",'объектов')}: ${ex} точно по запросу, остальные близкие – другой район или чуть выше бюджета.`
+    : `Точных совпадений сейчас нет. Показываю ${n} ближайших – другой район или чуть выше бюджета.`;
+  bot(txt);
+  const st=document.createElement('div'); st.className='stack';
+  st.innerHTML=r.res.map(x=>lotHTML(x.o,x.l?[x.l]:[])).join('');
+  chat.appendChild(st); shown=r.res.map(x=>x.o.id); scrollDown();
+  await wait(350);
+  bot('<p class="small">Объекты и цены – с garantus.by на 09.11.2026. Актуальность проверяйте по ссылке.</p>');
+  await wait(300);
+  bot('Хотите, чтобы новые подходящие объекты приходили сами? Это не общая рассылка – только под ваш запрос.');
+  setDock(`<button class="btn" id="sub-btn">Подписаться на новые объекты</button><div class="row"><button class="link" id="again">Изменить запрос</button></div>`);
+  $('#sub-btn').onclick=subscribe; $('#again').onclick=()=>{start()};
+}
+async function subscribe(){
+  setDock(''); me('Подписаться');
+  const rows=reqSummary().map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  const freq={now:'сразу, как только появится',look:'подборкой раз в неделю',soon:'в день появления, не чаще раза в день'}[req.w];
+  await botSay([`Готово, запрос сохранён:<dl class="req">${rows}</dl>`,`Новые объекты по этому запросу пришлю сюда сам – ${freq}.`,'Ваш запрос увидит агент. Если вам долго ничего не отправляли, бот напомнит ему об этом.'],520);
+  setDock(`<button class="btn" id="notif">Показать, как придёт уведомление</button><div class="row"><button class="link" id="again">Начать заново</button></div>`);
+  $('#notif').onclick=notif; $('#again').onclick=()=>{start()};
+}
+async function notif(){
+  setDock('');
+  const fresh=(results.rest[0]&&results.rest[0].o)||results.res[0].o;
+  add('<span>Через 2 дня · пример уведомления</span>','divider');
+  add(`<div class="bub wide"><div class="bell">${ic('bell')}Новый объект по вашему запросу</div>${lotHTML(fresh)}<p class="small" style="margin-top:8px">${fresh.g===req.g||!req.g?'Подходит под ваш запрос':'Подходит по типу и бюджету, район другой'}${req.b&&fresh.p<=req.b?`, до ${money(req.b)}\u00a0BYN`:''}. Пример: в работе здесь будет объект, появившийся после вашей подписки.</p></div>`);
+  setDock(`<div class="row"><button class="btn" id="view" style="flex:1 1 100%">Записаться на просмотр</button><button class="chip" id="no">Не подходит</button><button class="link" id="again">Начать заново</button></div>`);
+  $('#view').onclick=async()=>{setDock('');me('Записаться на просмотр');await botSay(['Передал агенту. Он свяжется с вами и согласует время просмотра.','<span class="small">В демо ничего не отправляется.</span>'],480);end()};
+  $('#no').onclick=async()=>{setDock('');me('Не подходит');await botSay(['Учту. Буду присылать только то, что ближе к запросу.'],480);end()};
+  $('#again').onclick=()=>{start()};
+}
+function end(){setDock(`<button class="btn" id="how">Как это внедрить</button><div class="row"><button class="link" id="again">Начать заново</button></div>`);$('#how').onclick=openOutro;$('#again').onclick=()=>{start()}}
+
+/* ---------- staff ---------- */
+const TODAY = new Date(2026,10,9);
+const fd = d=>{const x=new Date(TODAY);x.setDate(x.getDate()-d);return String(x.getDate()).padStart(2,'0')+'.'+String(x.getMonth()+1).padStart(2,'0')};
+const buyers = [
+  {id:'ir',name:'Ирина',dat:'Ирине',pr:'её',src:'Instagram',ag:'Агент А',days:6,req:{k:'flat',r:2,g:'Центр',b:350000,w:'now'},hist:[[12,'Заявка из Instagram, запрос принят ботом'],[12,'Отправлено 4 объекта'],[8,'Просмотр назначен'],[6,'Просмотр состоялся, ждёт новые варианты']]},
+  {id:'an',name:'Андрей',dat:'Андрею',pr:'его',src:'Сайт',ag:'Агент А',days:8,req:{k:'flat',r:3,g:'Восток',b:300000,w:'soon'},hist:[[10,'Заявка с сайта'],[9,'Отправлено 3 объекта'],[8,'Агент позвонил, договорились подобрать ещё']]},
+  {id:'sr',name:'Сергей',dat:'Сергею',pr:'его',src:'Instagram',ag:'Агент А',days:12,req:{k:'flat',r:2,g:'Юго-запад',b:220000,w:'look'},hist:[[14,'Заявка из Instagram'],[12,'Отправлено 2 объекта']]},
+  {id:'ol',name:'Олег',dat:'Олегу',pr:'его',src:'Kufar',ag:'Агент А',days:3,req:{k:'house',g:'',ar:'m',b:350000,w:'soon'},hist:[[6,'Заявка с Kufar'],[3,'Отправлено 3 объекта']]},
+  {id:'tt',name:'Татьяна',dat:'Татьяне',pr:'её',src:'Сайт',ag:'Агент А',days:0,req:{k:'flat',r:1,g:'Ковалёво',b:180000,w:'now'},hist:[[1,'Заявка с сайта'],[0,'Отправлено 3 объекта, звонок']]},
+];
+buyers.forEach(b=>{b.d0=b.days;b.m=match(b.req).res.filter(x=>x.t<=1).slice(0,2).map(x=>x.o);if(b.m.length<2)b.m=match(b.req).res.slice(0,2).map(x=>x.o)});
+const reqLine = r=>{const p=[];p.push(r.k==='flat'?(r.r===3?'3 комн. и больше':`${r.r}-комн.`):KIND_NAME[r.k].toLowerCase());if(r.g)p.push(r.g);p.push(r.b?`до ${money(r.b)}\u00a0BYN`:'любой бюджет');return p.join(', ')};
+const pillFor=d=>d>5?`<span class="pill r">${d} дн. без касания</span>`:d>2?`<span class="pill a">${d} дн.</span>`:`<span class="pill g">${d?d+' дн.':'сегодня'}</span>`;
+const staff=$('#staff');
+let stTab='today', openBuyer=null, sentLog={}, snooze={};
+function renderStaff(){
+  const nb=buyers.filter(b=>b.d0>5).length;
+  $('#st-buyers').textContent=`Покупатели (${buyers.length})`;
+  if(stTab==='buyers'){ return openBuyer?renderCard():renderList(); }
+  const alerts=buyers.filter(b=>b.id==='ir'||b.id==='an');
+  let h=`<div class="msg" style="animation:none"><div class="bub">Доброе утро, Агент А (пример). ${nb} ${plural(nb,'ваш покупатель ждёт','ваших покупателя ждут','ваших покупателей ждут')} касания больше 5 дней. Для двоих уже есть новые объекты.</div></div>`;
+  alerts.forEach(b=>{
+    const m=b.m, sent=sentLog[b.id], z=snooze[b.id];
+    h+=`<div class="alert" data-b="${b.id}"><h3>${ic('clock')}Напоминание</h3>
+      <p>Покупателю ${b.dat}\u00a0<span class="pill ex">пример</span> ${b.d0} ${plural(b.d0,'день','дня','дней')} ничего не отправляли. Запрос: ${reqLine(b.req)}. Вот ${m.length} ${plural(m.length,'новый объект','новых объекта','новых объектов')} под ${b.pr} запрос – отправить?</p>
+      <div class="stack">${m.map(o=>lotHTML(o)).join('')}</div>
+      ${sent?`<div class="ok">${ic('check')}<span>Отправлено ${b.dat} в Telegram. Записано в карточку.</span></div>`
+        :z?`<div class="ok" style="background:var(--amber-t);color:var(--amber)">${ic('clock')}<span>Напомню 12.11.</span></div>`
+        :`<div class="row"><button class="btn" data-send="${b.id}">Отправить ${m.length>1?'оба':'объект'}</button><button class="btn sec sm" data-open="${b.id}">Открыть карточку</button><button class="link" data-snz="${b.id}">Напомнить через 3 дня</button></div>`}
+    </div>`;
+  });
+  h+=`<p class="small" style="font-size:13px;color:var(--muted)">Так напоминание приходит агенту в Telegram. Покупатели и тексты – примеры.</p>`;
+  staff.innerHTML=h;
+  $$('[data-send]',staff).forEach(b=>b.onclick=()=>sendTo(b.dataset.send));
+  $$('[data-open]',staff).forEach(b=>b.onclick=()=>{openBuyer=b.dataset.open;setStTab('buyers')});
+  $$('[data-snz]',staff).forEach(b=>b.onclick=()=>{snooze[b.dataset.snz]=1;renderStaff()});
+}
+function sendTo(id){
+  const b=buyers.find(x=>x.id===id); sentLog[id]=1; b.hist.push([0,`Отправлено ${b.m.length} ${plural(b.m.length,'объект','объекта','объектов')} из бота`]); b.days=0; renderStaff();
+}
+function renderList(){
+  const rows=[...buyers].sort((a,b)=>b.days-a.days).map(b=>`<li><button class="buyer" data-id="${b.id}"><b>${b.name} <span class="pill ex">пример</span></b>${pillFor(b.days)}<span class="s">${reqLine(b.req)}</span><span class="s">${b.src} · ${b.ag}</span></button></li>`).join('');
+  staff.innerHTML=`<p class="sec-t">Сначала те, кого давно не касались</p><ul class="buyers">${rows}</ul>`;
+  $$('.buyer',staff).forEach(x=>x.onclick=()=>{openBuyer=x.dataset.id;renderStaff()});
+}
+function renderCard(){
+  const b=buyers.find(x=>x.id===openBuyer);
+  const rows=[['Что ищет',b.req.k==='flat'?'Квартиру':KIND_NAME[b.req.k]],...(b.req.k==='flat'?[['Комнат',b.req.r===3?'3 и больше':String(b.req.r)]]:[]),['Район',b.req.g||'любой'],['Бюджет',b.req.b?`до ${money(b.req.b)}\u00a0BYN`:'без ограничений'],['Срок',{now:'срочно',soon:'1–3 месяца',look:'присматривается'}[b.req.w]],['Откуда',b.src],['Ведёт',b.ag+' (пример)']].map(([a,c])=>`<dt>${a}</dt><dd>${c}</dd>`).join('');
+  const tl=b.hist.map(([d,t],i)=>`<li class="${i===b.hist.length-1&&b.days>5?'':'done'}"><span class="d">${fd(d)}</span>${t}</li>`).join('')+(b.days>5?`<li class="now"><span class="d">сегодня</span>${b.days} дней без касаний</li>`:'');
+  staff.innerHTML=`<button class="back" id="bk">${ic('back')}Все покупатели</button>
+   <div class="sheet"><h2>${b.name} <span class="pill ex">пример</span></h2><div style="margin-top:6px">${pillFor(b.days)}</div>
+   <h4>Запрос</h4><dl class="req">${rows}</dl>
+   <h4>История</h4><ul class="tl">${tl}</ul></div>
+   ${b.days>2?`<div class="sheet"><h4 style="margin-top:0">Новые объекты под запрос</h4><div class="stack" style="animation:none">${b.m.map(o=>lotHTML(o)).join('')}</div><button class="btn" id="cs">Отправить ${b.m.length>1?'оба':'объект'}</button></div>`:`<div class="ok">${ic('check')}<span>Свежее касание. Бот напомнит, если пауза затянется.</span></div>`}`;
+  $('#bk').onclick=()=>{openBuyer=null;renderStaff()};
+  const cs=$('#cs'); if(cs) cs.onclick=()=>{sendTo(b.id)};
+}
+function setStTab(t){stTab=t;$$('.sub button').forEach(x=>x.setAttribute('aria-selected',x.dataset.st===t));if(t==='today')openBuyer=null;renderStaff();staff.scrollTop=0}
+$$('.sub button').forEach(b=>b.onclick=()=>setStTab(b.dataset.st));
+
+/* ---------- owner ---------- */
+const owner=$('#owner'), remind={};
+function renderOwner(){
+  const ag=[['Агент А',3],['Агент Б',4],['Агент В',2],['Агент Г',2]];
+  const src=[['Instagram',17,'#1f4f4b'],['Сайт',12,'#5f9a8b'],['Kufar',9,'#e0b53a']];
+  const tot=src.reduce((s,x)=>s+x[1],0);
+  owner.innerHTML=`
+   <div class="msg" style="animation:none"><div class="bub">Сводка на 09.11.2026, 9:00 · за 02.11–08.11 <span class="pill ex">пример</span></div></div>
+   <div class="sheet">
+     <p class="big">11 покупателей ждут касания больше 5 дней</p>
+     <p style="margin-top:6px;color:var(--muted)">Им обещали варианты, но не отправили.</p>
+     <button class="btn" id="rall" style="margin-top:12px">Напомнить всем агентам</button>
+   </div>
+   <div class="sheet">
+     <p class="sec-t">Новые заявки за неделю: ${tot}</p>
+     <div class="bar" role="img" aria-label="Источники заявок">${src.map(s=>`<i style="width:${s[1]/tot*100}%;background:${s[2]}"></i>`).join('')}</div>
+     <ul class="leg">${src.map(s=>`<li><em style="background:${s[2]}"></em>${s[0]}<b class="num">${s[1]}</b></li>`).join('')}</ul>
+   </div>
+   <div class="sheet">
+     <p class="sec-t">Без касания больше 5 дней – по агентам</p>
+     <ul class="ag">${ag.map(([n,c])=>`<li><span class="nm">${n} <span class="pill ex">пример</span></span><button class="btn sec sm" data-r="${n}" ${remind[n]?'disabled':''}>${remind[n]?'Напомнили':'Напомнить'}</button><div class="tr"><i class="${c>=4?'hot':''}" style="width:${c/4*100}%"></i></div></li>`).join('')}</ul>
+     <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">Всего: ${ag.map(a=>a[1]).join(' + ')} = 11.</p>
+   </div>
+   <button class="btn sec" id="how2">Как это внедрить</button>
+   <p style="margin-top:10px;font-size:13px;color:var(--muted)">Все цифры в сводке – примеры. В работе их считает бот по реальным заявкам.</p>`;
+  $$('[data-r]',owner).forEach(b=>b.onclick=()=>{remind[b.dataset.r]=1;renderOwner()});
+  $('#rall').onclick=()=>{ag.forEach(a=>remind[a[0]]=1);const r=$('#rall');r.disabled=true;r.textContent='Напоминания отправлены агентам';renderOwner();const x=$('#rall');x.disabled=true;x.textContent='Напоминания отправлены агентам'};
+  $('#how2').onclick=openOutro;
+}
+
+/* ---------- shell ---------- */
+const SUBS={client:'Подбор недвижимости · бот',staff:'Рабочий чат агента',owner:'Ежедневная сводка'};
+function setRole(r){
+  $$('.roles button').forEach(b=>b.setAttribute('aria-selected',b.dataset.role===r));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+r));
+  $('#sub').textContent=SUBS[r];
+  if(r==='staff')renderStaff(); if(r==='owner')renderOwner();
+}
+$$('.roles button').forEach(b=>b.onclick=()=>setRole(b.dataset.role));
+const outro=$('#outro');
+function openOutro(){outro.style.setProperty('--noteh',$('.note').offsetHeight+'px');outro.classList.add('on');$('#outro-back').focus()}
+$('#howto').onclick=openOutro;
+$('#outro-back').onclick=()=>outro.classList.remove('on');
+document.addEventListener('keydown',e=>{if(e.key==='Escape')outro.classList.remove('on')});
+const q=new URLSearchParams(location.search);
+if(['staff','owner'].includes(q.get('role')))setRole(q.get('role'));
+if(q.get('st')==='buyers'){openBuyer=q.get('card')||null;stTab='buyers';if(q.get('role')==='staff')setStTab('buyers')}
+start();
+window.__demo={start,setRole,setStTab,openOutro,get req(){return req}};
+})();
+</script>
+</body>
+</html>

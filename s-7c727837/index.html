@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0e5a54">
+<title>Ремонт под контролем – демо-концепт для Автоцентра 710</title>
+<style>
+:root{
+  --page:#dde2e7;
+  --bg:#eef1f3;
+  --surface:#ffffff;
+  --ink:#14181e;
+  --muted:#566170;
+  --line:#dde2e7;
+  --accent:#0e5a54;
+  --accent-ink:#ffffff;
+  --accent-soft:#e0efec;
+  --warn:#8a4e00;
+  --warn-soft:#fff1d6;
+  --warn-line:#f0cf92;
+  --bad:#a8231b;
+  --bad-soft:#fde8e6;
+  --ok:#17703a;
+  --ok-soft:#e1f3e7;
+  --radius:14px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px;
+  color:var(--ink);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--page);min-height:100vh;line-height:1.4;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--accent);color:#fff}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+.num{font-variant-numeric:tabular-nums}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.sm{width:18px;height:18px}
+
+/* ---- каркас ---- */
+.demo-bar{background:#14181e;color:#e9edf1;font-size:12px;line-height:1.3;padding:6px 14px;text-align:center}
+.shell{max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;box-shadow:0 0 0 1px var(--line)}
+.roles{position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 12px 8px;border-bottom:1px solid var(--line)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:#dfe4e8;border-radius:12px;padding:3px;gap:2px}
+.seg button{min-height:44px;border-radius:10px;font-weight:600;font-size:15px;text-align:center;color:var(--muted);transition:background .2s var(--ease),color .2s var(--ease)}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(20,24,30,.14),0 1px 6px rgba(20,24,30,.06)}
+.example-note{font-size:13px;color:var(--muted);padding:10px 16px 0}
+.panel{padding-bottom:40px}
+.screen.enter{animation:enter .32s var(--ease)}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---- верхняя панель мини-приложения ---- */
+.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 8px;min-height:52px;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .l{justify-self:start}
+.top .r{justify-self:end}
+.top .tb{min-height:44px;min-width:44px;padding:0 8px;color:var(--accent);font-size:16px;display:inline-flex;align-items:center;gap:2px}
+.top .t{text-align:center;line-height:1.2}
+.top .t b{display:block;font-size:16px}
+.top .t span{font-size:12px;color:var(--muted)}
+.top .bot-ava{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;margin-left:6px}
+
+/* ---- общие блоки ---- */
+.pad{padding:16px}
+h1{font-size:22px;line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:18px;line-height:1.25;letter-spacing:-.005em}
+.h-sec{font-size:13px;font-weight:600;color:var(--muted);padding:22px 16px 8px;text-transform:none}
+.grp{background:var(--surface);border-radius:var(--radius);margin:0 12px;overflow:hidden}
+.grp>.row{padding:12px 14px;display:flex;gap:12px;align-items:baseline;justify-content:space-between;border-top:1px solid var(--line)}
+.grp>.row:first-child{border-top:0}
+.row .sub{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.row .val{font-weight:600;white-space:nowrap}
+.row.total{background:#f7f9fa}
+.row.total .val{font-size:18px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.ex{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--muted);border:1px solid #c3cad2;border-radius:6px;padding:1px 6px;vertical-align:middle;margin-left:6px;white-space:nowrap}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:0 18px;border-radius:13px;font-weight:600;font-size:16px;text-align:center;transition:transform .15s var(--ease),background .15s}
+.btn:active{transform:scale(.985)}
+a.btn{text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:#0a4a45}
+.btn.second{background:var(--surface);color:var(--accent);box-shadow:inset 0 0 0 1.5px #b8d3cf}
+.btn.ghost{color:var(--muted);min-height:48px;font-weight:500}
+.btn.dashed{border:1.5px dashed #9aa5b1;color:var(--muted);min-height:48px;font-weight:500;background:transparent}
+.btn[disabled]{opacity:.5;cursor:default}
+.stack{display:grid;gap:8px;padding:0 12px}
+.callout{margin:12px;padding:14px;border-radius:var(--radius);background:var(--warn-soft);box-shadow:inset 0 0 0 1px var(--warn-line);color:var(--ink)}
+.callout .k{display:flex;align-items:center;gap:8px;color:var(--warn);font-weight:700;margin-bottom:4px}
+.callout p{margin:0 0 12px}
+.callout.ok{background:var(--ok-soft);box-shadow:inset 0 0 0 1px #b4dcc0}
+.callout.ok .k{color:var(--ok)}
+.callout.bad{background:var(--bad-soft);box-shadow:inset 0 0 0 1px #f1bdb8}
+.callout.bad .k{color:var(--bad)}
+.callout.plain{background:var(--surface);box-shadow:none}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);background:#14181e;color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px);opacity:0;pointer-events:none;transition:opacity .25s var(--ease),transform .25s var(--ease);z-index:50}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---- карточка авто ---- */
+.car{background:var(--surface);padding:14px 16px 16px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;border-bottom:1px solid var(--line)}
+.car .ic{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.car b{font-size:17px;display:block}
+.plate{display:inline-block;font-weight:700;letter-spacing:.06em;font-size:13px;border:1.5px solid var(--ink);border-radius:5px;padding:0 6px;margin-right:6px;font-variant-numeric:tabular-nums}
+
+/* ---- лента статусов ---- */
+.steps{list-style:none;margin:0 12px;background:var(--surface);border-radius:var(--radius);padding:8px 14px}
+.steps li{display:grid;grid-template-columns:28px 1fr auto;gap:0 12px;position:relative;padding:10px 0}
+.steps li::before{content:"";position:absolute;left:13px;top:36px;bottom:-10px;width:2px;background:var(--line)}
+.steps li:last-child::before{display:none}
+.steps li.done::before{background:var(--accent)}
+.steps .dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#e8ecef;color:#8590a0;position:relative;z-index:1}
+.steps .dot svg{width:16px;height:16px;stroke-width:2.4}
+.steps li.done .dot{background:var(--accent);color:#fff}
+.steps li.now .dot{background:var(--warn-soft);color:var(--warn);box-shadow:inset 0 0 0 2px #e6b35a}
+.steps li.now.ready .dot{background:var(--ok);color:#fff;box-shadow:none}
+.steps b{font-size:16px;display:block;line-height:1.25}
+.steps li.todo b{color:#7b8696;font-weight:500}
+.steps .s{font-size:13px;color:var(--muted);margin-top:2px}
+.steps li.todo .s{color:#8a94a2}
+.steps time{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.steps li.now b{color:var(--ink)}
+.steps li.now:not(.ready) .s{color:var(--warn);font-weight:600}
+
+/* ---- схема ---- */
+.art{margin:0 12px;border-radius:var(--radius);overflow:hidden;background:#f3f5f7;position:relative}
+.art svg{display:block;width:100%;height:auto}
+.art figcaption{font-size:12px;color:var(--muted);padding:8px 12px;background:var(--surface);border-top:1px solid var(--line)}
+
+/* ---- итог / оценка ---- */
+.cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:16px 14px}
+.cmp .c{line-height:1.2}
+.cmp .c small{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.cmp .c b{font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.cmp .arrow{color:var(--muted)}
+.stars{display:flex;gap:2px;justify-content:space-between;padding:4px 8px 12px}
+.stars button{flex:1;min-height:56px;display:grid;place-items:center;border-radius:12px;color:#aab3be}
+.stars button svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.stars button.on{color:#d98e04}
+.stars button.on svg{fill:currentColor}
+.stars button:hover{background:#f1f4f6}
+textarea{width:100%;min-height:92px;border:1.5px solid #c3cad2;border-radius:12px;padding:12px;resize:vertical;background:#fff;line-height:1.4}
+textarea:focus,input:focus{outline:3px solid rgba(14,90,84,.35);border-color:var(--accent)}
+.check-anim{width:56px;height:56px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;margin-bottom:10px}
+.check-anim svg{width:32px;height:32px;stroke-width:2.6;stroke-dasharray:30;stroke-dashoffset:30;animation:draw .5s .1s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.ledger{list-style:none}
+.ledger li{padding:12px 14px;border-top:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:12px}
+.ledger li:first-child{border-top:0}
+.ledger time{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+
+/* ---- чат (сотрудник) ---- */
+.chat{background:#e4eaee;min-height:calc(100vh - 140px);padding:14px 10px 24px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;display:flex;flex-direction:column;gap:6px}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.bub{background:var(--surface);border-radius:4px 16px 16px 16px;padding:10px 12px 8px;box-shadow:0 1px 1px rgba(20,24,30,.08);animation:enter .3s var(--ease)}
+.msg.user .bub{background:#d3ebe6;border-radius:16px 4px 16px 16px}
+.bub .tm{display:block;text-align:right;font-size:11px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.kb{display:grid;gap:4px;width:100%;animation:enter .35s var(--ease)}
+.kb button{background:rgba(255,255,255,.92);color:var(--accent);font-weight:600;border-radius:10px;min-height:46px;padding:0 12px;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 1px 1px rgba(20,24,30,.08)}
+.kb button:hover{background:#fff}
+.kb button.hl{background:var(--accent);color:#fff}
+.calc{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+.calc .cr{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px}
+.stepper{display:inline-flex;align-items:center;gap:4px}
+.stepper button{width:44px;height:44px;border-radius:10px;background:#eef1f3;font-size:22px;font-weight:600;display:grid;place-items:center;color:var(--accent)}
+.stepper b{min-width:34px;text-align:center;font-variant-numeric:tabular-nums}
+.calc input{width:92px;min-height:44px;border:1.5px solid #c3cad2;border-radius:10px;padding:0 10px;text-align:right;font-variant-numeric:tabular-nums;background:#fff}
+.calc .tot{font-weight:700;font-size:17px}
+.thumb{width:230px;border-radius:12px;overflow:hidden;background:#f3f5f7}
+.thumb svg{display:block;width:100%;height:auto}
+.thumb span{display:block;font-size:11px;color:var(--muted);padding:4px 8px}
+
+/* ---- журнал смены ---- */
+.chk{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;padding:12px 14px;border-top:1px solid var(--line);width:100%;min-height:52px}
+.chk:first-child{border-top:0}
+.chk .bx{width:26px;height:26px;border-radius:8px;border:2px solid #a5afbb;display:grid;place-items:center;color:#fff;margin-top:-1px}
+.chk.on .bx{background:var(--accent);border-color:var(--accent)}
+.chk .bx svg{width:16px;height:16px;stroke-width:3}
+.chk .bx svg{opacity:0}
+.chk.on .bx svg{opacity:1}
+.entry{padding:14px;border-top:1px solid var(--line)}
+.entry:first-child{border-top:0}
+.entry h3{font-size:15px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+.entry h3 span{font-weight:500;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.entry p{font-size:14px;margin:2px 0}
+.entry .lbl{font-size:12px;font-weight:700;color:var(--muted);margin-top:8px}
+
+/* ---- владелец ---- */
+.lead{padding:18px 16px 4px}
+.lead p{margin-top:8px;color:var(--ink)}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;margin:10px 0 8px}
+.bar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px}
+.flag{font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.flag.w{background:var(--warn-soft);color:var(--warn)}
+.flag.b{background:var(--bad-soft);color:var(--bad)}
+.flag.g{background:var(--ok-soft);color:var(--ok)}
+.dist{display:grid;grid-template-columns:34px 1fr 30px;gap:8px;align-items:center;font-size:14px;padding:3px 14px}
+.dist i{display:block;height:10px;border-radius:5px;background:var(--c,#aeb7c2)}
+.act{margin-top:10px;display:flex;gap:8px}
+.act .btn{min-height:44px;font-size:15px;width:auto;padding:0 14px}
+.quote{font-size:15px}
+
+/* ---- финал ---- */
+.finale{padding:24px 16px 8px}
+.finale h1{font-size:28px;letter-spacing:-.02em;margin-bottom:12px}
+.finale .big{font-size:18px;margin-bottom:8px}
+.contact{margin:16px 12px 0;padding:16px;border-radius:var(--radius);background:var(--accent);color:#fff;font-size:18px;font-weight:600}
+.src{font-size:12px;color:var(--muted);padding:10px 16px 0}
+blockquote{padding:12px 14px;border-top:1px solid var(--line);font-size:15px}
+blockquote:first-child{border-top:0}
+blockquote cite{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.check-anim svg{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6.5 4h3L11 8l-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2 2A14 14 0 0 1 4.5 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-handoff" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M15 4a5 5 0 0 0-4.6 6.9L3.5 17.8l2.7 2.7 6.9-6.9A5 5 0 0 0 20 9l-3 3-2.5-.5L14 9l3-3z"/></symbol>
+    <symbol id="i-car" viewBox="0 0 24 24"><path d="M4 17v-5l2-5h12l2 5v5z"/><path d="M4 12h16"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/><path d="M5 17v2h3v-2M16 17v2h3v-2"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/></symbol>
+
+    <!-- схема: порванный пыльник ШРУСа (рисунок, не фото) -->
+    <symbol id="art-boot" viewBox="0 0 320 210">
+      <rect width="320" height="210" fill="#f3f5f7"/>
+      <path d="M0 150h320" stroke="#dde2e7" stroke-width="2"/>
+      <!-- вал -->
+      <rect x="8" y="82" width="86" height="26" rx="3" fill="#c9d0d8" stroke="#566170" stroke-width="2"/>
+      <path d="M20 82v26M34 82v26" stroke="#a9b2bd" stroke-width="2"/>
+      <!-- пыльник -->
+      <path d="M92 84 L112 84 L124 74 L137 82 L153 66 L165 76 L183 58 L195 68 L212 46 L212 144 L195 122 L183 132 L165 114 L153 124 L137 108 L124 116 L112 106 L92 106 Z" fill="#aab3be" stroke="#3b4552" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M124 74v42M153 66v58M183 58v74" stroke="#3b4552" stroke-width="1.4" opacity=".45"/>
+      <!-- хомуты -->
+      <rect x="104" y="80" width="8" height="30" rx="2" fill="#3b4552"/>
+      <rect x="206" y="44" width="8" height="102" rx="2" fill="#3b4552"/>
+      <!-- корпус шарнира -->
+      <path d="M214 50h54q16 0 16 16v62q0 16-16 16h-54z" fill="#7b8696" stroke="#3b4552" stroke-width="2.2"/>
+      <circle cx="262" cy="97" r="17" fill="#566170" stroke="#3b4552" stroke-width="2"/>
+      <circle cx="262" cy="97" r="6" fill="#c9d0d8"/>
+      <!-- порыв -->
+      <path d="M172 118l7 6-6 5 8 6" fill="none" stroke="#a8231b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M170 118l12 10-3 8-9-8z" fill="#3b4552" opacity=".55"/>
+      <!-- смазка -->
+      <path d="M176 140c-3 6-4 9-4 12a4 4 0 0 0 8 0c0-3-1-6-4-12z" fill="#d98e04"/>
+      <path d="M190 150c-2 4-3 6-3 8a3 3 0 0 0 6 0c0-2-1-4-3-8z" fill="#d98e04" opacity=".8"/>
+      <ellipse cx="170" cy="165" rx="16" ry="3.5" fill="#d98e04" opacity=".35"/>
+      <!-- выноска -->
+      <path d="M30 183L168 128" stroke="#a8231b" stroke-width="2" stroke-dasharray="4 4"/>
+      <circle cx="22" cy="190" r="12" fill="#a8231b"/>
+      <text x="22" y="195.5" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif" font-size="15" font-weight="700" fill="#fff">1</text>
+      <text x="42" y="195" font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif" font-size="13.5" font-weight="700" fill="#14181e">Порыв пыльника, смазка вытекает</text>
+      <text x="10" y="28" font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif" font-size="12" fill="#566170">ШРУС правый, вид сбоку</text>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="demo-bar" role="note">Демо-концепт. Не официальный сайт компании. Данные – из открытых источников на 09.11.2026</div>
+
+<div class="shell">
+  <header class="roles">
+    <div class="seg" role="tablist" aria-label="Роль">
+      <button role="tab" data-a="role" data-r="client" id="tab-client" aria-selected="true" aria-controls="app">Клиент</button>
+      <button role="tab" data-a="role" data-r="staff" id="tab-staff" aria-selected="false" aria-controls="app">Сотрудник</button>
+      <button role="tab" data-a="role" data-r="owner" id="tab-owner" aria-selected="false" aria-controls="app">Владелец</button>
+    </div>
+  </header>
+  <main id="app" class="panel" role="tabpanel"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- данные (все цены и клиенты – пример) ---------- */
+var NH = 65;            // нормочас, BYN – «от 65 BYN», forsage.by, 20.10.2026
+var YANDEX_REVIEW = 'https://yandex.by/maps/org/avtotsentr_710/116768595327/reviews/';
+var BASE = [
+  {n:'Масло Shell 4 л + фильтр', s:'Работа без оплаты при покупке масла в центре*', p:118},
+  {n:'Колодки передние, комплект', s:'', p:84},
+  {n:'Замена передних колодок', s:'1,5 н/ч × 65,00', p:97.5}
+];
+var BASE_TOTAL = BASE.reduce(function(a,b){return a+b.p},0);
+
+var S = {};
+function resetState(){
+  S = {
+    role:'client',
+    c:{screen:'order', stage:2, decision:null, rating:null, sent:false, call:false, fb:''},
+    extra:{hours:1, part:24},
+    e:{view:'chat', msgs:[], kb:'menu', done:[true,true,true], promise:true, handed:false, accepted:false},
+    o:{late1:false, late2:false, low1:false, low2:false}
+  };
+  S.e.msgs.push({f:'bot', t:'10:12', h:'<b>Заказ №1284</b> · Škoda Octavia (пример)<br>Диагностика закончена. При осмотре ходовой найден порыв пыльника ШРУСа.'});
+}
+resetState();
+
+/* ---------- утилиты ---------- */
+function money(n){ return n.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,' ') + ' BYN'; }
+function num(n){ return String(n).replace('.',','); }
+function extraTotal(){ return S.extra.hours*NH + S.extra.part; }
+function ic(id,cls){ return '<svg class="i '+(cls||'')+'" aria-hidden="true"><use href="#'+id+'"/></svg>'; }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}); }
+var toastT;
+function toast(t){ var el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(function(){el.classList.remove('on')},2600); }
+
+/* ---------- КЛИЕНТ ---------- */
+var STEPS = [
+  {n:'Принята', s:'Приёмщик записал жалобу: стук спереди справа', t:'08:40'},
+  {n:'Диагностика', s:'Подъёмник, осмотр ходовой', t:'09:05'},
+  {n:'Ждём согласования', s:'', t:'10:20'},
+  {n:'В работе', s:'', t:'10:34'},
+  {n:'Готова', s:'Можно забирать. Оплата по итогу', t:'16:10'}
+];
+
+function carHead(){
+  return '<div class="car"><div class="ic">'+ic('i-car')+'</div><div>'+
+    '<b>Škoda Octavia, 2012<span class="ex">пример</span></b>'+
+    '<span class="small muted"><span class="plate">1234 AB-1</span>Заказ-наряд №1284 · приём 09.11</span></div></div>';
+}
+
+function timeline(){
+  var c=S.c, h='<ol class="steps">';
+  STEPS.forEach(function(st,i){
+    var cls = i<c.stage ? 'done' : (i===c.stage ? 'now' : 'todo');
+    if(i===4 && c.stage===4) cls='done now ready';
+    if(i===c.stage && i===4) cls='now ready';
+    var sub = st.s;
+    if(i===2){
+      if(c.stage===2) sub='Доп. работа +'+money(extraTotal())+' – нужна ваша кнопка';
+      else if(c.stage>2) sub = c.decision==='ok' ? 'Вы согласовали доп. работу' : 'Вы отказались от доп. работы';
+    }
+    if(i===3) sub = c.stage<3 ? 'Начнём после вашего ответа' : (c.decision==='ok' ? 'Смета + пыльник ШРУСа' : 'Только работы из сметы');
+    var showT = i<c.stage || i===c.stage;
+    var icon = (cls.indexOf('done')>-1||cls.indexOf('ready')>-1) ? ic('i-check') : (i===2 ? ic('i-clock') : '');
+    h+='<li class="'+cls+'"><span class="dot">'+icon+'</span><div><b>'+st.n+'</b><div class="s">'+sub+'</div></div><time>'+(showT?st.t:'')+'</time></li>';
+  });
+  return h+'</ol>';
+}
+
+function estimate(){
+  var h='<div class="h-sec">Смета при приёме <span class="ex">пример</span></div><div class="grp">';
+  BASE.forEach(function(r){ h+='<div class="row"><span>'+r.n+(r.s?'<span class="sub">'+r.s+'</span>':'')+'</span><span class="val num">'+money(r.p)+'</span></div>'; });
+  if(S.c.decision==='ok'){
+    h+='<div class="row"><span>Доп. работа: пыльник ШРУСа<span class="sub">Согласовано вами в 10:34</span></span><span class="val num">'+money(extraTotal())+'</span></div>';
+  }
+  var tot = BASE_TOTAL + (S.c.decision==='ok'?extraTotal():0);
+  h+='<div class="row total"><span>Итого</span><span class="val num">'+money(tot)+'</span></div></div>';
+  h+='<p class="src">* Условие с сайта 710.by: при покупке масла в центре работа по замене не оплачивается. Нормочас от 65 BYN (forsage.by, 20.10.2026). Остальные цифры – пример.</p>';
+  return h;
+}
+
+function ledger(){
+  var c=S.c; if(!c.decision) return '';
+  var h='<div class="h-sec">Журнал согласований</div><div class="grp"><ul class="ledger">';
+  h+='<li><time>10:20</time><span>Мастер предложил: пыльник ШРУСа, '+money(extraTotal())+', +40 мин<span class="sub small muted" style="display:block">С фото и ценой. Без вашего ответа работа не начата.</span></span></li>';
+  if(c.decision==='ok') h+='<li><time>10:34</time><span><b>Вы согласовали.</b> Цена зафиксирована: '+money(extraTotal())+'</span></li>';
+  else h+='<li><time>10:34</time><span><b>Вы отказались.</b> Мастер записал отказ в заказ-наряд. Цена машины осталась '+money(BASE_TOTAL)+'</span></li>';
+  return h+'</ul></div>';
+}
+
+function finalBlock(){
+  var c=S.c, ok=c.decision==='ok';
+  var now = BASE_TOTAL + (ok?extraTotal():0);
+  var h='<div class="h-sec">Итог ремонта</div><div class="grp"><div class="cmp">'+
+    '<div class="c"><small>Было в смете</small><b>'+money(BASE_TOTAL)+'</b></div>'+
+    '<div class="arrow">'+ic('i-arrow')+'</div>'+
+    '<div class="c"><small>Стало</small><b>'+money(now)+'</b></div></div>'+
+    '<div class="row"><span>'+(ok?'Разница '+money(extraTotal())+' – одна доп. работа, согласована вами в 10:34':'Доп. работа не выполнялась – вы отказались')+'</span></div>'+
+    '<div class="row"><span style="display:flex;gap:8px;align-items:center;color:var(--ok);font-weight:700">'+ic('i-check','sm')+'Всё согласовано вами. Других изменений цены нет</span></div></div>';
+  h+='<div class="h-sec">Оцените ремонт</div><div class="grp"><div style="padding:12px 14px 0" class="small muted">Это займёт секунду. Нажмите на звезду.</div><div class="stars" role="group" aria-label="Оценка ремонта">';
+  for(var i=1;i<=5;i++) h+='<button data-a="rate" data-n="'+i+'" aria-label="Оценка '+i+' из 5" class="'+(c.rating&&i<=c.rating?'on':'')+'"><svg aria-hidden="true"><use href="#i-star"/></svg></button>';
+  h+='</div></div>';
+  if(c.rating===5){
+    h+='<div class="callout ok"><div class="k"><div class="check-anim" style="width:30px;height:30px;margin:0">'+ic('i-check')+'</div>Спасибо за пятёрку</div><p>Если не трудно, расскажите о ремонте на Яндекс Картах. Другим водителям это поможет выбрать сервис.</p><a class="btn primary" href="'+YANDEX_REVIEW+'" target="_blank" rel="noopener">Оставить отзыв на Яндекс Картах</a></div>';
+  } else if(c.rating && c.rating<5 && !c.fb){
+    h+='<div class="callout"><div class="k">'+ic('i-alert')+'Что пошло не так?</div><p>Напишите, и руководитель прочитает сегодня. Мы свяжемся с вами и разберёмся.</p>'+
+       '<textarea id="fbtext" aria-label="Что пошло не так" placeholder="Например: ждал дольше, чем обещали"></textarea>'+
+       '<div style="margin-top:10px"><button class="btn primary" data-a="fb">Отправить руководителю</button></div></div>';
+  } else if(c.fb){
+    h+='<div class="callout ok"><div class="k">'+ic('i-check')+'Передано руководителю</div><p>Спасибо, что сказали прямо. Руководитель свяжется с вами сам. Отзыв на Картах можно оставить и после – это ваш выбор.</p>'+
+       '<a class="btn second" href="'+YANDEX_REVIEW+'" target="_blank" rel="noopener">Написать отзыв на Картах</a></div>';
+  }
+  return h;
+}
+
+function clientOrder(){
+  var c=S.c, h='';
+  h+='<div class="top"><span class="l"><button class="tb" data-a="toast" data-t="В Telegram здесь закрывается мини-приложение">Закрыть</button></span><div class="t"><b>Автоцентр 710</b><span>Ремонт под контролем</span></div><span class="r"><button class="tb" aria-label="Меню" data-a="toast" data-t="Меню мини-приложения"><svg class="i"><use href="#i-more"/></svg></button></span></div>';
+  h+=carHead();
+  if(c.stage===2){
+    h+='<div class="callout"><div class="k">'+ic('i-alert')+'Нужен ваш ответ</div><p><b>Доп. работа: замена пыльника ШРУСа</b><br><span class="num">'+money(extraTotal())+'</span> · +40 мин · с фото. Пока вы не ответите, мастер эту работу не начнёт.</p><button class="btn primary" data-a="open-extra">Посмотреть и решить</button></div>';
+  }
+  h+='<div class="h-sec">Где ваша машина</div>'+timeline();
+  if(c.stage===3){
+    h+='<div class="stack" style="margin-top:14px"><button class="btn dashed" data-a="ready">Для демо: машина готова '+ic('i-arrow','sm')+'</button></div>';
+  }
+  h+=estimate();
+  h+=ledger();
+  if(c.stage===4) h+=finalBlock();
+  h+='<div class="stack" style="margin-top:22px"><button class="btn second" data-a="finale">Так может работать у вас '+ic('i-arrow','sm')+'</button><button class="btn ghost" data-a="reset">Начать демо заново</button></div>';
+  return h;
+}
+
+function clientExtra(){
+  var c=S.c, h='';
+  h+='<div class="top"><span class="l"><button class="tb" data-a="back">'+ic('i-back')+'Назад</button></span><div class="t"><b>Доп. работа</b><span>Заказ №1284</span></div><span></span></div>';
+  h+='<div style="padding:16px 16px 12px"><h1>Замена пыльника ШРУСа</h1><p class="muted" style="margin-top:6px">Мастер нашёл при осмотре на подъёмнике. Если оставить как есть, в шарнир попадёт грязь, и ремонт станет дороже.</p></div>';
+  h+='<figure class="art"><svg viewBox="0 0 320 210" role="img" aria-label="Схема: порванный пыльник правого ШРУСа"><use href="#art-boot"/></svg><figcaption>Схема-иллюстрация. В боевой версии здесь фото мастера.</figcaption></figure>';
+  h+='<div class="h-sec">Из чего складывается цена <span class="ex">пример</span></div><div class="grp">'+
+     '<div class="row"><span>Работа<span class="sub">'+num(S.extra.hours)+' н/ч × '+money(NH)+'</span></span><span class="val num">'+money(S.extra.hours*NH)+'</span></div>'+
+     '<div class="row"><span>Деталь: пыльник ШРУСа<span class="sub">со смазкой и хомутами</span></span><span class="val num">'+money(S.extra.part)+'</span></div>'+
+     '<div class="row total"><span>Итого доп. работа</span><span class="val num">'+money(extraTotal())+'</span></div>'+
+     '<div class="row"><span>Срок<span class="sub">Готово сегодня до 17:00 вместо 16:20</span></span><span class="val">+40 мин</span></div></div>';
+  h+='<p class="src">Цена зафиксирована. Мастер не сможет изменить её, не спросив вас снова.</p>';
+  h+='<div class="stack" style="margin-top:16px">'+
+     '<button class="btn primary" data-a="approve">'+ic('i-check')+'Согласовать за '+money(extraTotal())+'</button>'+
+     '<button class="btn second" data-a="call">'+ic('i-phone')+'Позвонить мастеру</button>'+
+     '<button class="btn ghost" data-a="decline">Отказаться</button></div>';
+  if(c.call) h+='<div class="callout plain" style="margin-top:12px"><div class="k" style="color:var(--accent)">'+ic('i-phone')+'Звоним мастеру (пример)</div><p class="small muted" style="margin:0">В боевой версии здесь откроется звонок. Предложение ждёт, цена не меняется, срок не идёт.</p></div>';
+  return h;
+}
+
+/* ---------- СОТРУДНИК ---------- */
+function staffTop(){
+  return '<div class="top"><span class="l"><button class="tb" data-a="'+(S.e.view==='journal'?'e-chat':'toast')+'" data-t="Назад к списку чатов">'+ic('i-back')+'</button></span><div class="t"><b>'+(S.e.view==='journal'?'Журнал смены':'Ремонт под контролем')+'</b><span>'+(S.e.view==='journal'?'Заказ №1284 · Škoda Octavia':'бот для мастеров · пример')+'</span></div><span class="r"><span class="bot-ava">'+ic('i-wrench')+'</span></span></div>';
+}
+
+function kbHtml(){
+  var k=S.e.kb;
+  if(k==='menu') return '<div class="kb"><button data-a="e-add">'+ic('i-wrench','sm')+'Добавить доп. работу</button><button data-a="e-journal">'+ic('i-handoff','sm')+'Журнал смены</button></div>';
+  if(k==='pick') return '<div class="kb"><button data-a="e-pick">Пыльник ШРУСа · 1 н/ч + деталь</button><button data-a="e-pick" data-other="1">Другая работа (написать)</button></div>';
+  if(k==='photo') return '<div class="kb"><button class="hl" data-a="e-photo">'+ic('i-camera','sm')+'Сфотографировать</button></div>';
+  if(k==='price') return '<div class="kb"><button class="hl" data-a="e-send" id="sendbtn">'+ic('i-send','sm')+'Отправить клиенту · '+money(extraTotal())+'</button></div>';
+  if(k==='after') return '<div class="kb"><button data-a="role" data-r="client" data-open="extra">Как это видит клиент '+ic('i-arrow','sm')+'</button><button data-a="e-journal">'+ic('i-handoff','sm')+'Журнал смены</button></div>';
+  return '';
+}
+
+function calcHtml(){
+  return '<div class="calc"><div class="cr"><span>Работа, н/ч × '+num(NH)+',00</span><span class="stepper"><button data-a="e-h" data-d="-0.5" aria-label="Меньше">−</button><b id="hh">'+num(S.extra.hours)+'</b><button data-a="e-h" data-d="0.5" aria-label="Больше">+</button></span></div>'+
+    '<div class="cr"><label for="part">Деталь, BYN</label><input id="part" inputmode="decimal" value="'+num(S.extra.part)+'" aria-label="Цена детали в BYN"></div>'+
+    '<div class="cr"><span>Итого клиенту</span><span class="tot num" id="tt">'+money(extraTotal())+'</span></div></div>';
+}
+
+function staffChat(){
+  var e=S.e, h=staffTop()+'<div class="chat" id="chat">';
+  e.msgs.forEach(function(m,i){
+    var last = i===e.msgs.length-1;
+    if(m.f==='user') h+='<div class="msg user"><div class="bub">'+m.h+'<span class="tm">'+m.t+'</span></div></div>';
+    else h+='<div class="msg"><div class="bub">'+m.h+(m.calc?calcHtml():'')+'<span class="tm">'+m.t+'</span></div>'+(last?kbHtml():'')+'</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function pushU(t,hh){ S.e.msgs.push({f:'user', t:t, h:hh}); }
+function pushB(t,hh,calc){ S.e.msgs.push({f:'bot', t:t, h:hh, calc:!!calc}); }
+
+function staffJournal(){
+  var e=S.e, h=staffTop();
+  var DONE=['Масло и фильтр заменены','Колодки установлены, тормоза прокачаны','Диагностика ходовой, фото порыва пыльника'];
+  var WAIT=['Пыльник ШРУСа – ждём ответа клиента','Контрольный проезд после замены колодок'];
+  h+='<div class="h-sec">Что сделано за смену</div><div class="grp">';
+  DONE.forEach(function(d,i){ h+='<button class="chk '+(e.done[i]?'on':'')+'" data-a="e-chk" data-i="'+i+'" role="checkbox" aria-checked="'+(!!e.done[i])+'"><span class="bx">'+ic('i-check')+'</span><span>'+d+'</span></button>'; });
+  h+='</div><div class="h-sec">Что ждёт</div><div class="grp">';
+  WAIT.forEach(function(d){ h+='<div class="row"><span>'+d+'</span></div>'; });
+  h+='</div><div class="h-sec">Что обещали клиенту</div><div class="grp">'+
+     '<div class="row"><span>Готово сегодня до 17:00. Позвоним, если срок сдвинется. Цену доп. работ без согласия клиента не меняем.<span class="sub">Из заказ-наряда и звонка приёмщика</span></span></div></div>';
+  if(!e.handed){
+    h+='<div class="stack" style="margin-top:16px"><button class="btn primary" data-a="e-hand">'+ic('i-handoff')+'Передать смену</button></div>';
+  } else {
+    h+='<div class="h-sec">Журнал передачи</div><div class="grp"><div class="entry"><h3>Смена 1 → смена 2<span>09.11 · 17:00</span></h3>'+
+       '<div class="lbl">Сделано</div><p>'+e.doneTxt+'</p><div class="lbl">Ждёт</div><p>'+WAIT.join('; ')+'</p><div class="lbl">Обещано клиенту</div><p>Готово до 17:00, звонить при сдвиге срока, цену без согласия не менять</p>'+
+       (e.accepted?'<p style="margin-top:10px;color:var(--ok);font-weight:700">Смена 2 приняла машину · 17:02</p>':'<div class="act"><button class="btn primary" data-a="e-accept">Принять смену (смена 2)</button></div>')+
+       '</div><div class="entry"><h3>Смена 2 → смена 1<span>08.11 · 08:30</span></h3><p class="muted">Пример прошлой записи: машина принята, диагностика после 8:30, клиенту обещан звонок до обеда.</p></div></div>';
+  }
+  h+='<p class="src">Следующая смена видит всё в одном месте и не переспрашивает клиента.</p>';
+  return h;
+}
+
+/* ---------- ВЛАДЕЛЕЦ ---------- */
+function owner(){
+  var o=S.o, h='';
+  h+='<div class="top"><span class="l"><button class="tb" data-a="toast" data-t="В Telegram здесь закрывается мини-приложение">Закрыть</button></span><div class="t"><b>Сводка дня</b><span>9 ноября · пример</span></div><span></span></div>';
+  h+='<div class="lead"><h1>2 машины просрочены, 1 доп. работа ждёт клиента больше часа</h1><p class="muted">И 2 низкие оценки за неделю. Их можно закрыть сегодня, пока это не отзыв на Картах.</p></div>';
+
+  h+='<div class="h-sec">Машины в работе: 14 <span class="ex">пример</span></div><div class="grp">'+
+     '<div class="row"><span><b>Renault Duster</b> <span class="plate">5678 EH-1</span><span class="sub">Обещано до 17:00, сейчас 18:20</span></span><span class="flag b">+1 ч 20 мин</span></div>'+
+     '<div class="row"><span><b>Toyota Corolla</b> <span class="plate">9012 KM-1</span><span class="sub">Ждали деталь, обещано вчера 18:00</span></span><span class="flag b">+1 день</span></div>'+
+     '<div class="row"><span><b>Škoda Octavia</b> <span class="plate">1234 AB-1</span><span class="sub">Доп. работа 89,00 BYN – клиент не ответил</span></span><span class="flag w">ждёт 1 ч 5 мин</span></div>'+
+     '<div class="row"><span class="muted">Ещё 11 машин идут в срок</span><span class="flag g">в срок</span></div></div>';
+
+  h+='<div class="h-sec">Просрочки: что сделать</div><div class="grp">'+
+     '<div class="entry"><p><b>Renault Duster</b> – позвонить клиенту до 18:30 и назвать новое время.</p>'+
+     (o.late1?'<p style="margin-top:8px;color:var(--ok);font-weight:700">Вы позвонили клиенту · отмечено</p>':'<div class="act"><button class="btn second" data-a="o-late1">'+ic('i-phone','sm')+'Я позвоню</button></div>')+'</div>'+
+     '<div class="entry"><p><b>Toyota Corolla</b> – клиент ждёт уже сутки, нужно решение по детали.</p>'+
+     (o.late2?'<p style="margin-top:8px;color:var(--ok);font-weight:700">Задача отдана старшему мастеру · отмечено</p>':'<div class="act"><button class="btn second" data-a="o-late2">Отдать старшему мастеру</button></div>')+'</div></div>';
+
+  h+='<div class="h-sec">Доп. работы за день: 9 предложено <span class="ex">пример</span></div><div class="grp"><div class="entry">'+
+     '<div class="bar" role="img" aria-label="7 согласовано, 1 отказ, 1 ждёт ответа"><i style="flex:7;background:#17703a"></i><i style="flex:1;background:#8590a0"></i><i style="flex:1;background:#d98e04"></i></div>'+
+     '<div class="legend"><span style="--c:#17703a">7 согласовано</span><span style="--c:#8590a0">1 отказ</span><span style="--c:#d98e04">1 ждёт ответа</span></div>'+
+     '<p class="small muted" style="margin-top:8px">Клиент отвечает в среднем за 14 мин. Спорных цен за день: 0, у каждой есть письменное согласие.</p></div></div>';
+
+  h+='<div class="h-sec">Низкие оценки за неделю: 2 <span class="ex">пример</span></div><div class="grp">'+
+     '<div class="entry"><h3>2 из 5<span>вт · Passat (пример)</span></h3><p class="quote">«Долго ждал, а цену сказали другую»</p>'+
+     (o.low1?'<p style="margin-top:8px;color:var(--ok);font-weight:700">Вы взяли в работу. Позвоните до публикации отзыва</p>':'<div class="act"><button class="btn second" data-a="o-low1">Взять в работу</button></div>')+'</div>'+
+     '<div class="entry"><h3>3 из 5<span>чт · Focus (пример)</span></h3><p class="quote">«Всё сделали, но срок сдвинулся на день»</p>'+
+     (o.low2?'<p style="margin-top:8px;color:var(--ok);font-weight:700">Вы взяли в работу. Позвоните до публикации отзыва</p>':'<div class="act"><button class="btn second" data-a="o-low2">Взять в работу</button></div>')+'</div></div>';
+
+  var D=[[5,31,'#17703a'],[4,6,'#6b7685'],[3,1,'#d98e04'],[2,1,'#a8231b'],[1,0,'#a8231b']];
+  h+='<div class="h-sec">Оценки ремонта за неделю: 39 <span class="ex">пример</span></div><div class="grp" style="padding:8px 0">';
+  D.forEach(function(d){ h+='<div class="dist"><span class="num">'+d[0]+' ★</span><i style="--c:'+d[2]+';width:'+Math.max(d[1]/31*100,d[1]?4:0)+'%"></i><span class="num">'+d[1]+'</span></div>'; });
+  h+='<p class="small muted" style="padding:8px 14px 4px">31 клиент с пятёркой получил ссылку на отзыв на Картах. Оценки ниже пришли к вам, а не на публику.</p></div>';
+
+  h+='<div class="stack" style="margin-top:22px"><button class="btn primary" data-a="finale">Так может работать у вас '+ic('i-arrow','sm')+'</button></div>';
+  return h;
+}
+
+/* ---------- ФИНАЛ ---------- */
+function finale(){
+  var h='<div class="top"><span class="l"><button class="tb" data-a="back-fin">'+ic('i-back')+'Назад</button></span><div class="t"><b>Автоцентр 710</b><span>демо-концепт</span></div><span></span></div>';
+  h+='<div class="finale"><h1>Так может работать у вас</h1><p class="big">Внедрение – 2–4 недели, дальше сопровождение.</p>'+
+     '<p class="muted">Клиент видит статус и сам одобряет каждую доп. работу с ценой. Смена передаёт машину по журналу. Вы видите проблему раньше, чем она станет отзывом.</p></div>';
+  h+='<div class="contact">Роман Благов<br><a href="https://t.me/blagov369">Telegram @blagov369</a><br><a href="tel:+375298611029">+375 29 861-10-29</a></div>';
+  h+='<div class="h-sec">Что клиенты пишут на Яндекс Картах (2026)</div><div class="grp">'+
+     '<blockquote>«По телефону цена одна, но в процессе начинает расти»<cite>отзыв, 07.2026</cite></blockquote>'+
+     '<blockquote>«Если ремонт больше двух дней, попадаешь в два разных сервиса – смены 2 через 2»<cite>отзыв, 05.2026</cite></blockquote>'+
+     '<blockquote>«Письменных согласований никаких, всё по телефону»<cite>отзыв, 03.2026</cite></blockquote>'+
+     '<blockquote>«После прочтения отзывов на данное СТО не хочется ехать совершенно»<cite>отзыв, 11.2026</cite></blockquote></div>'+
+     '<p class="src">Источник: Яндекс Карты, карточка «Автоцентр 710», отзывы на 09.11.2026. Аспект «Обслуживание»: +117 / −53. На сайте 710.by обещано: «Стоимость работы озвучивается до начала ремонтных работ».</p>';
+  h+='<div class="stack" style="margin-top:22px"><button class="btn second" data-a="reset-go">Пройти демо заново</button></div>';
+  return h;
+}
+
+/* ---------- рендер ---------- */
+var app=document.getElementById('app'), animNext=true, prevRole=null;
+function render(opts){
+  opts=opts||{};
+  var h;
+  if(S.fin) h=finale();
+  else if(S.role==='client') h = S.c.screen==='extra' ? clientExtra() : clientOrder();
+  else if(S.role==='staff') h = S.e.view==='journal' ? staffJournal() : staffChat();
+  else h = owner();
+  var note = S.fin ? '' : '<div class="example-note">'+({client:'Клиент, авто и цены – пример',staff:'Сотрудник и данные заказа – пример',owner:'Все цифры сводки – пример'})[S.role]+'</div>';
+  app.innerHTML = '<div class="screen'+(animNext?' enter':'')+'">'+note+h+'</div>';
+  animNext=false;
+  ['client','staff','owner'].forEach(function(r){
+    var b=document.getElementById('tab-'+r); b.setAttribute('aria-selected', (!S.fin && r===S.role)?'true':'false');
+  });
+  if(opts.top) window.scrollTo(0,0);
+  if(opts.bottom){ var ch=document.getElementById('chat'); if(ch){ window.scrollTo(0, document.body.scrollHeight); } }
+}
+
+function updateCalc(){
+  var hh=document.getElementById('hh'), tt=document.getElementById('tt'), sb=document.getElementById('sendbtn');
+  if(hh) hh.textContent=num(S.extra.hours);
+  if(tt) tt.textContent=money(extraTotal());
+  if(sb) sb.innerHTML=ic('i-send','sm')+'Отправить клиенту · '+money(extraTotal());
+}
+
+document.addEventListener('input', function(ev){
+  if(ev.target.id==='part'){ var v=parseFloat(ev.target.value.replace(',','.')); S.extra.part = isFinite(v)&&v>=0 ? v : 0; updateCalc(); }
+});
+
+document.addEventListener('click', function(ev){
+  var t=ev.target.closest('[data-a]'); if(!t) return;
+  var a=t.dataset.a, c=S.c, e=S.e, o=S.o;
+  switch(a){
+    case 'role':
+      S.fin=false; S.role=t.dataset.r; animNext=true;
+      if(t.dataset.open==='extra'){ c.screen = c.stage===2 ? 'extra' : c.screen; }
+      render({top:true}); return;
+    case 'toast': toast(t.dataset.t||'Демо'); return;
+    case 'open-extra': c.screen='extra'; animNext=true; render({top:true}); return;
+    case 'back': c.screen='order'; c.call=false; animNext=true; render({top:true}); return;
+    case 'call': c.call=!c.call; render(); return;
+    case 'approve':
+      c.decision='ok'; c.stage=3; c.screen='order'; c.call=false; animNext=true;
+      pushB('10:34','<b>Клиент согласовал</b> пыльник ШРУСа · '+money(extraTotal())+'.<br>Можно начинать. Запись внесена в заказ-наряд.');
+      e.kb='menu'; render({top:true}); toast('Согласовано. Мастер уже получил ответ'); return;
+    case 'decline':
+      c.decision='no'; c.stage=3; c.screen='order'; c.call=false; animNext=true;
+      pushB('10:34','<b>Клиент отказался</b> от замены пыльника ШРУСа.<br>Отказ записан в заказ-наряд. Работаем по смете.');
+      e.kb='menu'; render({top:true}); toast('Отказ передан мастеру'); return;
+    case 'ready': c.stage=4; render(); setTimeout(function(){ var el=document.querySelector('.cmp'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },60); return;
+    case 'rate': c.rating=+t.dataset.n; c.fb=''; render(); return;
+    case 'fb': var tx=document.getElementById('fbtext'); c.fb=(tx&&tx.value.trim())||'(без текста)'; render(); return;
+    case 'finale': S.fin=true; animNext=true; render({top:true}); return;
+    case 'back-fin': S.fin=false; animNext=true; render({top:true}); return;
+    case 'reset': case 'reset-go': var r = a==='reset-go'?'client':S.role; resetState(); S.role=r; animNext=true; render({top:true}); return;
+
+    case 'e-add':
+      pushU('10:13','Добавить доп. работу'); pushB('10:13','Что нашли? Выберите из прайса или опишите.'); e.kb='pick'; render({bottom:true}); return;
+    case 'e-pick':
+      if(t.dataset.other) toast('В боевой версии – свободный текст. В демо берём пыльник ШРУСа');
+      pushU('10:13','Пыльник ШРУСа'); pushB('10:14','Приложите фото. Клиент увидит его в заказе.'); e.kb='photo'; render({bottom:true}); return;
+    case 'e-photo':
+      pushU('10:15','<div class="thumb"><svg viewBox="0 0 320 210" aria-label="Фото порыва пыльника (в демо – схема)"><use href="#art-boot"/></svg><span>Фото мастера (в демо – схема)</span></div>');
+      pushB('10:15','Цена для клиента. Нормочас – '+money(NH)+' (пример). Поправьте часы и деталь.', true); e.kb='price'; render({bottom:true}); return;
+    case 'e-h':
+      S.extra.hours = Math.max(0.5, Math.round((S.extra.hours + parseFloat(t.dataset.d))*2)/2); updateCalc(); return;
+    case 'e-send':
+      pushU('10:20','Отправить клиенту · '+money(extraTotal()));
+      pushB('10:20','<b>Отправлено клиенту:</b> пыльник ШРУСа, '+money(extraTotal())+', +40 мин, фото приложено.<br>Без его кнопки работа не начнётся, цену изменить нельзя.');
+      e.kb='after'; render({bottom:true}); return;
+    case 'e-journal': e.view='journal'; animNext=true; render({top:true}); return;
+    case 'e-chat': e.view='chat'; animNext=true; render({top:true}); return;
+    case 'e-chk': var i=+t.dataset.i; e.done[i]=!e.done[i]; render(); return;
+    case 'e-hand':
+      var D=['Масло и фильтр заменены','Колодки установлены, тормоза прокачаны','Диагностика ходовой, фото порыва пыльника'];
+      e.doneTxt = D.filter(function(_,k){return e.done[k]}).join('; ') || 'ничего не отмечено';
+      e.handed=true; render(); toast('Записано в журнал. Смена 2 увидит'); return;
+    case 'e-accept': e.accepted=true; render(); toast('Смена принята'); return;
+
+    case 'o-late1': o.late1=true; render(); return;
+    case 'o-late2': o.late2=true; render(); return;
+    case 'o-low1': o.low1=true; render(); return;
+    case 'o-low2': o.low2=true; render(); return;
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1f2933">
+<title>Металл без очереди – демо-концепт для БАРСАвтоМет</title>
+<style>
+:root{
+  --bg:#e9edf1; --surface:#fff; --ink:#151a1f; --muted:#56616d; --line:#d9dfe6; --line-soft:#e8ecf0;
+  --steel:#1f2933; --steel-2:#323f4b;
+  --accent:#c33d06; --accent-ink:#fff; --accent-soft:#fdece3;
+  --blue:#1c5bc4; --blue-soft:#e6eefb;
+  --amber:#7a4f00; --amber-soft:#fff1cf;
+  --teal:#0b6b66; --teal-soft:#dff3f1;
+  --green:#1b6e3d; --green-soft:#dff3e6;
+  --r:12px; --r-sm:8px;
+  --ease:cubic-bezier(.22,1,.36,1);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;color:var(--ink);font-size:16px;line-height:1.4;background:var(--bg);-webkit-text-size-adjust:100%}
+::selection{background:#f6c9b3;color:var(--ink)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* верх: плашка и роли */
+.top{position:sticky;top:0;z-index:30;background:var(--bg)}
+.demo-note{background:var(--steel);color:#d6dde4;font-size:11.5px;line-height:1.3;text-align:center;padding:5px 12px}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px;background:#dde3e9;max-width:430px;margin:0 auto}
+.roles button{height:40px;border-radius:9px;font-weight:600;font-size:15px;color:var(--muted);transition:background .2s,color .2s}
+.roles button[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(21,26,31,.14)}
+
+.stage{max-width:430px;margin:0 auto;background:var(--surface);min-height:calc(100vh - 100px);box-shadow:0 0 0 1px var(--line-soft);position:relative}
+.stage.chat{background:#dfe5ea}
+
+/* шапка мини-приложения */
+.tgbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--steel);color:#fff;position:sticky;top:var(--top,78px);z-index:20}
+.tgbar .mark{width:34px;height:34px;border-radius:9px;background:var(--accent);display:grid;place-items:center;font-weight:800;font-size:17px;flex:none}
+.tgbar .t{flex:1;min-width:0}
+.tgbar .t b{display:block;font-size:16px;line-height:1.2}
+.tgbar .t span{display:block;font-size:12px;color:#aebac6;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tgbar .ib{width:44px;height:44px;margin:-6px -8px -6px 0;display:grid;place-items:center;border-radius:10px;color:#fff;position:relative}
+.tgbar .ib:active{background:rgba(255,255,255,.1)}
+.tgbar .badge{position:absolute;top:3px;right:2px;min-width:18px;height:18px;border-radius:9px;background:var(--accent);font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+
+.pad{padding:14px}
+.lead{padding:16px 14px 6px}
+.lead h1{margin:0;font-size:25px;line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
+.lead p{margin:6px 0 0;color:var(--muted);font-size:15px;text-wrap:pretty}
+.facts{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.facts li{display:flex;align-items:center;gap:5px}
+.facts .i{width:16px;height:16px}
+
+.search{display:flex;align-items:center;gap:8px;margin:12px 14px 0;height:46px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r);background:#f6f8fa;color:var(--muted)}
+.search:focus-within{border-color:var(--blue);background:#fff}
+.search input{flex:1;min-width:0;border:0;background:none;outline:0;font-size:16px;color:var(--ink);height:100%}
+.search input::placeholder{color:#6c7783}
+.search button{width:32px;height:32px;display:grid;place-items:center;border-radius:8px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 14px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:500;white-space:nowrap}
+.chip[aria-pressed=true]{background:var(--steel);border-color:var(--steel);color:#fff}
+.src{padding:8px 14px 4px;font-size:12px;color:var(--muted);line-height:1.35}
+
+.list{list-style:none;margin:0;padding:0}
+.row{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:12px 14px;border-top:1px solid var(--line-soft);min-height:68px;background:#fff}
+.row:active{background:#f3f5f7}
+.row .main{flex:1;min-width:0}
+.row .nm,.row .sp{display:block}
+.row .nm{font-weight:600;font-size:15.5px;line-height:1.25;overflow-wrap:anywhere}
+.row .sp{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+.row .pr{text-align:right;flex:none}
+.row .pr b{display:block;font-size:16px;white-space:nowrap}
+.row .pr span{display:block;font-size:12px;color:var(--muted);white-space:nowrap}
+.row .add{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.row.in .add{background:var(--accent);color:#fff}
+.incart{display:inline-block;margin-top:4px;font-size:12px;font-weight:600;color:var(--accent)}
+.more{display:block;margin:10px auto 18px;height:44px;padding:0 20px;border-radius:var(--r);border:1px solid var(--line);font-weight:600}
+.empty{padding:36px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+
+/* нижняя кнопка Telegram */
+.main-btn{position:sticky;bottom:0;z-index:15;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to top,#fff 70%,rgba(255,255,255,0))}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:var(--r);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:16px;padding:0 16px;transition:transform .15s var(--ease),background .15s}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{background:#cdd4db;color:#6b7580;cursor:not-allowed;transform:none}
+.btn.sec{background:#eef1f4;color:var(--ink)}
+.btn.line{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn .sum{margin-left:auto;font-variant-numeric:tabular-nums}
+.btn.split{justify-content:space-between}
+
+/* шторка с калькулятором */
+.scrim{position:fixed;inset:0;background:rgba(21,26,31,.45);z-index:50;display:flex;justify-content:center;align-items:flex-end;animation:fade .2s}
+.sheet{width:100%;max-width:430px;max-height:92vh;overflow:auto;background:#fff;border-radius:18px 18px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));animation:up .32s var(--ease)}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.grab{width:40px;height:4px;border-radius:2px;background:#cdd4db;margin:0 auto 10px}
+.sheet h2{margin:0;font-size:19px;line-height:1.25;overflow-wrap:anywhere}
+.sheet .sub{color:var(--muted);font-size:13px;margin-top:3px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:#eef1f4;border-radius:10px;padding:4px;margin:14px 0 4px}
+.seg button{min-height:40px;border-radius:7px;font-weight:600;font-size:14.5px;color:var(--muted);padding:0 6px}
+.seg button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(21,26,31,.15)}
+.field{display:block;margin-top:12px}
+.field>span{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.inp{width:100%;height:48px;border:1px solid var(--line);border-radius:var(--r-sm);padding:0 12px;font-size:17px;background:#fff;outline:0}
+.inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px #dbe7fb}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.quick button{height:34px;padding:0 12px;border-radius:17px;background:#eef1f4;font-size:14px;font-weight:600}
+.res{margin:14px 0 6px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.res div{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;font-size:15px}
+.res div+div{border-top:1px solid var(--line-soft)}
+.res div span:first-child{color:var(--muted)}
+.res div b{font-variant-numeric:tabular-nums;text-align:right}
+.res .tot{background:#f6f8fa}
+.res .tot b{font-size:18px}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.4}
+.warn{font-size:13px;color:#8a1c1c;background:#fde8e8;border-radius:8px;padding:8px 10px;margin-top:10px}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:48px;height:48px;border-radius:var(--r-sm);background:#eef1f4;display:grid;place-items:center}
+.stepper input{width:90px;text-align:center}
+
+/* корзина */
+.h2{font-size:13px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin:20px 14px 8px}
+.crow{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-top:1px solid var(--line-soft)}
+.crow .l{flex:1;min-width:0;text-align:left}
+.crow .l b{display:block;font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+.crow .l span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.crow .r{text-align:right;font-weight:700;white-space:nowrap}
+.crow .x{width:36px;height:36px;margin:-6px -8px -6px 0;border-radius:8px;color:var(--muted);display:grid;place-items:center}
+.totline{display:flex;justify-content:space-between;padding:14px;border-top:1px solid var(--line);font-size:17px;font-weight:700}
+.opt{display:grid;gap:8px;padding:0 14px}
+.opt.c2{grid-template-columns:1fr 1fr}
+.card-opt{display:flex;flex-direction:column;gap:2px;text-align:left;padding:12px;border:1.5px solid var(--line);border-radius:var(--r);min-height:76px;background:#fff}
+.card-opt b{font-size:15px;display:flex;align-items:center;gap:7px}
+.card-opt span{font-size:12.5px;color:var(--muted);line-height:1.3}
+.card-opt[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.card-opt.h{flex-direction:row;align-items:center;gap:10px;min-height:56px}
+.card-opt.h .tx{display:flex;flex-direction:column;gap:2px}
+.days{display:flex;gap:8px;padding:0 14px;overflow-x:auto;scrollbar-width:none}
+.days button{flex:none;min-height:44px;padding:0 14px;border-radius:var(--r-sm);border:1.5px solid var(--line);font-weight:600;font-size:14px}
+.days button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 14px 0}
+.slots button{min-height:44px;border-radius:var(--r-sm);border:1.5px solid var(--line);font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.slots button[aria-pressed=true]{border-color:var(--accent);background:var(--accent);color:#fff}
+.form{padding:0 14px;display:grid;gap:0}
+.hint{padding:8px 14px 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+.demo-tag{display:inline-block;font-size:11px;font-weight:700;color:#5c6672;background:#eef1f4;border-radius:4px;padding:1px 6px;vertical-align:1px;white-space:nowrap}
+
+/* принято */
+.done{padding:22px 14px 8px}
+.done .ok{width:48px;height:48px;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center}
+.done .ok .i{width:26px;height:26px;stroke-width:2.2}
+.done h1{margin:14px 0 6px;font-size:25px;line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
+.done .big{font-size:18px;line-height:1.35;margin:0;text-wrap:pretty}
+.done .big b{color:var(--accent)}
+.steps{list-style:none;margin:18px 0 0;padding:0}
+.steps li{position:relative;display:flex;gap:12px;padding:0 0 18px 0;font-size:15px}
+.steps li::before{content:"";position:absolute;left:11px;top:24px;bottom:0;width:2px;background:var(--line)}
+.steps li:last-child::before{display:none}
+.steps .dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);background:#fff;display:grid;place-items:center;flex:none;color:#fff}
+.steps .dot .i{width:14px;height:14px;stroke-width:3}
+.steps li.on .dot{background:var(--green);border-color:var(--green)}
+.steps li.on::before{background:var(--green)}
+.steps li.now .dot{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.steps .tx b{display:block;font-weight:600}
+.steps .tx span{display:block;color:var(--muted);font-size:13px;margin-top:1px}
+.steps li:not(.on):not(.now) .tx b{color:var(--muted);font-weight:500}
+
+/* пузыри чата */
+.chat-head{position:sticky;top:94px;z-index:20}
+.date-pill{width:max-content;margin:12px auto 8px;background:rgba(31,41,51,.55);color:#fff;font-size:12.5px;padding:3px 10px;border-radius:12px}
+.bubble{background:#fff;border-radius:14px 14px 14px 4px;margin:0 12px 6px;padding:10px 12px;max-width:100%;box-shadow:0 1px 1px rgba(21,26,31,.12);font-size:15px}
+.bubble .from{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:3px}
+.bubble h3{margin:0 0 6px;font-size:16px;line-height:1.25}
+.bubble .meta{color:var(--muted);font-size:12px;text-align:right;margin-top:6px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0;font-size:14.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pos{margin:8px 0;padding:0;list-style:none;border-top:1px solid var(--line-soft)}
+.pos li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:14px;line-height:1.3}
+.pos li span:first-child{min-width:0;overflow-wrap:anywhere}
+.pos li span:last-child{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
+.kb{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 12px 10px}
+.kb button{min-height:46px;border-radius:9px;background:rgba(31,41,51,.62);color:#fff;font-size:13.5px;font-weight:600;line-height:1.2;padding:4px 6px;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center}
+.kb button.next{background:var(--accent)}
+.kb button.did{background:rgba(27,110,61,.82)}
+.kb button[disabled]:not(.did){opacity:.55;cursor:not-allowed}
+.kb .i{width:16px;height:16px;stroke-width:2.4}
+.chip-s{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:700;white-space:nowrap}
+.s0{background:var(--blue-soft);color:var(--blue)}
+.s1{background:var(--amber-soft);color:var(--amber)}
+.s2{background:var(--teal-soft);color:var(--teal)}
+.s3{background:var(--green-soft);color:var(--green)}
+.q{list-style:none;margin:6px 0 0;padding:0}
+.q li button{display:grid;grid-template-columns:48px 1fr auto;gap:2px 10px;align-items:center;width:100%;text-align:left;padding:9px 0;border-top:1px solid var(--line-soft);min-height:56px}
+.q li:first-child button{border-top:0}
+.q .tm{font-weight:700;font-variant-numeric:tabular-nums}
+.q .cl{min-width:0;font-size:14.5px;line-height:1.25;overflow-wrap:anywhere}
+.q .cl small{display:block;color:var(--muted);font-size:12.5px}
+.q li.sel button{background:#f6f8fa;margin:0 -12px;padding-left:12px;padding-right:12px;width:calc(100% + 24px);border-radius:8px}
+.q .mine{color:var(--accent);font-weight:700;font-size:12px}
+.sub-h{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+
+/* владелец */
+.bars{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;height:92px;margin:10px 0 0}
+.bars div{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;height:100%;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bars i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--steel-2)}
+.bars div.pk i{background:var(--accent)}
+.bars b{color:var(--ink);font-size:12px}
+.ask{margin:6px 0 0;padding:0;list-style:none}
+.ask li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line-soft);font-size:14px;line-height:1.3}
+.ask li:first-child{border-top:0}
+.ask li span:last-child{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
+.quote{margin:8px 0 0;font-size:14px;line-height:1.4}
+.quote small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.quote+.quote{padding-top:8px;border-top:1px solid var(--line-soft)}
+.cmp{display:grid;gap:6px;margin-top:10px}
+.cmp div{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.cmp i{display:block;height:12px;border-radius:3px;background:var(--steel-2)}
+.cmp div+div i{background:#aab4bf}
+.cmp b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* итог */
+.final{padding:28px 18px calc(28px + env(safe-area-inset-bottom));min-height:calc(100vh - 100px);display:flex;flex-direction:column}
+.final h1{margin:0;font-size:30px;line-height:1.12;letter-spacing:-.015em;text-wrap:balance}
+.final .lh{margin:14px 0 0;font-size:18px;line-height:1.4;text-wrap:pretty}
+.final ul{margin:20px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.final li{display:flex;gap:10px;font-size:16px;line-height:1.35}
+.final li .i{color:var(--green);margin-top:1px;stroke-width:2.4}
+.sign{margin-top:auto;padding-top:28px}
+.sign p{margin:0 0 14px;font-size:19px;line-height:1.5;font-weight:600}
+.sign a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;display:inline-block;min-height:32px}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (min-width:431px){.stage{margin-top:0}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><path d="M3.5 4.5h2.2l2 11h9.6l2-8H7"/><circle cx="9.5" cy="19.5" r="1.3"/><circle cx="16.5" cy="19.5" r="1.3"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 1 0-13 0c0 5.4 6.5 11 6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24"><path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+<symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9.5 5.5 4h13L20 9.5M4 9.5v10h16v-10M4 9.5c0 1.5 1.1 2.5 2.7 2.5s2.6-1 2.6-2.5c0 1.5 1.2 2.5 2.7 2.5s2.7-1 2.7-2.5c0 1.5 1 2.5 2.6 2.5S20 11 20 9.5"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6.5 3.5h8l4 4v13h-12zM14.5 3.5v4h4M9 13h6M9 16.5h6"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M7.5 3.5h3l1.2 4-2 1.3a10 10 0 0 0 5.5 5.5l1.3-2 4 1.2v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 5.5 5.7a2 2 0 0 1 2-2.2Z"/></symbol>
+</defs>
+</svg>
+
+<div class="top">
+  <div class="demo-note">Демо-концепт. Не официальный сайт компании. Данные – из открытых источников на 09.11.2026</div>
+  <div class="roles" role="tablist" aria-label="Роль">
+    <button role="tab" data-role="client">Клиент</button>
+    <button role="tab" data-role="staff">Сотрудник</button>
+    <button role="tab" data-role="owner">Владелец</button>
+  </div>
+</div>
+<main id="app" class="stage"></main>
+<div id="layer"></div>
+
+<script>
+const DATA = {"collected":"09.11.2026","source":"https://barsmet.by/metalloprokat","cats":["Арматура","Балка","Швеллер","Уголок","Труба круглая","Труба профильная","Лист","Полоса","Круг","Квадрат","Шестигранник","Сетка сварная","Сетка рабица","Нержавейка"],"items":[{"id":1,"cat":"Арматура","name":"Арматура A500С ф12","spec":"ГОСТ 34028-2016","kind":"lin","unit":"м.п.","len":11.71,"price_t":2748.0,"price":2.5},{"id":2,"cat":"Арматура","name":"Арматура А1 ф 6мм (прутки L=6м)","spec":"","kind":"lin","unit":"м.п.","len":6.0,"price_t":2362.8,"price":0.57},{"id":3,"cat":"Арматура","name":"Арматура А1 ф 8 ст3сп","spec":"","kind":"lin","unit":"м.п.","len":11.7,"price_t":2487.6,"price":1.04},{"id":4,"cat":"Арматура","name":"Арматура А1 ф10 ст.сп/пс","spec":"ГОСТ 5781/34028","kind":"lin","unit":"м.п.","len":11.71,"price_t":2361.6,"price":1.51},{"id":5,"cat":"Арматура","name":"Арматура А1 ф16 ст.3сп","spec":"ГОСТ 2590-2006, ГОСТ 535-2005","kind":"lin","unit":"м.п.","len":6.0,"price_t":2373.6,"price":3.82},{"id":6,"cat":"Арматура","name":"Арматура А1 ф18 ст.3сп","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":11.73,"price_t":2172.0,"price":4.43},{"id":7,"cat":"Арматура","name":"Арматура А1 ф20 ст.3сп","spec":"ГОСТ 5781/34028","kind":"lin","unit":"м.п.","len":11.73,"price_t":2172.0,"price":5.36},{"id":8,"cat":"Арматура","name":"Арматура А500С ф 8","spec":"ГОСТ 34028-2016","kind":"lin","unit":"м.п.","len":11.71,"price_t":2106.0,"price":0.86},{"id":9,"cat":"Арматура","name":"Арматура А500С ф10","spec":"СТБ 1704-2012","kind":"lin","unit":"м.п.","len":11.72,"price_t":2601.6,"price":1.64},{"id":10,"cat":"Арматура","name":"Арматура А500С ф12мм","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":2748.0,"price":2.5},{"id":11,"cat":"Арматура","name":"Арматура А500С ф14","spec":"ГОСТ 34028-2016/СТБ 1704-2012","kind":"lin","unit":"м.п.","len":11.72,"price_t":2826.0,"price":3.25},{"id":12,"cat":"Арматура","name":"Арматура А500С ф16мм м.з.","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":2640.0,"price":4.17},{"id":13,"cat":"Арматура","name":"Арматура А500С ф18мм м.з.","spec":"","kind":"lin","unit":"м.п.","len":11.7,"price_t":2640.0,"price":5.33},{"id":14,"cat":"Арматура","name":"Арматура А500С ф20мм м.з.","spec":"","kind":"lin","unit":"м.п.","len":11.7,"price_t":2640.0,"price":6.52},{"id":15,"cat":"Арматура","name":"Арматура А500С ф4мм (прутки L=6м)","spec":"","kind":"lin","unit":"м.п.","len":6.0,"price_t":2930.0,"price":0.29},{"id":16,"cat":"Арматура","name":"Арматура А500С ф5мм (прутки L=6м)","spec":"","kind":"lin","unit":"м.п.","len":6.0,"price_t":2805.6,"price":0.45},{"id":17,"cat":"Арматура","name":"Арматура А500С ф6мм (прутки L=6м)","spec":"","kind":"lin","unit":"м.п.","len":6.0,"price_t":2484.0,"price":0.6},{"id":18,"cat":"Арматура","name":"Арматура А500С ф8мм (прутки L=6м)","spec":"","kind":"lin","unit":"м.п.","len":6.0,"price_t":2845.2,"price":1.17},{"id":19,"cat":"Арматура","name":"Круг г/к ф 12 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":2239.2,"price":2.04},{"id":20,"cat":"Арматура","name":"Круг г/к ф 14 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":3111.6,"price":3.77},{"id":21,"cat":"Арматура","name":"Сталь период.проф. ф10мм S500","spec":"","kind":"lin","unit":"м.п.","len":11.72,"price_t":2702.4,"price":1.7},{"id":22,"cat":"Балка","name":"Балка 10 ст3","spec":"ГОСТ 8239-93","kind":"lin","unit":"м.п.","len":12.01,"price_t":4231.2,"price":40.62},{"id":23,"cat":"Балка","name":"Балка 12 Б2 С345","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":4048.8,"price":42.92},{"id":24,"cat":"Балка","name":"Балка 14 Б1 ст.С255","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.02,"price_t":4356.0,"price":45.74},{"id":25,"cat":"Балка","name":"Балка 14 С345","spec":"","kind":"lin","unit":"м.п.","len":12.02,"price_t":4356.0,"price":60.98},{"id":26,"cat":"Балка","name":"Балка 16 Б1 С255-12","spec":"ГОСТ35087-2024, ГОСТ 27772-2021","kind":"lin","unit":"м.п.","len":12.01,"price_t":4356.0,"price":56.19},{"id":27,"cat":"Балка","name":"Балка 18 Б1 ст.3сп5","spec":"ГОСТ 57837-2017","kind":"lin","unit":"м.п.","len":12.02,"price_t":4116.0,"price":64.83},{"id":28,"cat":"Балка","name":"Балка 18 ст.С255","spec":"ТУ","kind":"lin","unit":"м.п.","len":12.02,"price_t":4356.0,"price":68.61},{"id":29,"cat":"Балка","name":"Балка 20 Б1 С255-12","spec":"ГОСТ35087-2024, ГОСТ 27772-2021","kind":"lin","unit":"м.п.","len":12.01,"price_t":3720.0,"price":79.38},{"id":30,"cat":"Балка","name":"Балка 25 Б1 ст.С255-12","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":3811.2,"price":98.52},{"id":31,"cat":"Балка","name":"Балка 25 Б2 С255","spec":"ГОСТ 35087/Р 57837(АСЧМ 20-93)","kind":"lin","unit":"м.п.","len":12.01,"price_t":3957.6,"price":117.11},{"id":32,"cat":"Швеллер","name":"Швеллер 5П ст.3сп5","spec":"ГОСТ 8240/ТУ","kind":"lin","unit":"м.п.","len":6.02,"price_t":4039.2,"price":20.2},{"id":33,"cat":"Швеллер","name":"Швеллер 6,5У ст.3сп","spec":"ГОСТ 8240-97","kind":"lin","unit":"м.п.","len":12.01,"price_t":2820.0,"price":16.64},{"id":34,"cat":"Швеллер","name":"Швеллер 8 П С255","spec":"ГОСТ 27772-2021","kind":"lin","unit":"м.п.","len":12.01,"price_t":2964.0,"price":21.01},{"id":35,"cat":"Швеллер","name":"Швеллер 8 У ст.3сп","spec":"ГОСТ 8240","kind":"lin","unit":"м.п.","len":6.0,"price_t":3729.6,"price":26.44},{"id":36,"cat":"Швеллер","name":"Швеллер 10 П С255","spec":"ГОСТ 8240-97","kind":"lin","unit":"м.п.","len":12.04,"price_t":3228.0,"price":29.05},{"id":37,"cat":"Швеллер","name":"Швеллер 10 П ст.3сп/пс","spec":"ГОСТ 8240-97","kind":"lin","unit":"м.п.","len":12.04,"price_t":2786.4,"price":25.08},{"id":38,"cat":"Швеллер","name":"Швеллер 12 П ст.3сп","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.03,"price_t":3054.0,"price":32.22},{"id":39,"cat":"Швеллер","name":"Швеллер 14 П ст3пс","spec":"ГОСТ 8240-97","kind":"lin","unit":"м.п.","len":12.02,"price_t":2804.4,"price":35.06},{"id":40,"cat":"Швеллер","name":"Швеллер 16 П ст.3сп5","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.01,"price_t":2940.0,"price":43.22},{"id":41,"cat":"Швеллер","name":"Швеллер 18 П С255","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.02,"price_t":3704.29,"price":61.75},{"id":42,"cat":"Швеллер","name":"Швеллер 18 П ст.3сп","spec":"ГОСТ8240/ТУ","kind":"lin","unit":"м.п.","len":12.02,"price_t":3704.29,"price":61.75},{"id":43,"cat":"Швеллер","name":"Швеллер 20 П С255","spec":"ГОСТ 8240","kind":"lin","unit":"м.п.","len":12.01,"price_t":4377.6,"price":82.74},{"id":44,"cat":"Швеллер","name":"Швеллер 20 П ст3сп","spec":"ГОСТ 8240","kind":"lin","unit":"м.п.","len":12.01,"price_t":4377.6,"price":82.74},{"id":45,"cat":"Швеллер","name":"Швеллер 22 П ст.3сп5","spec":"ГОСТ 8240/ТУ С255","kind":"lin","unit":"м.п.","len":12.03,"price_t":4678.8,"price":101.39},{"id":46,"cat":"Швеллер","name":"Швеллер 24 П ст3пс","spec":"ГОСТ 8240/ТУ","kind":"lin","unit":"м.п.","len":12.02,"price_t":4310.4,"price":108.28},{"id":47,"cat":"Уголок","name":"Уголок 25х25х3 ст.3сп","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":6.02,"price_t":3000.0,"price":3.48},{"id":48,"cat":"Уголок","name":"Уголок 25х25х4 ст.3сп","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":6.01,"price_t":2757.6,"price":4.03},{"id":49,"cat":"Уголок","name":"Уголок 32х32х3 ст.3пс5","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":6.02,"price_t":2757.6,"price":4.16},{"id":50,"cat":"Уголок","name":"Уголок 32х32х4 ст.3пс5","spec":"ГОСТ 8509","kind":"lin","unit":"м.п.","len":6.01,"price_t":2688.0,"price":5.21},{"id":51,"cat":"Уголок","name":"Уголок 35х35х3 ст.3сп5","spec":"ГОСТ 8509","kind":"lin","unit":"м.п.","len":6.01,"price_t":2728.8,"price":4.5},{"id":52,"cat":"Уголок","name":"Уголок 40х40х3 ст.3","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":6.02,"price_t":3990.0,"price":7.58},{"id":53,"cat":"Уголок","name":"Уголок 40х40х4 ст.3сп5","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.02,"price_t":2946.0,"price":7.13},{"id":54,"cat":"Уголок","name":"Уголок 45х45х4 ст3пс/сп","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.02,"price_t":3132.0,"price":8.55},{"id":55,"cat":"Уголок","name":"Уголок 50х50х4 ст3сп","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.02,"price_t":3270.0,"price":9.97},{"id":56,"cat":"Уголок","name":"Уголок 50х50х5 ст.3пс","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.02,"price_t":3402.0,"price":12.83},{"id":57,"cat":"Уголок","name":"Уголок 63х40х5 ст3сп5","spec":"","kind":"lin","unit":"м.п.","len":12.03,"price_t":3296.4,"price":13.02},{"id":58,"cat":"Уголок","name":"Уголок 63х63х5 ст.3сп5","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.01,"price_t":2702.4,"price":13.27},{"id":59,"cat":"Уголок","name":"Уголок 63х63х6 ст.3сп5","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.04,"price_t":2702.4,"price":15.46},{"id":60,"cat":"Уголок","name":"Уголок 75х75х5 ст.3сп","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.02,"price_t":2648.4,"price":15.36},{"id":61,"cat":"Уголок","name":"Уголок 75х75х6 ст.3сп","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.02,"price_t":2648.4,"price":18.3},{"id":62,"cat":"Уголок","name":"Уголок 80х80х6 С255","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.01,"price_t":2754.0,"price":20.27},{"id":63,"cat":"Уголок","name":"Уголок 80х80х6 ст.3сп5","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.01,"price_t":2754.0,"price":20.27},{"id":64,"cat":"Уголок","name":"Уголок 90х90х6 ст.3сп5","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.02,"price_t":2648.4,"price":22.11},{"id":65,"cat":"Уголок","name":"Уголок 100х 63х 6 ст3пс/сп5","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":2929.2,"price":22.06},{"id":66,"cat":"Уголок","name":"Уголок 100х100х 7 ст.3пс5","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.02,"price_t":2580.0,"price":27.84},{"id":67,"cat":"Уголок","name":"Уголок 100х100х 8 ст.3пс5","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":2648.4,"price":32.84},{"id":68,"cat":"Уголок","name":"Уголок 100х100х10 С255","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":2690.4,"price":40.68},{"id":69,"cat":"Уголок","name":"Уголок 100х100х10 ст3сп","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":2690.4,"price":40.68},{"id":70,"cat":"Уголок","name":"Уголок 125х125х 8 ст.3пс","spec":"ГОСТ 8509-93","kind":"lin","unit":"м.п.","len":12.02,"price_t":2757.6,"price":42.74},{"id":71,"cat":"Уголок","name":"Уголок 140х140х 9 ст.3сп5","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.0,"price_t":4770.0,"price":92.54},{"id":72,"cat":"Труба круглая","name":"Труба г/д 57х12 Ст.20","spec":"","kind":"lin","unit":"м.п.","len":null,"price_t":6566.4,"price":84.71},{"id":73,"cat":"Труба круглая","name":"Труба г/д 95х6 ст20","spec":"","kind":"lin","unit":"м.п.","len":null,"price_t":5343.6,"price":7.32},{"id":74,"cat":"Труба круглая","name":"Труба Ду 15х2.8 ст.2пс","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2556.0,"price":3.27},{"id":75,"cat":"Труба круглая","name":"Труба Ду 15х2.8 ст.3пс","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2556.0,"price":3.27},{"id":76,"cat":"Труба круглая","name":"Труба Ду 20х2,8 ст.2пс","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2469.6,"price":4.1},{"id":77,"cat":"Труба круглая","name":"Труба Ду 25х2,8 ст.2пс","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2258.4,"price":4.79},{"id":78,"cat":"Труба круглая","name":"Труба Ду 25х3,2 ст.2пс-5","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2517.6,"price":6.02},{"id":79,"cat":"Труба круглая","name":"Труба Ду 32х2,8 ст.3пс","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2766.0,"price":7.55},{"id":80,"cat":"Труба круглая","name":"Труба Ду 32х3,2 ст.3пс","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2263.2,"price":6.99},{"id":81,"cat":"Труба круглая","name":"Труба Ду 40х3,0 ст.3пс","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2556.0,"price":8.51},{"id":82,"cat":"Труба круглая","name":"Труба Ду 40х3,5 ст.3пс","spec":"т.м. ГОСТ 3262-75","kind":"lin","unit":"м.п.","len":6.01,"price_t":2556.0,"price":9.82},{"id":83,"cat":"Труба круглая","name":"Труба Ду 50х3,0 ст.2сп","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2335.2,"price":9.85},{"id":84,"cat":"Труба круглая","name":"Труба Ду 50х3,5 ст.3сп","spec":"ГОСТ 3262-75 т.м.","kind":"lin","unit":"м.п.","len":12.02,"price_t":2436.0,"price":11.89},{"id":85,"cat":"Труба круглая","name":"Труба оцинкованная Ду 15х2,8 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.0,"price_t":3960.0,"price":5.23},{"id":86,"cat":"Труба круглая","name":"Труба оцинкованная Ду 20х2,8 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":3913.2,"price":6.69},{"id":87,"cat":"Труба круглая","name":"Труба оцинкованная Ду 25х2,8 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":3754.8,"price":8.19},{"id":88,"cat":"Труба круглая","name":"Труба оцинкованная Ду 25х3,2 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":3754.8,"price":9.24},{"id":89,"cat":"Труба круглая","name":"Труба оцинкованная Ду 32х2,8 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":3960.0,"price":11.13},{"id":90,"cat":"Труба круглая","name":"Труба оцинкованная Ду 40х3,0 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":3686.4,"price":12.64},{"id":91,"cat":"Труба круглая","name":"Труба оцинкованная Ду 40х3,5 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":3691.2,"price":14.62},{"id":92,"cat":"Труба круглая","name":"Труба оцинкованная Ду 50х3,0 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":3686.4,"price":16.04},{"id":93,"cat":"Труба круглая","name":"Труба оцинкованная Ду 50х3,5 ст.3пс","spec":"т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":3686.4,"price":18.54},{"id":94,"cat":"Труба круглая","name":"Труба оцинкованная эл/св 108х3,5","spec":"ГОСТ 10704-91","kind":"lin","unit":"м.п.","len":6.01,"price_t":3625.2,"price":33.68},{"id":95,"cat":"Труба круглая","name":"Труба оцинкованная эл/св 57х3,5 Ст2пс","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":6.01,"price_t":3680.4,"price":17.59},{"id":96,"cat":"Труба круглая","name":"Труба оцинкованная эл/св 76х3,0","spec":"ГОСТ 10707","kind":"lin","unit":"м.п.","len":6.01,"price_t":3738.0,"price":20.78},{"id":97,"cat":"Труба круглая","name":"Труба оцинкованная эл/св 76х3,5","spec":"ГОСТ 10704","kind":"lin","unit":"м.п.","len":6.01,"price_t":3655.2,"price":23.61},{"id":98,"cat":"Труба круглая","name":"Труба пр. 10х10х1,2 х/к","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":3000.0,"price":0.96},{"id":99,"cat":"Труба профильная","name":"Труба проф. 15х15х1,5 ст08пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2844.0,"price":1.73},{"id":100,"cat":"Труба профильная","name":"Труба проф. 20х10х1,5 ст08пс","spec":"ГОСТ 13663-86","kind":"lin","unit":"м.п.","len":6.0,"price_t":2817.6,"price":1.75},{"id":101,"cat":"Труба профильная","name":"Труба проф. 25х25х1,5 ст2пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2646.0,"price":2.88},{"id":102,"cat":"Труба профильная","name":"Труба проф. 25х25х2 ст.2пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2496.0,"price":3.47},{"id":103,"cat":"Труба профильная","name":"Труба проф. 25х25х2 ст.3пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2736.0,"price":3.8},{"id":104,"cat":"Труба профильная","name":"Труба проф. 30х15х1,2 ст3пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2828.4,"price":2.23},{"id":105,"cat":"Труба профильная","name":"Труба проф. 30х20х2 ст3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2688.0,"price":3.76},{"id":106,"cat":"Труба профильная","name":"Труба проф. 30х30х1,5 ст08пс","spec":"ГОСТ 8639-82","kind":"lin","unit":"м.п.","len":6.02,"price_t":2802.0,"price":3.52},{"id":107,"cat":"Труба профильная","name":"Труба проф. 30х30х1,5 ст2пс","spec":"ГОСТ 8639-82","kind":"lin","unit":"м.п.","len":6.02,"price_t":2802.0,"price":3.67},{"id":108,"cat":"Труба профильная","name":"Труба проф. 30х30х2 ст3пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2718.0,"price":4.62},{"id":109,"cat":"Труба профильная","name":"Труба проф. 30х30х2 ст3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2468.4,"price":4.2},{"id":110,"cat":"Труба профильная","name":"Труба проф. 30х30х3 ст.3","spec":"ГОСТ 8639-82 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2468.4,"price":6.0},{"id":111,"cat":"Труба профильная","name":"Труба проф. 40х20х1,5 ст2пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2802.0,"price":3.67},{"id":112,"cat":"Труба профильная","name":"Труба проф. 40х20х2 ст.3сп","spec":"ГОСТ 13663-86","kind":"lin","unit":"м.п.","len":6.01,"price_t":2874.0,"price":4.89},{"id":113,"cat":"Труба профильная","name":"Труба проф. 40х20х3 ст.3пс","spec":"ГОСТ 8645-88","kind":"lin","unit":"м.п.","len":6.01,"price_t":2599.2,"price":6.29},{"id":114,"cat":"Труба профильная","name":"Труба проф. 40х20х3 ст.3пс","spec":"ТУ","kind":"lin","unit":"м.п.","len":6.01,"price_t":2599.2,"price":6.29},{"id":115,"cat":"Труба профильная","name":"Труба проф. 40х25х1,5 ст.08пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2755.32,"price":3.94},{"id":116,"cat":"Труба профильная","name":"Труба проф. 40х25х2 ст.2пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2688.0,"price":5.0},{"id":117,"cat":"Труба профильная","name":"Труба проф. 40х25х3 ст3пс","spec":"ГОСТ 8645-68 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2556.12,"price":6.8},{"id":118,"cat":"Труба профильная","name":"Труба проф. 40х40х1,5 ст2пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2760.0,"price":4.91},{"id":119,"cat":"Труба профильная","name":"Труба проф. 40х40х1,5 ст2пс-5","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2754.0,"price":4.9},{"id":120,"cat":"Труба профильная","name":"Труба проф. 40х40х2 ст.3сп","spec":"ГОСТ 8630-82 ОКРБ","kind":"lin","unit":"м.п.","len":6.01,"price_t":2874.0,"price":6.7},{"id":121,"cat":"Труба профильная","name":"Труба проф. 40х40х2 ст.3сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2780.4,"price":6.48},{"id":122,"cat":"Труба профильная","name":"Труба проф. 40х40х3 ст.3сп5","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2587.2,"price":8.69},{"id":123,"cat":"Труба профильная","name":"Труба проф. 40х40х3 ст.3сп5","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2587.2,"price":8.69},{"id":124,"cat":"Труба профильная","name":"Труба проф. 50х25х1,5 ст08пс","spec":"ГОСТ 8645-68 т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2686.8,"price":4.49},{"id":125,"cat":"Труба профильная","name":"Труба проф. 50х25х2 ст.2пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2754.0,"price":5.98},{"id":126,"cat":"Труба профильная","name":"Труба проф. 50х25х3 ст.3сп","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.03,"price_t":2580.0,"price":8.08},{"id":127,"cat":"Труба профильная","name":"Труба проф. 50х25х3 ст.3сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.03,"price_t":2580.0,"price":8.08},{"id":128,"cat":"Труба профильная","name":"Труба проф. 50х30х3 ст08-3сп","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2610.0,"price":8.77},{"id":129,"cat":"Труба профильная","name":"Труба проф. 50х50х2 ст.3пс","spec":"ТУ 1373-002-40198874-2015 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2424.0,"price":7.18},{"id":130,"cat":"Труба профильная","name":"Труба проф. 50х50х3 ст.3сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2520.0,"price":10.86},{"id":131,"cat":"Труба профильная","name":"Труба проф. 50х50х4 ст.3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2539.2,"price":14.14},{"id":132,"cat":"Труба профильная","name":"Труба проф. 60х30х1,5","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2728.8,"price":5.51},{"id":133,"cat":"Труба профильная","name":"Труба проф. 60х30х2 ст.2пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2649.6,"price":7.02},{"id":134,"cat":"Труба профильная","name":"Труба проф. 60х30х3 ст.3сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2460.0,"price":9.42},{"id":135,"cat":"Труба профильная","name":"Труба проф. 60х40х1,5 ст2пс-5","spec":"ТУ","kind":"lin","unit":"м.п.","len":6.01,"price_t":2672.4,"price":6.04},{"id":136,"cat":"Труба профильная","name":"Труба проф. 60х40х2 ст.2пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2586.0,"price":7.71},{"id":137,"cat":"Труба профильная","name":"Труба проф. 60х40х2 ст.3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2679.6,"price":7.99},{"id":138,"cat":"Труба профильная","name":"Труба проф. 60х40х3 ст.3пс5","spec":"ГОСТ 8645-68 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2598.0,"price":11.2},{"id":139,"cat":"Труба профильная","name":"Труба проф. 60х40х4 ст.3сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2520.0,"price":14.04},{"id":140,"cat":"Труба профильная","name":"Труба проф. 60х60х2 ст3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.07,"price_t":2688.0,"price":10.05},{"id":141,"cat":"Труба профильная","name":"Труба проф. 60х60х3 ст.3пс","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2598.0,"price":13.64},{"id":142,"cat":"Труба профильная","name":"Труба проф. 60х60х3 ст.3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2598.0,"price":13.64},{"id":143,"cat":"Труба профильная","name":"Труба проф. 60х60х4 ст3сп","spec":"ГОСТ8639-82 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2534.53,"price":17.29},{"id":144,"cat":"Труба профильная","name":"Труба проф. 60х60х4 ст3сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2534.53,"price":17.29},{"id":145,"cat":"Труба профильная","name":"Труба проф. 80х40х2 ст.2пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2754.0,"price":9.89},{"id":146,"cat":"Труба профильная","name":"Труба проф. 80х40х3 ст.3пс","spec":"ГОСТ 8645-68 т.м.","kind":"lin","unit":"м.п.","len":6.01,"price_t":2610.0,"price":13.7},{"id":147,"cat":"Труба профильная","name":"Труба проф. 80х60х3 ст.3сп","spec":"ГОСТ 8645-68 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2580.0,"price":16.0},{"id":148,"cat":"Труба профильная","name":"Труба проф. 80х60х5 ст.3сп","spec":"ГОСТ 30245-2003 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2586.0,"price":25.52},{"id":149,"cat":"Труба профильная","name":"Труба проф. 80х80х2 ст.3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":6.02,"price_t":2892.0,"price":14.0},{"id":150,"cat":"Труба профильная","name":"Труба проф. 80х80х4","spec":"ТУ24.20.1-001-04775382-2025","kind":"lin","unit":"м.п.","len":12.01,"price_t":2476.8,"price":23.11},{"id":151,"cat":"Труба профильная","name":"Труба проф.100х 50х3 ст3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":12.02,"price_t":2586.0,"price":17.22},{"id":152,"cat":"Труба профильная","name":"Труба проф.100х 50х4","spec":"ТУ 24.20.1-001-04775382-2025","kind":"lin","unit":"м.п.","len":12.01,"price_t":2598.0,"price":22.6},{"id":153,"cat":"Труба профильная","name":"Труба проф.100х100х3 ст.3пс","spec":"ГОСТ 30245-2003","kind":"lin","unit":"м.п.","len":12.01,"price_t":2559.6,"price":23.09},{"id":154,"cat":"Труба профильная","name":"Труба проф.100х100х4 ст2сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2547.6,"price":30.16},{"id":155,"cat":"Труба профильная","name":"Труба проф.100х100х4 ст3сп","spec":"ГОСТ т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2547.6,"price":30.16},{"id":156,"cat":"Труба профильная","name":"Труба проф.100х100х5 ст3сп","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2546.4,"price":36.69},{"id":157,"cat":"Труба профильная","name":"Труба проф.100х100х7 ст.3сп5","spec":"ГОСТ 30245-2003","kind":"lin","unit":"м.п.","len":12.01,"price_t":2676.0,"price":51.17},{"id":158,"cat":"Труба профильная","name":"Труба проф.120х 40х3 ст.3","spec":"","kind":"lin","unit":"м.п.","len":12.01,"price_t":2754.0,"price":19.83},{"id":159,"cat":"Труба профильная","name":"Труба проф.120х 80х4 ст.3","spec":"ГОСТ 30245-2003","kind":"lin","unit":"м.п.","len":12.02,"price_t":2532.0,"price":29.7},{"id":160,"cat":"Труба профильная","name":"Труба проф.120х120х3","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":12.01,"price_t":2637.6,"price":28.75},{"id":161,"cat":"Труба профильная","name":"Труба проф.120х120х4 ст.3пс","spec":"ТУ т.м.","kind":"lin","unit":"м.п.","len":12.02,"price_t":2593.2,"price":36.95},{"id":162,"cat":"Труба профильная","name":"Труба проф.140х140х4 ст.3","spec":"ГОСТ 30245-2003 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2563.2,"price":42.96},{"id":163,"cat":"Труба профильная","name":"Труба проф.160х160х4","spec":"ГОСТ30245-2003","kind":"lin","unit":"м.п.","len":12.01,"price_t":2566.8,"price":49.59},{"id":164,"cat":"Труба круглая","name":"Труба эл/св. 57х3,0 ст3сп","spec":"т.м.","kind":"lin","unit":"м.п.","len":12.02,"price_t":2592.0,"price":10.37},{"id":165,"cat":"Труба круглая","name":"Труба эл/св. 57х3,5 ст3сп","spec":"ГОСТ 10704-91/ 10705-80 т.м.","kind":"lin","unit":"м.п.","len":12.02,"price_t":2311.2,"price":10.68},{"id":166,"cat":"Труба круглая","name":"Труба эл/св. 76х3,0 ст.3сп","spec":"ГОСТ 10704-91/ 10705-80 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2403.6,"price":12.98},{"id":167,"cat":"Труба круглая","name":"Труба эл/св. 76х3,5 ст.3пс","spec":"ГОСТ 10704-91/ 10705-80 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2425.2,"price":15.21},{"id":168,"cat":"Труба круглая","name":"Труба эл/св. 89х3,0 ст.3пс","spec":"ГОСТ 10704-91/10705-80 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2370.0,"price":15.07},{"id":169,"cat":"Труба круглая","name":"Труба эл/св. 89х3,5 ст.3пс","spec":"ГОСТ 10704-91/10705-80 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2460.0,"price":18.15},{"id":170,"cat":"Труба круглая","name":"Труба эл/св.108х3,5 ст.3сп","spec":"ГОСТ 10704-91/10705-80 т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2460.0,"price":22.19},{"id":171,"cat":"Труба круглая","name":"Труба эл/св.108х4 ст3сп","spec":"т.м.","kind":"lin","unit":"м.п.","len":12.01,"price_t":2460.0,"price":25.24},{"id":172,"cat":"Труба круглая","name":"Труба эл/св.133х4,0 ст.3пс","spec":"ГОСТ 10704-91","kind":"lin","unit":"м.п.","len":12.01,"price_t":2532.0,"price":32.23},{"id":173,"cat":"Труба круглая","name":"Труба эл/св.133х4,5 ст.3пс","spec":"ГОСТ 10705-80","kind":"lin","unit":"м.п.","len":12.02,"price_t":2532.0,"price":36.11},{"id":174,"cat":"Труба круглая","name":"Труба эл/св.159х4,5 ст.3сп","spec":"ГОСТ 10704-91/10705-80 т.м.","kind":"lin","unit":"м.п.","len":12.02,"price_t":2436.0,"price":41.78},{"id":175,"cat":"Труба круглая","name":"Труба эл/св.219х6 ст.20","spec":"ГОСТ 10704-91","kind":"lin","unit":"м.п.","len":12.01,"price_t":2517.6,"price":79.51},{"id":176,"cat":"Труба круглая","name":"Труба эл/св.325х6 ст.20","spec":"ГОСТ 10705-80","kind":"lin","unit":"м.п.","len":12.0,"price_t":2701.2,"price":127.63},{"id":177,"cat":"Лист","name":"Лист г/к 1,5 ст.3сп5","spec":"ГОСТ 19903-2015","kind":"sheet","unit":"лист","size":"1,26х2,51","price_t":2724.0,"price":105.47},{"id":178,"cat":"Лист","name":"Лист г/к 2,0 ст3пс-5 19903-2015/ГОСТ 16523-97","spec":"","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":2719.2,"price":138.68},{"id":179,"cat":"Лист","name":"Лист г/к 3 ст3сп-5","spec":"ГОСТ 16523","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":2677.2,"price":203.47},{"id":180,"cat":"Лист","name":"Лист г/к 4 ст3сп-5","spec":"ГОСТ 14637-2024","kind":"sheet","unit":"лист","size":"1,51х6,0","price_t":2677.2,"price":733.55},{"id":181,"cat":"Лист","name":"Лист г/к 4х1500х6000 ст.09Г2С-15","spec":"","kind":"sheet","unit":"лист","size":"1,5х6,0","price_t":2677.2,"price":754.97},{"id":182,"cat":"Лист","name":"Лист г/к 5 ст.3сп5","spec":"ГОСТ 14637-89","kind":"sheet","unit":"лист","size":"1,51х6,0","price_t":2700.0,"price":936.9},{"id":183,"cat":"Лист","name":"Лист г/к 6 ст.сп/пс","spec":"ГОСТ 19903-2015/ГОСТ 16523-97","kind":"sheet","unit":"лист","size":"1,51х6,0","price_t":2842.8,"price":1203.44},{"id":184,"cat":"Лист","name":"Лист г/к 8 ст.3сп-5","spec":"ГОСТ 14637","kind":"sheet","unit":"лист","size":"1,52х6,0","price_t":2703.6,"price":1483.6},{"id":185,"cat":"Лист","name":"Лист г/к 10 ст.3сп5","spec":"ГОСТ 14637","kind":"sheet","unit":"лист","size":"1,52х6,02","price_t":2703.6,"price":1846.56},{"id":186,"cat":"Лист","name":"Лист г/к 12 ст.3сп5","spec":"ГОСТ 14637-2024","kind":"sheet","unit":"лист","size":"1,51х6,01","price_t":2682.0,"price":2285.06},{"id":187,"cat":"Лист","name":"Лист г/к 12х2000х6000 ст.09Г2С","spec":"","kind":"sheet","unit":"лист","size":"2,0х6,0","price_t":2750.4,"price":3146.46},{"id":188,"cat":"Лист","name":"Лист г/к 14 ст3сп5","spec":"ГОСТ 14637-89","kind":"sheet","unit":"лист","size":"1,51х6,01","price_t":2750.4,"price":2733.9},{"id":189,"cat":"Лист","name":"Лист г/к 16 ст.3сп5","spec":"ГОСТ 14637-89","kind":"sheet","unit":"лист","size":"1,50х6,00","price_t":2750.4,"price":3116.2},{"id":190,"cat":"Лист","name":"Лист г/к 20 ст.3сп5","spec":"ГОСТ 14637-2024","kind":"sheet","unit":"лист","size":"1,51х6,0","price_t":2750.4,"price":3836.81},{"id":191,"cat":"Лист","name":"Лист г/к 25 ст.3сп5","spec":"ГОСТ 14637-89","kind":"sheet","unit":"лист","size":"1,5х6,0","price_t":2628.0,"price":4690.98},{"id":192,"cat":"Лист","name":"Лист оцинк. 0,5 х1250х2500 ст08пс","spec":"","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":3830.4,"price":47.88},{"id":193,"cat":"Лист","name":"Лист оцинк. 0,7х1250х2500 ст.08пс","spec":"ГОСТ 19904-90","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":3540.0,"price":62.66},{"id":194,"cat":"Лист","name":"Лист оцинк. 1,0х1250х2500 Zn140","spec":"ГОСТ 19904-90","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":3386.4,"price":84.66},{"id":195,"cat":"Лист","name":"Лист оцинк. 1,2х1250х2500","spec":"ГОСТ 19904-90","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":3709.2,"price":111.28},{"id":196,"cat":"Лист","name":"Лист оцинк. 1,5 х1250х2500 Zn140","spec":"ГОСТ 14918-2020","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":3714.0,"price":137.42},{"id":197,"cat":"Лист","name":"Лист оцинк. 2,0х1250х2500 Zn140","spec":"ГОСТ 14918-2020","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":4006.8,"price":200.34},{"id":198,"cat":"Лист","name":"Лист ПВЛ-408 4х1200х2300(2400) ст3пс","spec":"","kind":"sheet","unit":"лист","size":"1,2х2,3(2,4)","price_t":2882.4,"price":156.8},{"id":199,"cat":"Лист","name":"Лист ПВЛ-508 5х1500х2500 ст3","spec":"","kind":"sheet","unit":"лист","size":"1,5х2,5","price_t":2886.0,"price":256.85},{"id":200,"cat":"Лист","name":"Лист рифл.г/к 3 ст3пс ромб.","spec":"ГОСТ 8568-77","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":2728.8,"price":212.16},{"id":201,"cat":"Лист","name":"Лист рифл.г/к 4 ст3сп чечев.","spec":"ГОСТ","kind":"sheet","unit":"лист","size":"1,51х6,0","price_t":2749.2,"price":797.27},{"id":202,"cat":"Лист","name":"Лист рифл.г/к 5 ст.сп/пс ромб.","spec":"","kind":"sheet","unit":"лист","size":"1,51х6,03","price_t":2566.8,"price":898.38},{"id":203,"cat":"Лист","name":"Лист рифл.г/к 5 ст.сп/пс чечев.","spec":"","kind":"sheet","unit":"лист","size":"1,51х6,03","price_t":2566.8,"price":898.38},{"id":204,"cat":"Лист","name":"Лист рифл.г/к 6 ст.сп/пс чечев.","spec":"","kind":"sheet","unit":"лист","size":"1,51х6,03","price_t":2566.8,"price":1078.06},{"id":205,"cat":"Лист","name":"Лист х/к 0,5 ст.08пс5","spec":"ГОСТ16523-97","kind":"sheet","unit":"лист","size":"1,25х2,50","price_t":3277.2,"price":42.6},{"id":206,"cat":"Лист","name":"Лист х/к 0,8 ст.08пс","spec":"ГОСТ 19904-90/ГОСТ 16523-97","kind":"sheet","unit":"лист","size":"1,25х2,50","price_t":2797.2,"price":55.94},{"id":207,"cat":"Лист","name":"Лист х/к 1,0","spec":"ГОСТ 19904-90/16523-97","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":2716.8,"price":67.92},{"id":208,"cat":"Лист","name":"Лист х/к 1,2 ст.08пс","spec":"ГОСТ 16523-97","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":2716.8,"price":81.5},{"id":209,"cat":"Лист","name":"Лист х/к 1,5 ст.08пс","spec":"ТУ отож","kind":"sheet","unit":"лист","size":"1,26х2,51","price_t":2928.0,"price":111.26},{"id":210,"cat":"Лист","name":"Лист х/к 2,0 ст.08пс-6","spec":"ГОСТ 16523-97, ГОСТ 19904-90","kind":"sheet","unit":"лист","size":"1,25х2,51","price_t":2928.0,"price":146.4},{"id":211,"cat":"Лист","name":"Лист х/к 3,0 ст.08пс","spec":"ТУ14-105-809-14","kind":"sheet","unit":"лист","size":"1,25х2,5","price_t":2856.0,"price":212.77},{"id":212,"cat":"Полоса","name":"Полоса 12х20 ст3","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.04,"price_t":3568.8,"price":6.75},{"id":213,"cat":"Полоса","name":"Полоса 3х25 ст.3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.02,"price_t":3267.6,"price":2.12},{"id":214,"cat":"Полоса","name":"Полоса 3х30ст.3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.01,"price_t":3355.2,"price":2.52},{"id":215,"cat":"Полоса","name":"Полоса 4х100 ст.3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.01,"price_t":3334.8,"price":10.47},{"id":216,"cat":"Полоса","name":"Полоса 4х20 ст.сп/пс","spec":"","kind":"lin","unit":"м.п.","len":6.04,"price_t":2912.4,"price":1.83},{"id":217,"cat":"Полоса","name":"Полоса 4х25 ст3","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.01,"price_t":3702.0,"price":3.0},{"id":218,"cat":"Полоса","name":"Полоса 4х30 Ст3пс","spec":"ГОСТ","kind":"lin","unit":"м.п.","len":6.01,"price_t":2436.0,"price":2.46},{"id":219,"cat":"Полоса","name":"Полоса 4х40 ст.3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.04,"price_t":2583.6,"price":3.31},{"id":220,"cat":"Полоса","name":"Полоса 4х50 ст.3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.01,"price_t":2397.6,"price":3.81},{"id":221,"cat":"Полоса","name":"Полоса 5х30 ст.3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.0,"price_t":2496.0,"price":2.95},{"id":222,"cat":"Полоса","name":"Полоса 5х50 ст.3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.03,"price_t":2763.6,"price":5.42},{"id":223,"cat":"Полоса","name":"Полоса 6х12 ст3сп","spec":"","kind":"lin","unit":"м.п.","len":6.03,"price_t":4562.4,"price":2.6},{"id":224,"cat":"Полоса","name":"Полоса 6х60 ст3пс","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.01,"price_t":2985.6,"price":8.51},{"id":225,"cat":"Полоса","name":"Полоса 8х100 ст3","spec":"ГОСТ 103-2006","kind":"lin","unit":"м.п.","len":6.01,"price_t":3092.4,"price":19.79},{"id":226,"cat":"Полоса","name":"Полоса 8х40 ст.3пс","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":2436.0,"price":6.11},{"id":227,"cat":"Круг","name":"Круг г/к ф 18 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2269.2,"price":4.54},{"id":228,"cat":"Круг","name":"Круг г/к ф 20 ст.45","spec":"","kind":"lin","unit":"м.п.","len":6.03,"price_t":2487.6,"price":6.14},{"id":229,"cat":"Круг","name":"Круг г/к ф 22 ст.45","spec":"","kind":"lin","unit":"м.п.","len":6.03,"price_t":1801.2,"price":5.4},{"id":230,"cat":"Круг","name":"Круг г/к ф 25 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2250.0,"price":8.78},{"id":231,"cat":"Круг","name":"Круг г/к ф 30 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.03,"price_t":2280.0,"price":13.29},{"id":232,"cat":"Круг","name":"Круг г/к ф 30 ст.45","spec":"","kind":"lin","unit":"м.п.","len":6.04,"price_t":2280.0,"price":12.77},{"id":233,"cat":"Круг","name":"Круг г/к ф 38 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":2232.0,"price":19.86},{"id":234,"cat":"Круг","name":"Круг г/к ф 42 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":2232.0,"price":24.55},{"id":235,"cat":"Круг","name":"Круг г/к ф 48 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2232.0,"price":31.92},{"id":236,"cat":"Круг","name":"Круг г/к ф 52 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2232.0,"price":37.27},{"id":237,"cat":"Круг","name":"Круг г/к ф 52 ст.45","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2256.0,"price":37.68},{"id":238,"cat":"Круг","name":"Круг г/к ф 60 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2232.0,"price":49.55},{"id":239,"cat":"Круг","name":"Круг г/к ф 80 ст3","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2232.0,"price":88.16},{"id":240,"cat":"Круг","name":"Круг г/к ф 90 ст.3","spec":"","kind":"lin","unit":"м.п.","len":6.01,"price_t":2232.0,"price":111.47},{"id":241,"cat":"Круг","name":"Круг г/к ф 90 ст.3","spec":"ГОСТ 2590-06","kind":"lin","unit":"м.п.","len":6.01,"price_t":2652.0,"price":132.44},{"id":242,"cat":"Круг","name":"Круг г/к ф120 ст45","spec":"","kind":"lin","unit":"м.п.","len":6.02,"price_t":2520.0,"price":223.78},{"id":243,"cat":"Круг","name":"Круг г/к ф180 ст3","spec":"","kind":"lin","unit":"м.п.","len":4.985,"price_t":2450.4,"price":484.2},{"id":244,"cat":"Квадрат","name":"Квадрат 8х 8 ст3пс","spec":"ГОСТ 2591","kind":"lin","unit":"м.п.","len":6.03,"price_t":4020.0,"price":2.05},{"id":245,"cat":"Квадрат","name":"Квадрат 10х10 ст.3","spec":"ГОСТ 2591","kind":"lin","unit":"м.п.","len":6.02,"price_t":2596.8,"price":2.08},{"id":246,"cat":"Квадрат","name":"Квадрат 12х12 ст.3","spec":"ГОСТ 2591-2006","kind":"lin","unit":"м.п.","len":6.04,"price_t":2528.4,"price":2.88},{"id":247,"cat":"Квадрат","name":"Квадрат 14х14 ст.3","spec":"ГОСТ 2591","kind":"lin","unit":"м.п.","len":6.01,"price_t":2557.2,"price":3.94},{"id":248,"cat":"Квадрат","name":"Квадрат 16х16 ст.3сп1","spec":"ГОСТ 2591","kind":"lin","unit":"м.п.","len":6.01,"price_t":2366.4,"price":4.87},{"id":249,"cat":"Квадрат","name":"Квадрат 20х20 ст.3пс","spec":"ГОСТ 2591","kind":"lin","unit":"м.п.","len":6.01,"price_t":2520.0,"price":7.99},{"id":250,"cat":"Шестигранник","name":"Шестигранник 14 ст.20","spec":"ГОСТ 2879","kind":"lin","unit":"м.п.","len":6.04,"price_t":3572.4,"price":4.82},{"id":251,"cat":"Шестигранник","name":"Шестигранник 17 ст.45","spec":"ГОСТ 2879","kind":"lin","unit":"м.п.","len":6.01,"price_t":3376.8,"price":6.75},{"id":252,"cat":"Шестигранник","name":"Шестигранник 19 ст.45","spec":"ГОСТ 2879","kind":"lin","unit":"м.п.","len":6.0,"price_t":3376.8,"price":8.44},{"id":253,"cat":"Шестигранник","name":"Шестигранник 22 ст.35","spec":"ГОСТ 2879","kind":"lin","unit":"м.п.","len":6.03,"price_t":3757.2,"price":12.44},{"id":254,"cat":"Шестигранник","name":"Шестигранник 24 ст.20","spec":"ГОСТ 2879","kind":"lin","unit":"м.п.","len":6.04,"price_t":3946.8,"price":15.59},{"id":255,"cat":"Шестигранник","name":"Шестигранник 27 ст.45","spec":"ГОСТ 2879","kind":"lin","unit":"м.п.","len":6.04,"price_t":3376.8,"price":16.55},{"id":256,"cat":"Шестигранник","name":"Шестигранник 30 ст.35","spec":"ГОСТ 2879","kind":"lin","unit":"м.п.","len":6.04,"price_t":3758.4,"price":22.55},{"id":257,"cat":"Сетка сварная","name":"Сетка сварная 12,5х12,5х0,8мм, оц.(рулон 1,0х25м)","spec":"","kind":"roll","unit":"рулон","size":"1,0х25","price_m2":4.8,"price":4.8},{"id":258,"cat":"Сетка сварная","name":"Сетка сварная 20х20х0,8мм, оц.(рулон 1,0х25м)","spec":"","kind":"roll","unit":"рулон","size":"1,0х25","price_m2":3.6,"price":3.6},{"id":259,"cat":"Сетка сварная","name":"Сетка сварная 6х6х0,6мм, оц.(рулон 1,0х25м)","spec":"","kind":"roll","unit":"рулон","size":"1,0х25","price_m2":6.0,"price":6.0},{"id":260,"cat":"Сетка сварная","name":"Сетка стальная сварная 50х3х1000х2000","spec":"","kind":"roll","unit":"лист","size":"1,0х2,0","price_m2":7.14,"price":7.14},{"id":261,"cat":"Сетка сварная","name":"Сетка стальная сварная 50х3х500х2000","spec":"","kind":"roll","unit":"лист","size":"0,5х2,0","price_m2":5.4,"price":5.4},{"id":262,"cat":"Сетка сварная","name":"Сетка стальная сварная 50х4х1000х2000","spec":"","kind":"roll","unit":"лист","size":"1,0х2,0","price_m2":9.84,"price":9.84},{"id":263,"cat":"Сетка сварная","name":"Сетка стальная сварная (ГОСТ) 100х3х2000х3000","spec":"","kind":"roll","unit":"лист","size":"2х3","price_m2":4.2,"price":4.2},{"id":264,"cat":"Сетка сварная","name":"Сетка стальная сварная (ГОСТ) 100х4х2000х3000","spec":"","kind":"roll","unit":"лист","size":"2х3","price_m2":6.36,"price":6.36},{"id":265,"cat":"Сетка сварная","name":"Сетка стальная сварная (ГОСТ) 100х5х2000х3000","spec":"","kind":"roll","unit":"лист","size":"2х3","price_m2":11.09,"price":11.09},{"id":266,"cat":"Сетка сварная","name":"Сетка стальная сварная (ГОСТ) 150х3х2000х3000","spec":"","kind":"roll","unit":"лист","size":"2х3","price_m2":3.6,"price":3.6},{"id":267,"cat":"Сетка сварная","name":"Сетка стальная сварная (ГОСТ) 200х4х2000х3000","spec":"","kind":"roll","unit":"лист","size":"2х3","price_m2":4.03,"price":4.03},{"id":268,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.1,6мм оц.выс.1,2м","spec":"","kind":"roll","unit":"рулон","size":"1,2х10","price_m2":2.75,"price":33.0},{"id":269,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.1,6мм оц.выс.1,5м","spec":"","kind":"roll","unit":"рулон","size":"1,5х10","price_m2":3.12,"price":46.8},{"id":270,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.1,8мм оц.выс.1,2м","spec":"","kind":"roll","unit":"рулон","size":"1,2х10","price_m2":3.9,"price":46.8},{"id":271,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.1,8мм оц.выс.1,8м","spec":"","kind":"roll","unit":"рулон","size":"1,8х10","price_m2":3.84,"price":69.12},{"id":272,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.2,0мм оц.выс.1,2м","spec":"","kind":"roll","unit":"рулон","size":"1,2х10","price_m2":3.94,"price":47.28},{"id":273,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.2,0мм оц.выс.1,5м","spec":"","kind":"roll","unit":"рулон","size":"1,5х10","price_m2":4.8,"price":72.0},{"id":274,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.2,0мм оц.выс.2,0м","spec":"","kind":"roll","unit":"рулон","size":"2,0х10","price_m2":4.8,"price":96.0},{"id":275,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.2,4мм ПВХ выс.2,0м - зеленый","spec":"","kind":"roll","unit":"рулон","size":"2,0х10","price_m2":4.32,"price":86.4},{"id":276,"cat":"Сетка рабица","name":"Сетка рабица 55х55 д.2,4мм ПВХ покр. выс.1,2м","spec":"","kind":"roll","unit":"рулон","size":"1,2х10","price_m2":4.26,"price":51.12},{"id":277,"cat":"Нержавейка","name":"Сталь нержав. х/к н/с лист AISI 304 (08Х18Н10) №1 3х1250х2500","spec":"","kind":"sheet","unit":"лист","size":"3х1250х2500","price_t":11956.8,"price":884.8},{"id":278,"cat":"Нержавейка","name":"Сталь нержав.х/к б/н AISI 430 (08Х17) 2В 0,5х1000х2000","spec":"","kind":"sheet","unit":"лист","size":"1000х2000","price_t":7549.2,"price":117.47}]};
+</script>
+<script>
+(function(){
+'use strict';
+const NB=' ', ITEMS=DATA.items, CATS=['Все'].concat(DATA.cats);
+const byId=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=n=>`<svg class="i" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+function group(s){return s.replace(/\B(?=(\d{3})+(?!\d))/g,NB)}
+function money(n){const [a,b]=Math.abs(n).toFixed(2).split('.');return group(a)+','+b}
+function num(n,d=2){let s=(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);if(s.includes('.'))s=s.replace(/\.?0+$/,'');const [a,b]=s.split('.');return group(a)+(b?','+b:'')}
+const rub=n=>money(n)+NB+'р.';
+const pf=v=>{const x=parseFloat(String(v).replace(',','.').replace(/\s/g,''));return isFinite(x)&&x>0?x:0};
+const pad2=n=>String(n).padStart(2,'0');
+const plural=(n,a,b,c)=>{const m=n%100,k=n%10;return (m>10&&m<20)?c:k===1?a:(k>=2&&k<=4)?b:c};
+
+/* ---- поиск ---- */
+const MAP={x:'х',a:'а',c:'с',e:'е',o:'о',p:'р',k:'к',m:'м',h:'н',t:'т',ё:'е'};
+const norm=s=>s.toLowerCase().replace(/[xacepokmhtё]/g,c=>MAP[c]).replace(/,/g,'.');
+ITEMS.forEach(i=>{i._h=norm(i.name+' '+i.spec+' '+i.cat);i._h2=i._h.replace(/\s/g,'')});
+function match(i,q){return q.split(/\s+/).filter(Boolean).every(t=>i._h.includes(t)||i._h2.includes(t))}
+
+/* ---- единицы ---- */
+function sizeText(i){
+  if(i.kind==='lin') return i.len?`хлыст ${num(i.len)}${NB}м`:'длина по запросу';
+  const s=(i.size||'').replace(/х/g,'×');
+  return `${i.unit} ${s}${/^\d+×\d+×\d+$/.test(s)?NB+'мм':NB+'м'}`;
+}
+function priceText(i){return {big:`${money(i.price)}${NB}р./${i.kind==='lin'?'м.п.':i.unit}`,
+  small:i.kind==='lin'?`${money(i.price_t)}${NB}р./т`:(i.kind==='roll'?`${money(i.price_m2)}${NB}р./м²`:`${money(i.price_t)}${NB}р./т`)}}
+const kgPerUnit=i=>i.price_t?i.price/i.price_t*1000:0;
+
+/* ---- состояние ---- */
+const now=new Date();
+const S={role:'client',screen:'catalog',cat:'Все',q:'',shown:40,cart:[],sheet:null,
+  mode:'pickup',pay:'erip',day:0,slot:null,name:'ИП Пример',phone:'+375 29 000-00-00',addr:'',
+  orders:[],sel:null,myId:null,seq:16};
+const HOLID=[];
+function workDays(){
+  const out=[];let d=new Date(now);d.setHours(0,0,0,0);
+  const wd=x=>x.getDay()!==0&&x.getDay()!==6;
+  let first=true;
+  while(out.length<4){
+    if(wd(d)&&!(first&&(now.getHours()>=15||!wd(now)))) out.push(new Date(d));
+    first=false;d.setDate(d.getDate()+1);
+  }
+  const t0=new Date(now);t0.setHours(0,0,0,0);
+  return out.map(x=>{const diff=Math.round((x-t0)/864e5);
+    const w=['вс','пн','вт','ср','чт','пт','сб'][x.getDay()];
+    const lab=diff===0?'Сегодня':diff===1?'Завтра':w;
+    return {d:x,label:`${lab}, ${pad2(x.getDate())}.${pad2(x.getMonth()+1)}`,today:diff===0}});
+}
+function slotsFor(day){
+  const out=[];for(let m=9*60;m<=16*60+30;m+=30){
+    if(day.today&&m<=now.getHours()*60+now.getMinutes()+60) continue;
+    out.push(pad2(Math.floor(m/60))+':'+pad2(m%60));}
+  return out;
+}
+function ensureSlot(){const days=workDays();if(S.day>=days.length)S.day=0;const sl=slotsFor(days[S.day]);if(!sl.includes(S.slot))S.slot=sl.includes('14:00')?'14:00':sl[0]||null;}
+
+/* ---- примеры заявок (вымышленные) ---- */
+const find=(sub,n=0)=>ITEMS.filter(i=>i.name.includes(sub))[n]||ITEMS[0];
+function mk(id,no,client,time,mode,pay,status,lines,extra){
+  const items=lines.map(([it,q,meta])=>({id:it.id,q,meta:meta||'',sum:q*it.price}));
+  return Object.assign({id,no,client,time,mode,pay,status,items,total:items.reduce((s,x)=>s+x.sum,0),ts:[],example:true},extra||{});
+}
+S.orders=[
+  mk('o1','1109-011','ООО «Строй-Пример»','09:00','pickup','bez',3,[[find('Арматура А500С ф12мм'),240],[find('Арматура А500С ф10'),120]],{ts:['08:41','08:52','09:05','09:12']}),
+  mk('o2','1109-012','ИП Пример А.','10:30','pickup','erip',2,[[find('Сетка рабица 55х55 д.1,8мм оц.выс.1,2м'),2]],{ts:['09:50','10:02','10:21']}),
+  mk('o3','1109-013','Бригада Пример','13:00','delivery','bez',1,[[find('Труба проф. 60х60х4'),72],[find('Уголок 50х50х4'),48]],{ts:['11:15','11:40']}),
+  mk('o4','1109-014','ИП Пример Б.','14:00','pickup','erip',0,[[find('Труба проф. 40х40х2'),36,'резка 1,5 м × 24'],[find('Арматура А500С ф12мм'),60],[find('Сетка рабица 55х55 д.2,0мм оц.выс.1,5м'),1]],{ts:['12:03']}),
+  mk('o5','1109-015','ООО «Пример-Монтаж»','15:30','pickup','cash',0,[[find('Лист г/к 3 ст3сп-5'),3],[find('Швеллер 10 П ст.3сп/пс'),24]],{ts:['12:20']}),
+];
+S.orders.forEach(o=>o.no=o.no.replace('1109','0911'));
+S.sel='o4';
+
+/* ---- корзина ---- */
+const cartSum=()=>S.cart.reduce((s,l)=>s+l.sum,0);
+const cartQty=()=>S.cart.length;
+function unitShort(i){return i.kind==='lin'?'м.п.':i.unit}
+function lineText(l){const i=byId[l.id];return `${num(l.qty)}${NB}${unitShort(i)}`}
+
+/* ---- шапка ---- */
+function bar(title,sub,opts={}){
+  return `<header class="tgbar">${opts.back?`<button class="ib" data-act="${opts.back}" aria-label="Назад" style="margin-left:-8px">${ic('back')}</button>`:'<div class="mark" aria-hidden="true">Б</div>'}
+  <div class="t"><b>${title}</b><span>${sub}</span></div>
+  ${opts.cart?`<button class="ib" data-act="cart" aria-label="Корзина">${ic('cart')}${cartQty()?`<span class="badge num">${cartQty()}</span>`:''}</button>`:''}</header>`;
+}
+
+/* ---- КЛИЕНТ: каталог ---- */
+function catalogHTML(){
+  const q=norm(S.q.trim());
+  let list=ITEMS.filter(i=>(S.cat==='Все'||i.cat===S.cat)&&(!q||match(i,q)));
+  const total=list.length;list=list.slice(0,S.shown);
+  const inCart=Object.fromEntries(S.cart.map(l=>[l.id,l]));
+  const rows=list.map(i=>{const p=priceText(i),l=inCart[i.id];
+    return `<li><button class="row${l?' in':''}" data-act="open" data-id="${i.id}">
+      <span class="main"><span class="nm">${esc(i.name)}</span>
+      <span class="sp">${esc(sizeText(i))}${i.spec?' · '+esc(i.spec):''}</span>
+      ${l?`<span class="incart num">В заказе: ${lineText(l)}</span>`:''}</span>
+      <span class="pr num"><b>${p.big}</b><span>${p.small}</span></span>
+      <span class="add">${ic(l?'check':'plus')}</span></button></li>`}).join('');
+  const cnt=cartQty();
+  return `${bar('БАРСАвтоМет','Металлопрокат · мини-приложение',{cart:1})}
+  <section class="lead"><h1>Металл без очереди</h1>
+  <p>Соберите заказ заранее. К вашему приезду счёт и отгрузка уже готовы.</p>
+  <ul class="facts"><li>${ic('pin')}Брест, Учительская, 43/1</li><li>${ic('clock')}пн–пт 8:30–17:00</li></ul></section>
+  <label class="search">${ic('search')}<span class="sr">Поиск по каталогу</span>
+    <input id="q" type="search" inputmode="search" autocomplete="off" placeholder="Например: 40х40, ф12, рабица" value="${esc(S.q)}">
+    ${S.q?`<button data-act="clearq" aria-label="Очистить">${ic('x')}</button>`:''}</label>
+  <div class="chips" role="group" aria-label="Категории">${CATS.map(c=>`<button class="chip" data-act="cat" data-cat="${esc(c)}" aria-pressed="${c===S.cat}">${esc(c)}</button>`).join('')}</div>
+  <div class="src">Каталог barsmet.by на ${DATA.collected}. Оптовые цены с НДС, не публичная оферта – итог подтвердит менеджер.</div>
+  <ul class="list" style="margin-top:6px">${rows||`<li class="empty"><b>Ничего не нашли</b>Попробуйте другой размер или категорию.</li>`}</ul>
+  ${total>S.shown?`<button class="more" data-act="more">Показать ещё · осталось ${total-S.shown}</button>`:''}
+  <div style="height:${cnt?70:20}px"></div>
+  ${cnt?`<div class="main-btn" style="position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:430px;bottom:0"><button class="btn split" data-act="cart">${ic('cart')}<span>Заказ · ${cnt} ${plural(cnt,'позиция','позиции','позиций')}</span><span class="sum">${rub(cartSum())}</span></button></div>`:''}`;
+}
+
+/* ---- КЛИЕНТ: калькулятор ---- */
+function calc(sh){
+  const i=byId[sh.id];const r={ok:false,rows:[],qty:0,sum:0,meta:'',err:''};
+  const kg=kgPerUnit(i);
+  if(i.kind==='lin'){
+    let m=0,bars=null;
+    if(sh.mode==='m'){m=pf(sh.m);if(i.len&&m)bars=Math.ceil(m/i.len-1e-9);
+      r.rows.push(['Нужно',`${num(m)}${NB}м`]);
+      if(bars!==null)r.rows.push(['Хлыстов',`${bars}${NB}шт × ${num(i.len)}${NB}м`]);
+    }else{
+      const size=pf(sh.size)/1000,cnt=Math.floor(pf(sh.cnt));
+      if(size&&cnt){
+        if(i.len){const per=Math.floor(i.len/size+1e-9);
+          if(per<1){r.err=`Деталь ${num(size,3)} м длиннее хлыста ${num(i.len)} м.`;}
+          else{bars=Math.ceil(cnt/per);m=size*cnt;
+            r.rows.push(['Из хлыста',`${per}${NB}дет. по ${num(size*1000,0)}${NB}мм`]);
+            r.rows.push(['Взять хлыстов',`${bars}${NB}шт`]);
+            r.rows.push(['Отход',`${num(bars*i.len-m)}${NB}м`]);}
+        }else{m=size*cnt;}
+        r.rows.push(['Резаных деталей',`${cnt}${NB}шт = ${num(m)}${NB}м`]);
+        r.meta=`резка ${num(size*1000,0)}${NB}мм × ${cnt}`;
+      }
+    }
+    r.qty=m;
+    if(m&&kg)r.rows.push(['Вес (расчётный)',`${num(m*kg,1)}${NB}кг`]);
+  }else if(i.kind==='sheet'){
+    const q=Math.floor(pf(sh.q));r.qty=q;
+    r.rows.push(['Листов',`${q}${NB}шт`]);
+    if(q&&kg)r.rows.push(['Вес (расчётный)',`${num(q*kg,1)}${NB}кг`]);
+  }else{
+    const q=Math.floor(pf(sh.q));r.qty=q;
+    r.rows.push([i.unit==='рулон'?'Рулонов':'Листов',`${q}${NB}шт`]);
+  }
+  r.sum=r.qty*i.price;r.ok=r.qty>0&&!r.err;
+  r.rows.push(['Сумма',rub(r.sum)]);
+  return r;
+}
+function openSheet(id){
+  const i=byId[id],l=S.cart.find(x=>x.id===id);
+  const sh={id,mode:'m',m:'12',size:'1500',cnt:'20',q:'1',len:''};
+  if(l&&l.sh)Object.assign(sh,l.sh);
+  else if(i.kind==='lin'&&i.len)sh.m=String(Math.round(i.len*10)/10).replace('.',',');
+  S.sheet=sh;renderSheet();
+}
+function sheetBody(sh){
+  const i=byId[sh.id];let h='';
+  if(i.kind==='lin'){
+    h+=`<div class="seg" role="group" aria-label="Режим расчёта"><button data-act="smode" data-v="m" aria-pressed="${sh.mode==='m'}">Метры</button><button data-act="smode" data-v="cut" aria-pressed="${sh.mode==='cut'}">Резка в размер</button></div>`;
+    if(sh.mode==='m'){
+      h+=`<label class="field"><span>Сколько метров</span><input class="inp num" id="f-m" inputmode="decimal" value="${esc(sh.m)}"></label>
+      <div class="quick">${[6,12,24,50,100].map(v=>`<button data-act="qm" data-v="${v}">${v}${NB}м</button>`).join('')}</div>`;
+    }else{
+      h+=`<div class="two"><label class="field"><span>Размер детали, мм</span><input class="inp num" id="f-size" inputmode="numeric" value="${esc(sh.size)}"></label>
+      <label class="field"><span>Сколько штук</span><input class="inp num" id="f-cnt" inputmode="numeric" value="${esc(sh.cnt)}"></label></div>`;
+    }
+  }else{
+    if(i.kind==='roll'){
+      const m=(i.size||'').match(/([\d,]+)\s*х\s*([\d,]+)/);const L=m?Math.max(pf(m[1]),pf(m[2])):0;
+      if(L&&i.unit==='рулон')h+=`<label class="field"><span>Нужна длина, м (посчитаем рулоны по ${num(L)}${NB}м)</span><input class="inp num" id="f-len" inputmode="decimal" placeholder="Например: 38" value="${esc(sh.len)}" data-L="${L}"></label>`;
+    }
+    h+=`<div class="field"><span>${i.unit==='рулон'?'Рулонов':'Листов'}</span><div class="stepper"><button data-act="qminus" aria-label="Меньше">${ic('minus')}</button><input class="inp num" id="f-q" inputmode="numeric" value="${esc(sh.q)}" style="text-align:center"><button data-act="qplus" aria-label="Больше">${ic('plus')}</button></div></div>`;
+  }
+  return h+`<div class="res num" id="res"></div><div id="resx"></div>`;
+}
+function renderSheet(){
+  const sh=S.sheet;const layer=$('#layer');
+  if(!sh){layer.innerHTML='';document.body.style.overflow='';return}
+  const i=byId[sh.id],p=priceText(i),inC=S.cart.some(x=>x.id===sh.id);
+  document.body.style.overflow='hidden';
+  layer.innerHTML=`<div class="scrim" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(i.name)}">
+    <div class="grab"></div><h2>${esc(i.name)}</h2>
+    <div class="sub">${esc(sizeText(i))}${i.spec?' · '+esc(i.spec):''} · ${p.big}</div>
+    <div id="sbody">${sheetBody(sh)}</div>
+    <p class="note">${i.kind==='lin'?'Резка, рубка и доставка оплачиваются отдельно – их стоимость назовёт менеджер.':'Итог подтвердит менеджер.'}</p>
+    <div style="display:grid;gap:8px;margin-top:12px"><button class="btn" id="addbtn" data-act="addline"></button>
+    ${inC?`<button class="btn line" data-act="rmline">Убрать из заказа</button>`:''}</div></div></div>`;
+  updateCalc();
+}
+function updateCalc(){
+  const sh=S.sheet;if(!sh)return;const r=calc(sh);
+  $('#res').innerHTML=r.rows.map((x,k)=>`<div class="${k===r.rows.length-1?'tot':''}"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+  $('#resx').innerHTML=r.err?`<div class="warn" role="alert">${r.err}</div>`:'';
+  const b=$('#addbtn');b.disabled=!r.ok;
+  b.innerHTML=r.ok?`${S.cart.some(x=>x.id===sh.id)?'Обновить':'В заказ'}<span class="sum">${rub(r.sum)}</span>`:'Укажите количество';
+  b.className='btn'+(r.ok?' split':'');
+}
+function addLine(){
+  const sh=S.sheet,r=calc(sh);if(!r.ok)return;
+  const l={id:sh.id,qty:r.qty,sum:r.sum,meta:r.meta,sh:Object.assign({},sh)};
+  const k=S.cart.findIndex(x=>x.id===sh.id);k>=0?S.cart[k]=l:S.cart.push(l);
+  S.sheet=null;renderSheet();render();
+}
+
+/* ---- КЛИЕНТ: корзина ---- */
+function cartHTML(){
+  ensureSlot();const days=workDays(),day=days[S.day],slots=slotsFor(day);
+  const lines=S.cart.map(l=>{const i=byId[l.id];return `<div class="crow"><button class="l" data-act="open" data-id="${l.id}"><b>${esc(i.name)}</b><span class="num">${lineText(l)}${l.meta?' · '+esc(l.meta):''}</span></button><div class="r num">${rub(l.sum)}</div><button class="x" data-act="rm" data-id="${l.id}" aria-label="Убрать">${ic('trash')}</button></div>`}).join('');
+  const emptyC=!S.cart.length;
+  return `${bar('Ваш заказ',emptyC?'пока пусто':`${cartQty()} ${plural(cartQty(),'позиция','позиции','позиций')}`,{back:'catalog'})}
+  ${emptyC?`<div class="empty"><b>В заказе пока ничего нет</b>Выберите позиции в каталоге.<br><br><button class="btn" data-act="catalog" style="max-width:240px;margin:auto">В каталог</button></div>`:`
+  <div>${lines}</div>
+  <div class="totline"><span>Итого</span><span class="num">${rub(cartSum())}</span></div>
+  <div class="h2">Как получить</div>
+  <div class="opt c2">
+    <button class="card-opt" data-act="mode" data-v="pickup" aria-pressed="${S.mode==='pickup'}"><b>${ic('store')}Самовывоз</b><span>Приедете ко времени – всё готово</span></button>
+    <button class="card-opt" data-act="mode" data-v="delivery" aria-pressed="${S.mode==='delivery'}"><b>${ic('truck')}Длинномер</b><span>До 12${NB}м и 21${NB}т, доставим на объект</span></button>
+  </div>
+  <div class="h2">${S.mode==='pickup'?'Когда приедете':'Когда привезти'}</div>
+  <div class="days" role="group">${days.map((d,k)=>`<button data-act="day" data-v="${k}" aria-pressed="${k===S.day}">${d.label}</button>`).join('')}</div>
+  ${S.mode==='pickup'?`<div class="slots" role="group" aria-label="Время приезда">${slots.map(s=>`<button data-act="slot" data-v="${s}" aria-pressed="${s===S.slot}">${s}</button>`).join('')}</div>
+    <div class="hint">Склад «Гершоны» работает пн–пт 8:30–17:00.</div>`
+  :`<div class="form" style="margin-top:10px"><label class="field" style="margin-top:0"><span>Адрес разгрузки</span><input class="inp" id="f-addr" placeholder="Город, улица, объект" value="${esc(S.addr)}"></label></div>
+    <div class="hint">Доставка с 8:30 до 17:00 в будни. Стоимость и время согласует менеджер.</div>`}
+  <div class="h2">Как оплатить</div>
+  <div class="opt">
+    <button class="card-opt h" data-act="pay" data-v="erip" aria-pressed="${S.pay==='erip'}"><div class="tx"><b>ЕРИП</b><span>Счёт придёт сюда, платите из любого банкинга</span></div></button>
+    <button class="card-opt h" data-act="pay" data-v="bez" aria-pressed="${S.pay==='bez'}"><div class="tx"><b>Безналом по счёту</b><span>Для юрлиц и ИП, счёт – файлом в чат</span></div></button>
+    <button class="card-opt h" data-act="pay" data-v="cash" aria-pressed="${S.pay==='cash'}"><div class="tx"><b>На месте</b><span>Наличные или карта при отгрузке</span></div></button>
+  </div>
+  <div class="h2">Кто заказывает <span class="demo-tag">пример</span></div>
+  <div class="form"><label class="field" style="margin-top:0"><span>Имя или организация</span><input class="inp" id="f-name" value="${esc(S.name)}"></label>
+  <label class="field"><span>Телефон</span><input class="inp" id="f-phone" inputmode="tel" value="${esc(S.phone)}"></label></div>
+  <div class="hint">Ничего никуда не отправляется: это демо. Кнопка ниже покажет следующий экран.</div>
+  <div style="height:90px"></div>
+  <div class="main-btn" style="position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:430px;bottom:0"><button class="btn split" data-act="send" ${S.mode==='pickup'&&!S.slot?'disabled':''}><span>Отправить заявку</span><span class="sum">${rub(cartSum())}</span></button></div>`}`;
+}
+
+/* ---- заявка ---- */
+const PAY={erip:'ЕРИП',bez:'Безнал (по счёту)',cash:'На месте'};
+function sendOrder(){
+  ensureSlot();const days=workDays(),day=days[S.day];
+  const items=S.cart.map(l=>({id:l.id,q:l.qty,meta:l.meta,sum:l.sum}));
+  const no=pad2(now.getDate())+pad2(now.getMonth()+1)+'-'+String(S.seq++).padStart(3,'0');
+  const o={id:'mine',no,client:S.name||'Клиент',phone:S.phone,time:S.mode==='pickup'?S.slot:'по согласованию',day:day.label,
+    mode:S.mode,pay:S.pay,addr:S.addr,status:0,items,total:cartSum(),ts:[hhmm()],example:false,mine:true};
+  S.orders=S.orders.filter(x=>!x.mine);S.orders.push(o);S.myId='mine';S.sel='mine';S.screen='done';
+  window.scrollTo(0,0);render();
+}
+const hhmm=()=>{const d=new Date();return pad2(d.getHours())+':'+pad2(d.getMinutes())};
+function myOrder(){return S.orders.find(o=>o.mine)}
+function doneHTML(){
+  const o=myOrder();if(!o){S.screen='catalog';return catalogHTML()}
+  const pick=o.mode==='pickup';
+  const st=o.status;
+  const L=[
+    ['Заявка принята','Менеджер уже видит её в Telegram'],
+    ['Счёт выставлен',o.pay==='erip'?'Придёт сюда. Оплатить через ЕРИП → Сервис E-POS':o.pay==='bez'?'Придёт сюда файлом':'Оплата на месте, при отгрузке'],
+    ['Собрано',pick?'Ждёт вас на отгрузке':'Готово к погрузке'],
+    ['Отгружено',pick?'Можно ехать домой':'Едет к вам']];
+  return `${bar('БАРСАвтоМет','Заявка № '+o.no,{back:'catalog'})}
+  <section class="done"><div class="ok">${ic('check')}</div>
+  <h1>Заявка № ${o.no} принята</h1>
+  <p class="big">${pick?`Счёт придёт сюда. Приезжайте к <b class="num">${o.time}</b>${o.day&&!o.day.startsWith('Сегодня')?` (${o.day.toLowerCase()})`:''} – проходите сразу на отгрузку.`:`Счёт придёт сюда. Менеджер уточнит время и стоимость доставки${o.day?` на ${o.day.toLowerCase()}`:''}.`}</p>
+  <ol class="steps">${L.map((x,k)=>`<li class="${k<=st?'on':k===st+1?'now':''}"><span class="dot">${k<=st?ic('check'):''}</span><span class="tx"><b>${x[0]}${o.ts[k]?` · <span class="num" style="display:inline;color:var(--muted);font-weight:500">${o.ts[k]}</span>`:''}</b><span>${x[1]}</span></span></li>`).join('')}</ol>
+  </section>
+  <div class="h2">Состав заказа</div>
+  <ul class="pos" style="margin:0 14px;border-top:1px solid var(--line-soft)">${o.items.map(x=>{const i=byId[x.id];return `<li><span>${esc(i.name)}</span><span>${num(x.q)}${NB}${unitShort(i)}</span></li>`}).join('')}</ul>
+  <div class="totline"><span>Итого</span><span class="num">${rub(o.total)}</span></div>
+  <div class="hint" style="padding-bottom:14px">${PAY[o.pay]}${pick?' · самовывоз':' · доставка длинномером'}. Это демо: статус меняет «сотрудник» – попробуйте на соседней вкладке.</div>
+  <div style="padding:0 14px 24px;display:grid;gap:8px"><button class="btn" data-act="goto-staff">Что при этом видит сотрудник</button><button class="btn line" data-act="newcart">Собрать новый заказ</button></div>`;
+}
+
+/* ---- СОТРУДНИК ---- */
+const ST=['Новая','Счёт выставлен','Собрано','Отгружено'];
+function orderLabel(o){return o.mine?'Ваша заявка из демо':o.client}
+function staffHTML(){
+  const list=S.orders.slice().sort((a,b)=>(a.mine?(a.day&&!a.day.startsWith('Сегодня')?'z':'')+a.time:a.time).localeCompare(b.mine?(b.day&&!b.day.startsWith('Сегодня')?'z':'')+b.time:b.time));
+  const sel=S.orders.find(o=>o.id===S.sel)||list[0];
+  const open=S.orders.filter(o=>o.status<3).length;
+  const q=list.map(o=>`<li class="${o.id===sel.id?'sel':''}"><button data-act="selo" data-id="${o.id}">
+    <span class="tm">${o.time.startsWith('по')?'—':o.time}</span>
+    <span class="cl">№ ${o.no}${o.mine?' <span class="mine">ваша</span>':''}<small>${o.mine&&o.day&&!o.day.startsWith('Сегодня')?esc(o.day.split(',')[0].toLowerCase())+' · ':''}${esc(o.client)}${o.mode==='delivery'?' · доставка':''} · ${rub(o.total)}</small></span>
+    <span class="chip-s s${o.status}">${ST[o.status]}</span></button></li>`).join('');
+  const stepBtn=(k,label)=>{const done=sel.status>=k,next=sel.status===k-1;
+    return `<button class="${done?'did':next?'next':''}" data-act="step" data-k="${k}" ${next?'':'disabled'}>${done?ic('check'):''}${label}</button>`};
+  const dt=sel.mine&&sel.day?sel.day.split(',')[0]+' '+sel.time:(sel.time.startsWith('по')?sel.time:'сегодня '+sel.time);
+  return `${bar('Заявки БАРСАвтоМет','бот · '+open+' в работе на сегодня',{})}
+  <div class="date-pill">Новая заявка в чате</div>
+  <div class="bubble"><div class="from">Бот заявок</div>
+    <h3>${sel.example?'':''}Заявка № ${sel.no} ${sel.example?'<span class="demo-tag">пример</span>':''}</h3>
+    <dl class="kv"><dt>Клиент</dt><dd>${esc(sel.client)}${sel.example?'':' <span class="demo-tag">пример</span>'}</dd>
+      <dt>Телефон</dt><dd>${sel.phone?esc(sel.phone):'+375 29 000-00-00'}</dd>
+      <dt>${sel.mode==='pickup'?'Приедет':'Доставка'}</dt><dd>${esc(dt)}</dd>
+      ${sel.mode==='delivery'?`<dt>Адрес</dt><dd>${esc(sel.addr||'уточнить у клиента')}</dd>`:''}
+      <dt>Оплата</dt><dd>${PAY[sel.pay]}</dd></dl>
+    <ul class="pos">${sel.items.map(x=>{const i=byId[x.id];return `<li><span>${esc(i.name)}${x.meta?`<br><small style="color:var(--muted)">${esc(x.meta)}</small>`:''}</span><span>${num(x.q)}${NB}${unitShort(i)}<br>${rub(x.sum)}</span></li>`}).join('')}</ul>
+    <dl class="kv"><dt><b style="color:var(--ink)">Сумма</b></dt><dd><b>${rub(sel.total)}</b></dd></dl>
+    <p class="sub-h" style="margin-top:8px">Статус: <span class="chip-s s${sel.status}">${ST[sel.status]}</span></p>
+    ${sel.ts.length>1?`<p class="sub-h num" style="margin-top:6px">${sel.ts.slice(1).map((t,k)=>ST[k+1]+' '+t).join(' · ')}</p>`:''}
+    <div class="meta num">${sel.ts[0]||hhmm()}</div></div>
+  <div class="kb">${stepBtn(1,'Счёт выставлен')}${stepBtn(2,'Собрано')}${stepBtn(3,'Отгружено')}</div>
+  ${sel.status===3?`<div class="bubble"><div class="from">Бот заявок</div>Заявка № ${sel.no} отгружена. Клиенту ушло сообщение.<div class="meta num">${sel.ts[3]}</div></div>`:''}
+  <div class="date-pill">Очередь на день</div>
+  <div class="bubble"><div class="from">Бот заявок</div>
+    <h3>Очередь · ${pad2(now.getDate())}.${pad2(now.getMonth()+1)} <span class="demo-tag">пример</span></h3>
+    <p class="sub-h">Нажмите заявку – её карточка откроется вверху.</p>
+    <ul class="q">${q}</ul></div>
+  <div style="height:20px"></div>`;
+}
+
+/* ---- ВЛАДЕЛЕЦ ---- */
+function ownerHTML(){
+  const hrs=[1,2,2,1,2,3,2,1],labs=['9','10','11','12','13','14','15','16'];
+  const mx=Math.max(...hrs);
+  return `${bar('Сводка БАРСАвтоМет','бот · ежедневно в 17:30',{})}
+  <div class="date-pill">${pad2(now.getDate())}.${pad2(now.getMonth()+1)}.${now.getFullYear()}</div>
+  <div class="bubble"><div class="from">Бот сводки</div>
+    <h3>Итоги дня <span class="demo-tag">пример</span></h3>
+    <dl class="kv">
+      <dt>Заявок через бот</dt><dd><b>14</b></dd>
+      <dt>Сумма заявок</dt><dd><b>${rub(18420)}</b></dd>
+      <dt>Приехали ко времени</dt><dd>12 из 14</dd>
+      <dt>От приезда до отгрузки</dt><dd><b>9${NB}мин</b> в среднем</dd>
+      <dt>Оплата</dt><dd>ЕРИП 5 · безнал 7 · на месте 2</dd>
+    </dl>
+    <div class="meta">17:30</div></div>
+  <div class="bubble"><div class="from">Бот сводки</div>
+    <h3>Приезды по часам <span class="demo-tag">пример</span></h3>
+    <p class="sub-h">Видно, когда на складе пик, и кого предупредить заранее.</p>
+    <div class="bars" role="img" aria-label="Приезды по часам: 9ч – 1, 10ч – 2, 11ч – 2, 12ч – 1, 13ч – 2, 14ч – 3, 15ч – 2, 16ч – 1">${hrs.map((v,k)=>`<div class="${v===mx?'pk':''}"><b>${v}</b><i style="height:${Math.round(v/mx*56)+6}px"></i><span>${labs[k]}</span></div>`).join('')}</div>
+    <div class="meta">17:30</div></div>
+  <div class="bubble"><div class="from">Бот сводки</div>
+    <h3>Что спрашивали <span class="demo-tag">пример</span></h3>
+    <p class="sub-h">Чаще всего заказывали</p>
+    <ul class="ask"><li><span>${esc(find('Арматура А500С ф12мм').name)}</span><span>6 заявок</span></li>
+    <li><span>${esc(find('Труба проф. 40х40х2').name)}</span><span>4 заявки</span></li>
+    <li><span>${esc(find('Сетка рабица 55х55 д.2,0мм оц.выс.1,5м').name)}</span><span>3 заявки</span></li></ul>
+    <p class="sub-h" style="margin-top:12px">Спрашивали, но на сайте «цена уточняется»</p>
+    <ul class="ask"><li><span>Круг г/к ф50 ст.45</span><span>3 запроса</span></li>
+    <li><span>Круг г/к ф60 ст.45</span><span>2 запроса</span></li>
+    <li><span>Круг г/к ф24 ст.3</span><span>1 запрос</span></li></ul>
+    <p class="note" style="margin-top:8px">Этим клиентам бот предложил поставку под заказ (на сайте – 1–7 суток) и записал спрос. Позиции с пометкой «уточнять» взяты из каталога на ${DATA.collected}.</p>
+    <div class="meta">17:30</div></div>
+  <div class="bubble"><div class="from">Зачем это</div>
+    <h3>Что писали в отзывах</h3>
+    <p class="quote">«Менеджеры работают долго, выписка документов 50 минут. Отгрузка медленная, большие очереди клиентов»<small>Яндекс Карты, 17.06.2026</small></p>
+    <p class="quote">«…там заказываешь, там касса отдельно, оплати, и полчаса ждал, пока рулон сетки рабицы вынесут»<small>Яндекс Карты, 27.08.2026</small></p>
+    <div class="cmp" role="img" aria-label="Сравнение: 50 минут на документы по отзыву против 9 минут в примере сводки"><div><span>Из отзыва</span><i style="width:100%"></i><b>50 мин</b></div><div><span>Пример сводки</span><i style="width:18%"></i><b>9 мин</b></div></div>
+    <p class="note">Слева – время на документы из отзыва, справа – пример того, что можно считать в сводке. Не обещание результата.</p>
+    <div class="meta">17:30</div></div>
+  <div style="padding:6px 12px 24px"><button class="btn" data-act="final">Как внедрить у вас</button></div>`;
+}
+
+/* ---- итог ---- */
+function finalHTML(){
+  return `<section class="final"><h1>Так может работать у вас.</h1>
+  <p class="lh">Внедрение – 2–4 недели, дальше сопровождение.</p>
+  <ul><li>${ic('check')}<span>Клиент собирает заказ в Telegram из вашего каталога и приезжает ко времени.</span></li>
+  <li>${ic('check')}<span>Менеджер получает готовую карточку, а не диктует позиции по телефону.</span></li>
+  <li>${ic('check')}<span>Вы каждый вечер видите заявки, суммы и то, чего не хватило на складе.</span></li></ul>
+  <div class="sign"><p>Роман Благов<br><a href="https://t.me/blagov369">Telegram @blagov369</a><br><a href="tel:+375298611029" class="num">+375 29 861-10-29</a></p><button class="btn line" data-act="back-owner">${ic('back')}Вернуться к демо</button></div></section>`;
+}
+
+/* ---- рендер ---- */
+function render(keepScroll){
+  const app=$('#app');
+  document.querySelectorAll('.roles button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.role===S.role&&S.screen!=='final')));
+  app.classList.toggle('chat',S.role!=='client'&&S.screen!=='final');
+  let h;
+  if(S.screen==='final')h=finalHTML();
+  else if(S.role==='client')h=S.screen==='cart'?cartHTML():S.screen==='done'?doneHTML():catalogHTML();
+  else h=S.role==='staff'?staffHTML():ownerHTML();
+  const y=window.scrollY;app.innerHTML=h;if(keepScroll)window.scrollTo(0,y);
+  const q=$('#q');if(q&&S._fq){q.focus();q.setSelectionRange(q.value.length,q.value.length);S._fq=false}
+}
+function go(role,screen){S.role=role;if(screen)S.screen=screen;else if(S.screen==='final')S.screen='catalog';window.scrollTo(0,0);render()}
+
+/* ---- события ---- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-role],[data-act]');if(!t)return;
+  if(t.dataset.role){S.role=t.dataset.role;if(S.screen==='final')S.screen='catalog';window.scrollTo(0,0);render();return}
+  const a=t.dataset.act,d=t.dataset;
+  if(a==='closesheet'){if(e.target===t){S.sheet=null;renderSheet()}return}
+  switch(a){
+    case 'cat':S.cat=d.cat;S.shown=40;render(true);break;
+    case 'more':S.shown+=40;render(true);break;
+    case 'clearq':S.q='';S._fq=true;S.shown=40;render(true);break;
+    case 'open':openSheet(+d.id);break;
+    case 'cart':S.screen='cart';S.role='client';window.scrollTo(0,0);render();break;
+    case 'catalog':S.screen='catalog';window.scrollTo(0,0);render();break;
+    case 'rm':S.cart=S.cart.filter(l=>l.id!==+d.id);render(true);break;
+    case 'smode':S.sheet.mode=d.v;renderSheet();break;
+    case 'qm':S.sheet.m=d.v;{const f=$('#f-m');f.value=d.v}updateCalc();break;
+    case 'qplus':case 'qminus':{const f=$('#f-q');let v=Math.floor(pf(f.value))+(a==='qplus'?1:-1);v=Math.max(1,v);f.value=v;S.sheet.q=String(v);S.sheet.len='';const l=$('#f-len');if(l)l.value='';updateCalc();break}
+    case 'addline':addLine();break;
+    case 'rmline':S.cart=S.cart.filter(l=>l.id!==S.sheet.id);S.sheet=null;renderSheet();render(true);break;
+    case 'mode':S.mode=d.v;render(true);break;
+    case 'day':S.day=+d.v;S.slot=null;render(true);break;
+    case 'slot':S.slot=d.v;render(true);break;
+    case 'pay':S.pay=d.v;render(true);break;
+    case 'send':sendOrder();break;
+    case 'newcart':S.cart=[];S.orders=S.orders.filter(o=>!o.mine);S.sel='o4';S.screen='catalog';window.scrollTo(0,0);render();break;
+    case 'goto-staff':S.role='staff';S.sel='mine';window.scrollTo(0,0);render();break;
+    case 'selo':S.sel=d.id;window.scrollTo(0,0);render();break;
+    case 'step':{const o=S.orders.find(x=>x.id===S.sel),k=+d.k;if(o&&o.status===k-1){o.status=k;o.ts[k]=hhmm();render(true)}break}
+    case 'final':S.screen='final';window.scrollTo(0,0);render();break;
+    case 'back-owner':S.screen='catalog';S.role='owner';window.scrollTo(0,0);render();break;
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target,id=t.id;
+  if(id==='q'){S.q=t.value;S.shown=40;S._fq=true;render(true)}
+  else if(id==='f-m'){S.sheet.m=t.value;updateCalc()}
+  else if(id==='f-size'){S.sheet.size=t.value;updateCalc()}
+  else if(id==='f-cnt'){S.sheet.cnt=t.value;updateCalc()}
+  else if(id==='f-q'){S.sheet.q=t.value;updateCalc()}
+  else if(id==='f-len'){S.sheet.len=t.value;const L=+t.dataset.L,v=pf(t.value);if(v&&L){const r=Math.max(1,Math.ceil(v/L-1e-9));S.sheet.q=String(r);$('#f-q').value=r}updateCalc()}
+  else if(id==='f-name')S.name=t.value;
+  else if(id==='f-phone')S.phone=t.value;
+  else if(id==='f-addr')S.addr=t.value;
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet){S.sheet=null;renderSheet()}});
+const setTop=()=>document.documentElement.style.setProperty('--top',$('.top').offsetHeight+'px');setTop();addEventListener('resize',setTop);
+render();
+})();
+</script>
+</body>
+</html>
