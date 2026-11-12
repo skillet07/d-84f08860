@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Воронка Reels → Telegram → прогрев → продажа: демо для программ через тело</title>
+<style>
+:root{--bg:#FAF3EA;--card:#fff;--ink:#3b2b24;--mute:#7a6a60;--acc:#B8553A;--acc2:#8E3F29;--soft:#F6E8DA;--sage:#6E8F78;--line:#E8D8C7;--chat:#F1E4D4}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input{font:inherit;color:inherit}
+.demo-bar{background:#3b2b24;color:#f7e9da;font-size:13px;text-align:center;padding:6px 10px;line-height:1.3}
+.wrap{max-width:460px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:23px;line-height:1.25;margin:6px 0 8px}
+.lead{color:var(--mute);font-size:16px;margin:0 0 16px}
+h2{font-size:22px;line-height:1.25;margin:0 0 6px}
+.main{display:block}
+.funnel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:16px}
+.funnel h3{margin:0 0 10px;font-size:18px}
+.steps{list-style:none;margin:0;padding:0;position:relative}
+.steps li{position:relative}
+.steps li:not(:last-child)::after{content:"";position:absolute;left:24px;top:52px;bottom:-4px;width:2px;background:var(--line)}
+.step{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:transparent;border:2px solid transparent;border-radius:14px;padding:8px;cursor:pointer;min-height:56px}
+.step:hover{background:var(--soft)}
+.step.on{background:var(--soft);border-color:var(--acc)}
+.step .n{flex:none;width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid var(--acc);color:var(--acc2);font-weight:700;display:grid;place-items:center;position:relative;z-index:1}
+.step.on .n{background:var(--acc);color:#fff}
+.step b{display:block;font-size:17px;line-height:1.3}
+.step small{display:block;color:var(--mute);font-size:14px;line-height:1.35;margin-top:2px}
+.fnote{font-size:13px;color:var(--mute);margin:10px 4px 0}
+.tg{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 6px 24px rgba(91,60,40,.10)}
+.tg-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.ava{flex:none;width:42px;height:42px;border-radius:50%;background:var(--acc);display:grid;place-items:center}
+.tg-head .t{flex:1;min-width:0;line-height:1.25}
+.tg-head .t b{display:block;font-size:17px}
+.tg-head .t span{font-size:13px;color:var(--mute)}
+.reset{border:1.5px solid var(--acc);background:#fff;color:var(--acc2);border-radius:12px;padding:8px 12px;font-weight:600;font-size:15px;cursor:pointer;min-height:44px}
+.reset:hover{background:var(--soft)}
+.chat{height:min(680px,76vh);min-height:480px;overflow-y:auto;background:var(--chat);padding:14px 10px;display:flex;flex-direction:column;gap:10px}
+.b{max-width:88%;padding:10px 14px 6px;border-radius:16px;font-size:17px;line-height:1.5;animation:in .25s ease-out;word-wrap:break-word}
+.b.bot{background:#fff;align-self:flex-start;border-bottom-left-radius:4px}
+.b.me{background:#F6D5BE;align-self:flex-end;border-bottom-right-radius:4px;padding-bottom:10px;font-weight:600}
+.b.wide{max-width:96%;width:96%}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.meta{text-align:right;margin-top:2px;line-height:1}
+.ex{display:inline-block;font-size:11px;line-height:16px;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:0 6px;background:#fff8f0}
+.div{align-self:center;background:rgba(59,43,36,.75);color:#fff;font-size:13px;padding:4px 12px;border-radius:12px;margin-top:8px}
+.kb{display:flex;flex-direction:column;gap:6px;width:96%;align-self:flex-start;animation:in .25s ease-out}
+.kb.grid2{display:grid;grid-template-columns:1fr 1fr}
+.kb.grid3{display:grid;grid-template-columns:1fr 1fr 1fr}
+.kbtn{min-height:52px;border-radius:12px;background:#fff;color:var(--acc2);border:1.5px solid #e1c6ae;font-weight:600;font-size:17px;line-height:1.25;padding:8px 12px;cursor:pointer;text-align:center}
+.kbtn:hover{background:#fff4ea}
+.kbtn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.kbtn.pri:hover{background:var(--acc2)}
+.kbtn.sel{background:var(--acc);border-color:var(--acc);color:#fff}
+.kb.used .kbtn:not(.sel){opacity:.45;pointer-events:none}
+.kbtn:disabled{opacity:.6;cursor:default}
+.plate{background:#fff;border:1.5px dashed #d9b99d;border-radius:16px;padding:12px 14px;align-self:stretch;animation:in .25s ease-out}
+.plate .ph{display:flex;gap:10px;align-items:flex-start}
+.plate .ic{flex:none;width:38px;height:38px;border-radius:12px;background:var(--soft);display:grid;place-items:center}
+.plate p{margin:0;font-size:17px}
+.mini{margin-top:10px;background:var(--soft);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.mini .u{align-self:flex-end;background:#F6D5BE;border-radius:12px;padding:4px 10px;font-weight:600}
+.mini .r{align-self:flex-start;background:#fff;border-radius:12px;padding:4px 10px}
+.plate .kbtn{width:100%;margin-top:10px}
+.vid{position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#E9B88F,#C9704F);height:150px;margin:8px 0;cursor:pointer;display:grid;place-items:center;color:#fff}
+.vid .dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.45);border-radius:8px;padding:0 8px;font-size:14px}
+.vid .cap{position:absolute;left:10px;top:8px;font-size:14px;opacity:.95}
+.vid .bar{position:absolute;left:0;bottom:0;height:5px;width:0;background:#fff;transition:width 7s linear}
+.vid.play .bar{width:100%}
+.vtitle{font-weight:700}
+.tl{list-style:none;margin:10px 0 4px;padding:0}
+.tl li{display:flex;gap:10px;align-items:flex-start;padding:5px 0;opacity:.55}
+.tl li i{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);background:#fff;margin-top:4px}
+.tl li small{display:block;color:var(--mute);font-size:14px;line-height:1.3}
+.tl li.next{opacity:1}.tl li.next i{border-color:var(--acc)}
+.tl li.done{opacity:1}.tl li.done i{background:var(--sage);border-color:var(--sage)}
+.dayhd{font-size:13px;color:var(--acc2);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-bottom:2px}
+.inv{background:var(--soft);border-radius:12px;padding:10px 12px;margin:8px 0}
+.inv div{margin:2px 0}
+.note{border-left:4px solid var(--sage);background:#eef4ef;border-radius:8px;padding:8px 10px;font-size:15px;margin:8px 0 4px}
+.tar{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px;cursor:pointer;min-height:56px}
+.tar.on{border-color:var(--acc);background:#fff6ee}
+.tar b{display:block;line-height:1.3}
+.tar small{display:block;color:var(--mute);font-size:14px;line-height:1.3}
+.tar .p{font-weight:700;white-space:nowrap;color:var(--acc2)}
+.lnk{display:block;background:var(--soft);border-radius:10px;padding:8px 12px;color:var(--acc2);font-weight:600;text-decoration:none;margin:6px 0;word-break:break-all}
+.sched{margin:6px 0 0;padding-left:20px}
+.nudge{align-self:stretch;border:1.5px dashed #d9b99d;border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.nudge>.lab{font-size:13px;color:var(--acc2);font-weight:700}
+.comp{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:#fff}
+.comp input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;background:#fffaf5;min-height:50px;font-size:17px}
+.comp input:disabled{opacity:.6}
+.comp .send{flex:none;width:50px;border:0;border-radius:14px;background:var(--acc);display:grid;place-items:center;cursor:pointer}
+.chint{font-size:13px;color:var(--mute);padding:0 12px 10px;background:#fff}
+section.blk{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 16px;margin-top:22px}
+.tagex{font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:1px 8px;background:#fff8f0;vertical-align:middle;margin-left:6px;font-weight:400}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.kpi{background:var(--soft);border-radius:14px;padding:10px 12px}
+.kpi b{display:block;font-size:24px;line-height:1.2}
+.kpi span{font-size:14px;color:var(--mute)}
+.row{margin:12px 0}
+.row .lbl{display:flex;justify-content:space-between;gap:8px;font-size:16px}
+.row .lbl b{white-space:nowrap}
+.track{height:14px;background:#f1e6da;border-radius:8px;margin-top:4px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--acc);border-radius:8px}
+.track.g i{background:var(--sage)}
+.row small{color:var(--mute);font-size:14px}
+h4{margin:18px 0 0;font-size:18px}
+.case{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px;background:#fffaf5}
+.case h3{margin:0 0 2px;font-size:19px}
+.case .co{color:var(--mute);font-size:15px;margin-bottom:6px}
+.case p{margin:6px 0}
+.case .tr{font-size:13px;color:var(--mute)}
+.case a,.final a{color:var(--acc2);font-weight:600}
+.final{background:#3b2b24;color:#fbeede;border-radius:18px;padding:22px 18px;margin-top:22px}
+.final h2{color:#fff}
+.final a{color:#ffd9bd}
+.final p{margin:8px 0}
+@media(min-width:900px){
+.wrap{max-width:1040px}
+.main{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
+.funnel{position:sticky;top:12px;margin-bottom:0}
+.chat{height:660px}
+.kpis{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="demo-bar">Демо-прототип под вашу задачу. Данные – примерные</div>
+<div class="wrap">
+<h1>Воронка Reels → Telegram → прогрев → продажа для программ через тело (женщины 40+)</h1>
+<p class="lead">Нажмите шаг воронки, и чат прокрутится к нему. Все кнопки в чате работают.</p>
+
+<div class="main">
+<aside class="funnel" aria-label="Схема воронки">
+<h3>Схема воронки <span class="tagex">пример</span></h3>
+<ol class="steps" id="steps">
+<li><button class="step on" data-n="1"><span class="n">1</span><span><b>Вход</b><small>Кодовое слово в Reels или в директе Instagram</small></span></button></li>
+<li><button class="step" data-n="2"><span class="n">2</span><span><b>Знакомство и подарок</b><small>Два вопроса кнопками и практика на 7 минут</small></span></button></li>
+<li><button class="step" data-n="3"><span class="n">3</span><span><b>Прогрев</b><small>Три автосообщения за три дня</small></span></button></li>
+<li><button class="step" data-n="4"><span class="n">4</span><span><b>Эфир</b><small>Живой эфир, запись приходит в бот</small></span></button></li>
+<li><button class="step" data-n="5"><span class="n">5</span><span><b>Продажа и оплата</b><small>Тарифы, страна оплаты, доступ в канал</small></span></button></li>
+</ol>
+<p class="fnote">Все названия, тексты, цифры и цены в демо – пример.</p>
+</aside>
+
+<div class="tg">
+<div class="tg-head">
+<div class="ava"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.500-7 10-7 10z"/></svg></div>
+<div class="t"><b>Тело и жизнь</b><span>бот в Telegram · пример</span></div>
+<button class="reset" id="reset" type="button">Начать заново</button>
+</div>
+<div class="chat" id="chat" role="log" aria-live="polite"></div>
+<form class="comp" id="cf" autocomplete="off">
+<input id="ci" placeholder="Напишите кодовое слово…" aria-label="Сообщение боту">
+<button class="send" type="submit" aria-label="Отправить"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button>
+</form>
+<div class="chint">Слово ТЕЛО – пример. Дальше отвечайте кнопками в чате.</div>
+</div>
+</div>
+
+<section class="blk" id="dash">
+<h2>Что видит автор <span class="tagex">пример</span></h2>
+<p class="lead" style="margin:0">Мини-дашборд: сколько человек доходит до каждого шага. Все цифры вымышленные.</p>
+<div id="dashbody"></div>
+</section>
+
+<section class="blk" id="cases">
+<h2>Так уже сделали</h2>
+<p class="lead" style="margin:0">Похожая логика у других компаний: быстрый ответ на заявку в мессенджере. Цифры принадлежат этим компаниям и на ваш проект не переносятся.</p>
+<p class="lead" style="margin:8px 0 0"><b>Как это переносится на вашу воронку:</b> бот отвечает на кодовое слово сразу, и заявки не теряются, даже если вы заняты или спите.</p>
+<div class="case">
+<h3>TEHNIKUM School</h3>
+<div class="co">Узбекистан · малая, до 50 человек</div>
+<p><b>Результат:</b> Настройка заняла три недели; конверсия агента-квалификатора 27%, на уровне опытных специалистов; закрытие части сделок агентом снизило стоимость обработки лидов в два раза; за два месяца школа обрабатывает вдвое больше заявок без расширения штата</p>
+<a href="https://www.spot.uz/ru/2026/04/21/tehnikum-school/" target="_blank" rel="noopener">Источник: данные компании</a>
+</div>
+<div class="case">
+<h3>Детский клуб «Прознание»</h3>
+<div class="co">Беларусь · малая, до 50 человек</div>
+<p><b>Результат:</b> при том же составе команда обрабатывает больше сообщений; паузы в ответах практически исчезли, диалоги перестали теряться; по аренде пространства агент записывает сам; нагрузка на отдел продаж в пик рекламы снизилась</p>
+<a href="https://brandplatform.by/articles/kak-ii-pomoshhnik-v-detskom-klube-v-mogileve-stal-pochti-polnoczennym-menedzherom-po-prodazham/" target="_blank" rel="noopener">Источник: данные компании</a>
+</div>
+</section>
+
+<section class="final">
+<h2>Доведу до рабочей версии под ваш процесс</h2>
+<p>Подключу кодовые слова в Instagram и Telegram, приём оплат из разных стран и эфиры с записью. Схему воронки оставим простой, без перегруза.</p>
+<p>Роман Благов, Telegram <a href="https://t.me/adam_nfb">@adam_nfb</a></p>
+</section>
+</div>
+
+<script>
+(function(){
+var chat=document.getElementById('chat'),ci=document.getElementById('ci');
+var st,quick=false;
+var TOPICS=['Спина и шея','Энергия','Вес и тонус','Сон'];
+var AGES=['40–50','50–60','60+'];
+var VT={'Спина и шея':'Мягкая спина и шея','Энергия':'Утренний заряд без спешки','Вес и тонус':'Тонус без нагрузки на суставы','Сон':'Расслабление перед сном'};
+var DAYS=[
+{k:'Отзыв участницы',w:'День 1, 10:00',t:'«Мне 54 года. Через неделю я перестала просыпаться с тяжёлой спиной. Раньше думала, что так теперь будет всегда.»<br><i>Марина, участница</i>'},
+{k:'Мини-история',w:'День 2, 10:00',t:'«Когда мне было 47, я не могла поднять сумку без боли в шее. Я начала с пяти минут на коврике. Не с подвигов, а с пяти минут.»<br><i>История автора</i>'},
+{k:'Ответ на страх «мне уже поздно»',w:'День 3, 10:00',t:'«Мне уже поздно» – самая частая мысль. Телу не бывает поздно. Мы подбираем нагрузку под вас, а не вас под нагрузку. Многие участницы начинали после 60.'}
+];
+var TAR=[
+{n:'Базовый',d:'Записи уроков на 6 недель',rub:4900,kzt:24500,eur:49},
+{n:'Основной',d:'Записи, живые эфиры и чат',rub:9900,kzt:49500,eur:99},
+{n:'С куратором',d:'Всё из основного и личный разбор',rub:17900,kzt:89500,eur:179}
+];
+var fmt=function(n){return n.toLocaleString('ru-RU')};
+function el(c,h){var d=document.createElement('div');d.className=c;if(h!=null)d.innerHTML=h;return d}
+function bottom(){if(quick){chat.scrollTop=chat.scrollHeight}else{chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'})}}
+function add(n){chat.appendChild(n);bottom();return n}
+function bot(h,c){return add(el('b bot '+(c||''),h+'<div class="meta"><span class="ex">пример</span></div>'))}
+function me(t){return add(el('b me',t))}
+function lockAll(){chat.querySelectorAll('.kb').forEach(function(g){g.classList.add('used')})}
+function divider(t,step,stage){lockAll();st.stage=stage;var d=el(t);d.className='div';d.dataset.step=step;d.textContent=t;add(d);if(!quick)setTimeout(upd,350)}
+function kb(items,o){
+o=o||{};var g=el('kb'+(o.grid?' grid'+o.grid:''));
+items.forEach(function(it){
+var b=document.createElement('button');b.type='button';b.className='kbtn'+(it.pri?' pri':'');b.textContent=it.t;if(it.def)b.dataset.def='1';
+b.onclick=function(){
+if(g.classList.contains('used')||b.disabled)return;
+if(o.mode==='each'){b.disabled=true;b.classList.add('sel')}
+else if(o.mode!=='free'){g.classList.add('used');b.classList.add('sel')}
+it.cb(b,g)};
+g.appendChild(b)});
+return add(g)}
+function svg(p){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8E3F29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>'}
+
+function startEntry(){
+divider('Экран «Вход»',1,0);
+var a=el('plate','<div class="ph"><span class="ic">'+svg('<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m10 8 6 4-6 4z"/>')+'</span><p><b>В Reels:</b> напишите слово <b>ТЕЛО</b> в директ или боту <span class="ex">пример</span></p></div>');
+add(a);
+var b=el('plate','<div class="ph"><span class="ic">'+svg('<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.500" cy="6.500" r=".6"/>')+'</span><p>То же слово в директе Instagram, бот отвечает ссылкой в Telegram <span class="ex">пример</span></p></div><div class="mini"><span class="u">ТЕЛО</span><span class="r">Ваша ссылка в Telegram: t.me/demo_bot</span></div><button type="button" class="kbtn">Открыть Telegram</button>');
+b.querySelector('button').onclick=function(){doCode('ТЕЛО')};
+add(b);
+bot('Напишите кодовое слово внизу или нажмите на него здесь.');
+kb([{t:'ТЕЛО',pri:1,def:1,cb:function(){doCode('ТЕЛО')}}])}
+
+function doCode(w){
+if(st.coded)return;w=(w||'').trim();if(!w)return;
+me(w);
+if(w.toUpperCase()!=='ТЕЛО'){bot('Не нашла такого слова. Попробуйте слово <b>ТЕЛО</b>.');return}
+st.coded=true;lockAll();ci.disabled=true;ci.placeholder='Отвечайте кнопками в чате';
+bot('Слово принято. Сейчас познакомимся.');
+toProfile()}
+
+function toProfile(){
+divider('Экран «Знакомство»',2,1);
+bot('Здравствуйте! Очень рада, что вы здесь. Меня зовут Анна, я помогаю женщинам вернуть лёгкость в теле. Здесь спокойно и без спешки. Два коротких вопроса, чтобы подобрать для вас практику.');
+bot('<b>Что беспокоит?</b><br>Выберите то, что ближе сейчас. Потом можно будет поменять.');
+kb(TOPICS.map(function(t,i){return {t:t,def:i===0,cb:function(){pickTopic(t)}}}),{grid:2})}
+function pickTopic(t){
+me(t);st.topic=t;
+bot('Спасибо, что поделились. <b>Ваш возраст?</b><br>Он нужен только для того, чтобы нагрузка была мягкой.');
+kb(AGES.map(function(a,i){return {t:a,def:i===1,cb:function(){pickAge(a)}}}),{grid:3})}
+function pickAge(a){me(a);st.age=a;toGift()}
+
+function toGift(){
+divider('Экран «Подарок»',2,2);
+bot('Благодарю вас. Для вас подарок: бесплатная практика на 7 минут. Делайте в своём темпе, можно сидя на стуле. Если устанете, остановитесь, это нормально.');
+var n=bot('<div class="vtitle">'+VT[st.topic]+'</div><div class="vid" role="button" tabindex="0" aria-label="Запустить видео"><span class="cap">Видео-практика</span><svg class="pl" width="56" height="56" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.25)"/><path d="m10 8 6 4-6 4z"/></svg><span class="dur">7:00</span><span class="bar"></span></div><small style="color:#7a6a60">Для темы «'+st.topic+'», возраст '+st.age+'. Нажмите на видео, это демо без настоящего ролика.</small>','wide');
+var v=n.querySelector('.vid');
+var tg=function(){v.classList.toggle('play');v.querySelector('.cap').textContent=v.classList.contains('play')?'Идёт воспроизведение (демо)':'Видео-практика'};
+v.onclick=tg;v.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg()}};
+kb([{t:'Сделала ✅',pri:1,def:1,cb:done}])}
+function done(){
+me('Сделала ✅');
+bot('Вы большая молодец. Как ощущения в теле? Завтра в 10:00 пришлю короткое сообщение. Отвечать не обязательно.');
+toWarm()}
+
+function tlUpdate(){st.tl.querySelectorAll('li').forEach(function(li,i){li.classList.toggle('done',i<st.days);li.classList.toggle('next',i===st.days)})}
+function ctrlLabel(){return 'Показать следующее сообщение ('+(st.days+1)+' из 3)'}
+function toWarm(){
+divider('Экран «Прогрев»',3,3);
+bot('Дальше бот сам пишет по расписанию. Нажмите кнопку, чтобы увидеть, как сообщения уходят в нужный день.');
+st.tl=bot('<b>Расписание автосообщений</b><ol class="tl">'+DAYS.map(function(d,i){return '<li><i></i><span><b>День '+(i+1)+'</b><small>'+d.k+'</small></span></li>'}).join('')+'</ol>','wide');
+tlUpdate();
+st.ctrl=kb([{t:ctrlLabel(),pri:1,def:1,cb:nextDay}],{mode:'free'})}
+function nextDay(){
+if(st.days>=3)return;
+var d=DAYS[st.days];st.days++;tlUpdate();
+bot('<div class="dayhd">'+d.w+' · '+d.k+'</div>'+d.t);
+if(st.days<3){st.ctrl.querySelector('button').textContent=ctrlLabel();chat.appendChild(st.ctrl);bottom()}
+else{st.ctrl.remove();kb([{t:'Дальше: приглашение на эфир',pri:1,def:1,cb:toWebinar}])}}
+
+function toWebinar(){
+divider('Экран «Эфир»',4,4);
+bot('Приглашаю вас на живой эфир. Будем двигаться вместе, а вопросы можно писать в чат.');
+bot('<b>Живой эфир</b><div class="inv"><div><b>Тема:</b> «Лёгкая спина за 20 минут в день»</div><div><b>Дата:</b> пятница, 20 ноября, 19:00 по Москве</div><div><b>Длительность:</b> 60 минут, можно с телефона</div></div><div class="note">Платформа для эфиров стабильная. Запись приходит в бот автоматически.</div>','wide');
+st.proceed=false;
+kb([{t:'Напомнить за час',def:1,cb:function(){
+me('Напомнить за час');
+bot('Хорошо. Напишу вам в 18:00 по Москве, с ссылкой на эфир.');proceed()}},
+{t:'Получить запись, если не смогу',cb:function(){
+me('Получить запись, если не смогу');
+bot('Договорились. Если не получится прийти, запись сама придёт сюда в бот. Ничего искать не нужно.');proceed()}}],{mode:'each'})}
+function proceed(){if(st.proceed)return;st.proceed=true;kb([{t:'Дальше: предложение программы',pri:1,def:1,cb:toSale}])}
+
+function toSale(){
+divider('Экран «Продажа»',5,5);
+bot('Спасибо, что вы были рядом. Если откликнулось, расскажу о программе. Решение за вами, без спешки.');
+var n=bot('<b>Программа «Тело без боли»</b><br><small style="color:#7a6a60">6 недель, по 20 минут в день</small>'+TAR.map(function(t,i){return '<button type="button" class="tar'+(i===st.tariff?' on':'')+'" data-i="'+i+'"><span><b>'+t.n+'</b><small>'+t.d+'</small></span><span class="p">'+fmt(t.rub)+' ₽</span></button>'}).join(''),'wide');
+n.querySelectorAll('.tar').forEach(function(b){b.onclick=function(){st.tariff=+b.dataset.i;n.querySelectorAll('.tar').forEach(function(x){x.classList.toggle('on',x===b)})}});
+bot('<b>В какой стране вам удобнее оплатить?</b>');
+kb([
+{t:'Россия: карта РФ / СБП',def:1,cb:function(b){pickCountry('ru',b.textContent)}},
+{t:'Казахстан и СНГ',cb:function(b){pickCountry('kz',b.textContent)}},
+{t:'Европа и мир: Visa / Mastercard',cb:function(b){pickCountry('eu',b.textContent)}},
+{t:'Другое: написать куратору',cb:function(b){pickCountry('xx',b.textContent)}}])}
+function pickCountry(k,label){
+me(label);var t=TAR[st.tariff],h;
+if(k==='ru')h='Для России: оплата картой РФ или через СБП. Тариф «'+t.n+'»: <b>'+fmt(t.rub)+' ₽</b>. Чек придёт сюда в бот.';
+else if(k==='kz')h='Для Казахстана и СНГ: оплата картой местного банка. Тариф «'+t.n+'»: <b>'+fmt(t.kzt)+' ₸</b>. Чек придёт сюда в бот.';
+else if(k==='eu')h='Для Европы и мира: оплата Visa или Mastercard. Тариф «'+t.n+'»: <b>'+fmt(t.eur)+' €</b>. Чек придёт сюда в бот.';
+else h='Подберём способ вместе: куратор напишет вам в Telegram и предложит удобный вариант. В демо покажем следующий шаг сразу.';
+bot(h);
+kb([{t:'Оплатить (демо)',pri:1,def:1,cb:pay}])}
+
+function pay(){
+me('Оплатить (демо)');
+divider('Экран «После оплаты»',5,6);
+bot('<b>Оплата получена</b> (демо). Благодарю вас за доверие. Я очень рада, что вы с нами.');
+var n=bot('<b>Ваш доступ</b><a href="#" class="lnk">t.me/+zakrytyj_kanal_programmy</a><b>График эфиров</b><ul class="sched"><li>Вторник, 19:00: разбор техники</li><li>Пятница, 19:00: вопросы и ответы</li><li>Воскресенье, 11:00: мягкая разминка</li></ul><div class="note">Записи эфиров приходят в бот автоматически.</div>','wide');
+n.querySelector('.lnk').onclick=function(e){e.preventDefault()};
+var nd=el('nudge','<span class="lab">Отдельное сообщение: если за 24 часа оплаты нет</span>');
+var nb=el('b bot','Здравствуйте! Вы смотрели программу «Тело без боли». Если остались вопросы, просто ответьте мне, я помогу разобраться. Решать вам, возвращайтесь, когда будет удобно.<div class="meta"><span class="ex">пример</span></div>');
+nd.appendChild(nb);add(nd);
+kb([{t:'Задать вопрос куратору',cb:function(){me('Задать вопрос куратору');bot('Куратор ответит вам в течение дня.')}}]);
+kb([{t:'Начать заново',pri:1,cb:reset},{t:'Посмотреть, что видит автор',cb:function(){document.getElementById('dash').scrollIntoView({behavior:'smooth',block:'start'})}}],{mode:'free'})}
+
+function advance(){
+var gs=[].slice.call(chat.querySelectorAll('.kb')).filter(function(g){return !g.classList.contains('used')&&g.querySelector('button:not(:disabled)')});
+var g=gs[gs.length-1];if(!g)return;
+var b=g.querySelector('button[data-def]:not(:disabled)')||g.querySelector('button:not(:disabled)');
+if(b)b.click()}
+function has(n){return chat.querySelector('.div[data-step="'+n+'"]')}
+
+var steps=document.querySelectorAll('.step');
+function setActive(n){steps.forEach(function(s){s.classList.toggle('on',+s.dataset.n===+n)})}
+function upd(){
+var ds=chat.querySelectorAll('.div'),top=chat.getBoundingClientRect().top,lim=top+chat.clientHeight*0.5,cur=1;
+ds.forEach(function(d){if(d.getBoundingClientRect().top<lim)cur=d.dataset.step});
+setActive(cur)}
+chat.addEventListener('scroll',upd);
+steps.forEach(function(s){s.onclick=function(){
+var n=+s.dataset.n,g=0;
+quick=true;while(!has(n)&&g++<40)advance();
+chat.scrollTop=chat.scrollTop;quick=false;
+if(window.innerWidth<900)document.querySelector('.tg').scrollIntoView({behavior:'smooth',block:'start'});
+var d=has(n);
+setTimeout(function(){
+var y=d.getBoundingClientRect().top-chat.getBoundingClientRect().top+chat.scrollTop-10;
+chat.scrollTo({top:y,behavior:'smooth'});setActive(n)},60)}});
+
+function reset(){
+st={stage:-1,coded:false,topic:null,age:null,days:0,proceed:false,tariff:1,tl:null,ctrl:null};
+chat.innerHTML='';ci.disabled=false;ci.value='';ci.placeholder='Напишите кодовое слово…';
+quick=true;startEntry();quick=false;chat.scrollTop=0;setActive(1)}
+document.getElementById('reset').onclick=reset;
+document.getElementById('cf').onsubmit=function(e){
+e.preventDefault();var v=ci.value.trim();if(!v||ci.disabled)return;ci.value='';doCode(v)};
+
+function dash(){
+var flow=[['Пришли по кодовому слову',1240],['Прошли подарок',860],['Были на эфире',410],['Оплатили',96]];
+var rev=[['Россия',612000],['Казахстан и СНГ',148000],['Европа и мир',96000],['Другое',24000]];
+var total=rev.reduce(function(a,r){return a+r[1]},0);
+var pc=function(a,b){return (a/b*100).toFixed(1).replace('.',',')};
+var h='<div class="kpis"><div class="kpi"><b>'+fmt(flow[0][1])+'</b><span>вошли за месяц</span></div><div class="kpi"><b>'+pc(flow[3][1],flow[0][1])+' %</b><span>из входа в оплату</span></div><div class="kpi"><b>'+flow[3][1]+'</b><span>оплат</span></div><div class="kpi"><b>'+fmt(total)+' ₽</b><span>выручка</span></div></div>';
+h+='<h4>Воронка по шагам</h4>';
+flow.forEach(function(f,i){
+h+='<div class="row"><div class="lbl"><span>'+f[0]+'</span><b>'+fmt(f[1])+'</b></div><div class="track"><i style="width:'+(f[1]/flow[0][1]*100)+'%"></i></div>'+(i?'<small>'+pc(f[1],flow[i-1][1])+' % от предыдущего шага</small>':'<small>старт воронки</small>')+'</div>'});
+h+='<h4>Выручка по странам</h4>';
+rev.forEach(function(r){
+h+='<div class="row"><div class="lbl"><span>'+r[0]+'</span><b>'+fmt(r[1])+' ₽</b></div><div class="track g"><i style="width:'+(r[1]/rev[0][1]*100)+'%"></i></div><small>'+pc(r[1],total)+' % от выручки</small></div>'});
+h+='<p class="fnote">Все цифры – пример. Суммы по странам в пересчёте на рубли.</p>';
+document.getElementById('dashbody').innerHTML=h}
+dash();reset();
+})();
+</script>
+</body>
+</html>
