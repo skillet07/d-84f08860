@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="demo-screens" content="6">
+<title>Таплинк эксперта по нейросетям – демо-прототип</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --page:#e6dfd6;--bg:#f7f2ec;--card:#ffffff;--text:#2b2a28;--muted:#7a746c;
+  --accent:#5b7f73;--accent-text:#ffffff;--line:#e8e0d6;--soft:#eef3f0;
+}
+[data-theme="dark"]{
+  --page:#0a0a08;--bg:#14130f;--card:#1e1c17;--text:#f1ebdd;--muted:#9b9384;
+  --accent:#c8a96a;--accent-text:#1a1608;--line:#2f2c24;--soft:#26231c;
+}
+[data-theme="bright"]{
+  --page:#ffe39a;--bg:#fffaf0;--card:#ffffff;--text:#1b1d2b;--muted:#6a6d7d;
+  --accent:#ff5a36;--accent-text:#ffffff;--line:#ffe2c9;--soft:#ffeede;
+}
+html{scroll-behavior:auto}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--page);color:var(--text);line-height:1.45;font-size:16px;
+  transition:background-color .3s ease,color .3s ease;
+}
+.app{
+  max-width:430px;margin:0 auto;min-height:0;display:flex;flex-direction:column;
+  background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.18);
+  transition:background-color .3s ease;
+}
+.demobar{
+  font-size:12px;text-align:center;padding:7px 12px;background:var(--text);color:var(--bg);
+  letter-spacing:.01em;
+}
+main{flex:none;padding:20px 18px 24px}
+.screen{display:none}
+.screen.active{display:block;animation:fade .25s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ex{
+  display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;
+  vertical-align:middle;margin-left:6px;white-space:nowrap;font-style:normal
+}
+h1{font-size:24px;line-height:1.2}
+h2{font-size:21px;line-height:1.25;margin-bottom:14px}
+.sub{color:var(--muted)}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;
+  transition:background-color .3s ease,border-color .3s ease;
+}
+
+/* profile */
+.head{text-align:center;padding:6px 0 4px}
+.avatar{
+  width:96px;height:96px;border-radius:50%;margin:0 auto 14px;background:var(--soft);
+  border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;
+  color:var(--accent);font-size:38px;font-weight:700;transition:all .3s ease
+}
+.head .role{margin-top:4px;font-size:16px;color:var(--accent);font-weight:600}
+.head .about{margin-top:12px;font-size:15px;color:var(--muted)}
+.note{
+  margin-top:14px;font-size:13px;color:var(--muted);background:var(--soft);
+  border-radius:14px;padding:10px 12px;text-align:left
+}
+.socials{display:flex;justify-content:center;gap:14px;margin:20px 0 6px}
+.soc{
+  width:56px;height:56px;border-radius:50%;border:none;background:var(--accent);color:var(--accent-text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;
+  transition:transform .15s ease,background-color .3s ease
+}
+.soc:active{transform:scale(.93)}
+.soc svg{width:26px;height:26px}
+.soclabel{text-align:center;font-size:12px;color:var(--muted);margin-bottom:18px}
+.links{display:flex;flex-direction:column;gap:12px}
+.btn{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:58px;
+  padding:14px 18px;border-radius:18px;border:1.5px solid var(--accent);background:var(--card);
+  color:var(--text);font:inherit;font-weight:600;font-size:16px;text-align:left;cursor:pointer;
+  text-decoration:none;transition:transform .15s ease,background-color .3s ease,border-color .3s ease
+}
+.btn:active{transform:scale(.98)}
+.btn.main{background:var(--accent);color:var(--accent-text)}
+.btn.main .ex{color:var(--accent-text);border-color:rgba(255,255,255,.55)}
+[data-theme="dark"] .btn.main .ex{border-color:rgba(26,22,8,.55)}
+.btn svg{width:20px;height:20px;flex:none}
+.btn.small{min-height:46px;justify-content:center;font-size:15px;padding:10px 14px}
+
+/* theme switch */
+.themes{margin-top:24px}
+.themes .lbl{font-size:13px;color:var(--muted);margin-bottom:8px;text-align:center}
+.seg{display:flex;gap:8px}
+.seg button{
+  flex:1;min-height:48px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);
+  color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s ease
+}
+.seg button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.sw{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.2);flex:none}
+
+/* services */
+.services{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.svc h3{font-size:18px}
+.svc p{font-size:14px;color:var(--muted);margin:4px 0 12px}
+.svc .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.price{font-size:22px;font-weight:700;color:var(--accent)}
+.svc .btn{width:auto;min-height:46px;padding:10px 18px}
+
+/* carousel */
+.car{position:relative}
+.track{
+  display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;scroll-behavior:smooth
+}
+.track::-webkit-scrollbar{display:none}
+.rev{flex:0 0 100%;scroll-snap-align:center;min-height:190px;display:flex;flex-direction:column;justify-content:space-between}
+.rev p{font-size:15px}
+.rev .who{margin-top:14px;font-size:14px;font-weight:600}
+.rev .who span{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.stars{color:var(--accent);letter-spacing:2px;margin-bottom:8px;font-size:15px}
+.carctl{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.arrow{
+  width:48px;height:48px;border-radius:50%;border:1.5px solid var(--accent);background:var(--card);
+  color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s ease
+}
+.arrow:active{transform:scale(.92)}
+.arrow svg{width:22px;height:22px}
+.dots{display:flex;gap:8px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:all .25s ease}
+.dots i.on{background:var(--accent);width:22px;border-radius:6px}
+
+/* faq */
+.faq{display:flex;flex-direction:column;gap:10px}
+.qa{padding:0;overflow:hidden}
+.q{
+  width:100%;background:none;border:none;color:var(--text);font:inherit;font-weight:600;text-align:left;
+  padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;min-height:56px
+}
+.q svg{width:20px;height:20px;flex:none;color:var(--accent);transition:transform .25s ease}
+.q[aria-expanded="true"] svg{transform:rotate(180deg)}
+.a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+.a.open{grid-template-rows:1fr}
+.a>div{overflow:hidden}
+.a p{padding:0 16px 16px;font-size:15px;color:var(--muted)}
+
+/* form */
+form{display:flex;flex-direction:column;gap:14px}
+label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
+input,select{
+  width:100%;min-height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);
+  color:var(--text);font:inherit;padding:12px 14px;outline:none;transition:border-color .2s ease
+}
+input:focus,select:focus{border-color:var(--accent)}
+.err{color:#c0392b;font-size:13px;min-height:16px;margin-top:-6px}
+.hint{font-size:13px;color:var(--muted)}
+.thanks{text-align:center}
+.check{
+  width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--accent-text);
+  display:flex;align-items:center;justify-content:center;margin:6px auto 14px
+}
+.check svg{width:34px;height:34px}
+.tg{
+  margin-top:20px;text-align:left;border-radius:18px;overflow:hidden;background:#17212b;color:#f5f5f5;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);animation:slide .4s ease both
+}
+@keyframes slide{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.tg .top{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#1f2c3a;font-size:13px}
+.tg .ic{width:30px;height:30px;border-radius:50%;background:#2ea6dd;display:flex;align-items:center;justify-content:center;flex:none}
+.tg .ic svg{width:16px;height:16px;color:#fff}
+.tg .top b{display:block;font-size:14px}
+.tg .top span{color:#8fa3b5;font-size:12px}
+.tg .msg{padding:12px 14px;font-size:14px;line-height:1.55}
+.tg .msg b{color:#fff}
+.tg .msg div{color:#c9d3dc}
+.tg .tm{padding:0 14px 10px;text-align:right;font-size:11px;color:#8fa3b5}
+.tgcap{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+
+/* cases */
+.case{margin-bottom:12px}
+.case .co{font-size:18px;font-weight:700}
+.case .meta{font-size:13px;color:var(--muted);margin:2px 0 10px}
+.case .pat{display:inline-block;font-size:12px;background:var(--soft);color:var(--accent);border-radius:8px;padding:3px 9px;margin-bottom:10px;font-weight:600}
+.case .res{font-size:15px}
+.case .trust{font-size:12px;color:var(--muted);margin-top:10px}
+.case a{color:var(--accent);font-weight:600;font-size:14px;display:inline-block;margin-top:8px;word-break:break-word}
+.warn{font-size:13px;color:var(--muted);margin:4px 0 16px}
+
+/* final */
+.steps{list-style:none;display:flex;flex-direction:column;gap:10px;margin:14px 0 20px}
+.steps li{display:flex;gap:12px;align-items:flex-start;font-size:15px}
+.steps b{
+  width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-text);
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex:none
+}
+.contact a{color:var(--accent);font-weight:700}
+.contact .name{font-size:18px;font-weight:700}
+.next{margin-top:20px}
+
+.foot{text-align:center;font-size:11px;color:var(--muted);padding:6px 18px 14px}
+nav{
+  position:sticky;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);
+  transition:background-color .3s ease;z-index:5
+}
+nav a{
+  flex:1;text-align:center;text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;
+  padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;
+  border-top:2px solid transparent;transition:color .2s ease
+}
+nav a b{font-size:15px;line-height:1}
+nav a[aria-current="page"]{color:var(--accent);border-top-color:var(--accent)}
+
+.toast{
+  position:fixed;left:50%;bottom:78px;transform:translate(-50%,10px);max-width:380px;width:calc(100% - 36px);
+  background:var(--text);color:var(--bg);padding:12px 16px;border-radius:14px;font-size:14px;text-align:center;
+  opacity:0;pointer-events:none;transition:all .25s ease;z-index:20
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-theme="pastel">
+<div class="app" id="app">
+  <div class="demobar">Демо-прототип под вашу задачу. Данные – примерные</div>
+
+  <main>
+    <!-- s1 профиль -->
+    <section class="screen" id="s1">
+      <div class="head">
+        <div class="avatar" aria-hidden="true">Е</div>
+        <h1>Екатерина <i class="ex">пример</i></h1>
+        <div class="role">Нейросети для бизнеса и жизни <i class="ex">пример</i></div>
+        <p class="about">Помогаю предпринимателям и обычным людям использовать нейросети в работе: писать тексты, делать картинки, разбирать документы и экономить часы в неделю. Объясняю простым языком, без сложных терминов. <i class="ex">пример</i></p>
+        <p class="note">Ниша в заявке не указана, поэтому показан профиль эксперта по нейросетям (пример). Стиль подстроим под вашу нишу.</p>
+      </div>
+
+      <div class="socials">
+        <a class="soc" href="https://t.me/ekaterina_neiro" target="_blank" rel="noopener" aria-label="Telegram">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 3.6 2.9 10.8c-.9.3-.9 1.3 0 1.6l4.7 1.5 1.8 5.6c.2.6.9.8 1.4.4l2.6-2.2 4.8 3.5c.6.4 1.3.1 1.5-.6l3-15.1c.2-.9-.6-1.6-1.4-1.3zM9.5 13.6l8.6-5.3-6.7 6.4-.3 3.1z"/></svg>
+        </a>
+        <button class="soc" data-toast="Пример: здесь будет ссылка на ваш WhatsApp" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.2 20.8l1.5-4.6A8.6 8.6 0 1 1 8 19.5z"/><path fill="currentColor" stroke="none" d="M9 7.8c-.4.5-.5 1.3-.2 2.1.8 2.2 2.6 3.9 4.8 4.7.8.3 1.6.2 2.1-.3l.4-.6-1.9-1-.8.6c-1.1-.4-2-1.3-2.4-2.4l.6-.8-1-1.9z"/></svg>
+        </button>
+        <button class="soc" data-toast="Пример: здесь будет ссылка на ваш VK" aria-label="VK">
+          <svg viewBox="0 0 24 24"><text x="12" y="16.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="12" fill="currentColor">VK</text></svg>
+        </button>
+        <button class="soc" data-toast="Пример: здесь будет ссылка на ваш Instagram" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+      <div class="soclabel">Telegram, WhatsApp, VK, Instagram <i class="ex">пример</i></div>
+
+      <div class="links">
+        <a class="btn main" href="https://t.me/ekaterina_neiro" target="_blank" rel="noopener">
+          <span>Мой Telegram-канал <i class="ex">пример</i></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </a>
+        <button class="btn" data-toast="Пример: здесь откроется файл или страница с гайдом">
+          <span>Бесплатный гайд <i class="ex">пример</i></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="btn" data-go="book">
+          <span>Записаться на консультацию <i class="ex">пример</i></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="btn" data-go="reviews">
+          <span>Отзывы <i class="ex">пример</i></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <div class="themes">
+        <div class="lbl">Выберите оформление – цвета меняются сразу</div>
+        <div class="seg" role="group" aria-label="Оформление">
+          <button type="button" data-theme-btn="pastel" aria-pressed="true"><span class="sw" style="background:#f0d9c8"></span>Пастель</button>
+          <button type="button" data-theme-btn="dark" aria-pressed="false"><span class="sw" style="background:#14130f;border-color:#c8a96a"></span>Премиум</button>
+          <button type="button" data-theme-btn="bright" aria-pressed="false"><span class="sw" style="background:#ff5a36"></span>Яркий</button>
+        </div>
+      </div>
+      <div class="next"><a class="btn small" href="#s2">Дальше: услуги и отзывы</a></div>
+    </section>
+
+    <!-- s2 услуги и отзывы -->
+    <section class="screen" id="s2">
+      <h2>Услуги и цены <i class="ex">пример</i></h2>
+      <div class="services">
+        <div class="card svc">
+          <h3>Консультация <i class="ex">пример</i></h3>
+          <p>60 минут: разберём вашу задачу и подберём нейросети под неё.</p>
+          <div class="row"><div class="price">3 000 ₽</div><button class="btn main" data-book="Консультация">Записаться</button></div>
+        </div>
+        <div class="card svc">
+          <h3>Обучение <i class="ex">пример</i></h3>
+          <p>4 занятия в мини-группе: от первых запросов до готовых рабочих сценариев.</p>
+          <div class="row"><div class="price">12 000 ₽</div><button class="btn main" data-book="Обучение">Записаться</button></div>
+        </div>
+        <div class="card svc">
+          <h3>Сопровождение <i class="ex">пример</i></h3>
+          <p>Месяц рядом: настрою процессы, отвечу на вопросы, проверю результат.</p>
+          <div class="row"><div class="price">25 000 ₽</div><button class="btn main" data-book="Сопровождение">Записаться</button></div>
+        </div>
+      </div>
+
+      <h2 id="reviews">Отзывы <i class="ex">пример</i></h2>
+      <div class="car">
+        <div class="track" id="track">
+          <div class="card rev">
+            <div><div class="stars">★★★★★</div><p>«За час на консультации я поняла, как делать описания товаров за минуты, а не за вечер. Всё объяснено спокойно и понятно».</p></div>
+            <div class="who">Анна, владелица магазина<span>вымышленный отзыв, пример</span></div>
+          </div>
+          <div class="card rev">
+            <div><div class="stars">★★★★★</div><p>«После обучения вся команда пользуется нейросетями каждый день. Рутины стало заметно меньше, времени на клиентов больше».</p></div>
+            <div class="who">Игорь, руководитель студии<span>вымышленный отзыв, пример</span></div>
+          </div>
+          <div class="card rev">
+            <div><div class="stars">★★★★★</div><p>«Думала, что это сложно и не для меня. Оказалось, что нужно только понятное объяснение и немного практики».</p></div>
+            <div class="who">Марина, репетитор<span>вымышленный отзыв, пример</span></div>
+          </div>
+        </div>
+        <div class="carctl">
+          <button class="arrow" id="prev" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
+          <button class="arrow" id="next" aria-label="Вперёд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+      <div class="next"><a class="btn small" href="#s3">Дальше: частые вопросы</a></div>
+    </section>
+
+    <!-- s3 faq -->
+    <section class="screen" id="s3">
+      <h2>Частые вопросы <i class="ex">пример</i></h2>
+      <div class="faq">
+        <div class="card qa">
+          <button class="q" aria-expanded="false">Нужно ли разбираться в нейросетях заранее?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="a"><div><p>Нет. Начинаем с нуля и говорим простым языком. Достаточно уметь пользоваться телефоном или компьютером. (пример)</p></div></div>
+        </div>
+        <div class="card qa">
+          <button class="q" aria-expanded="false">Как проходит консультация?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="a"><div><p>Созвон в удобном мессенджере на 60 минут. Вы рассказываете о задаче, мы вместе пробуем решения прямо на экране. (пример)</p></div></div>
+        </div>
+        <div class="card qa">
+          <button class="q" aria-expanded="false">Как оплатить участие?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="a"><div><p>После заявки я напишу вам и пришлю реквизиты или ссылку на оплату. Оплата возможна картой или переводом. (пример)</p></div></div>
+        </div>
+        <div class="card qa">
+          <button class="q" aria-expanded="false">Останется ли запись занятия?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="a"><div><p>Да, запись и краткий конспект вы получите в тот же день и сможете вернуться к ним в любой момент. (пример)</p></div></div>
+        </div>
+      </div>
+      <div class="next"><a class="btn small" href="#s4">Дальше: форма заявки</a></div>
+    </section>
+
+    <!-- s4 заявка -->
+    <section class="screen" id="s4">
+      <div id="formWrap">
+        <h2>Заявка <i class="ex">пример</i></h2>
+        <p class="sub" style="margin:-6px 0 14px;font-size:14px">Функция тарифа «Бизнес»: заявка сразу приходит владельцу в Telegram.</p>
+        <form id="form" class="card" novalidate>
+          <div>
+            <label for="fname">Ваше имя</label>
+            <input id="fname" type="text" autocomplete="off" placeholder="Например, Анна (пример)">
+          </div>
+          <div>
+            <label for="fphone">Телефон</label>
+            <input id="fphone" type="tel" inputmode="tel" autocomplete="off" placeholder="+7 900 000-00-00 (пример)">
+          </div>
+          <div>
+            <label for="fsvc">Услуга</label>
+            <select id="fsvc">
+              <option>Консультация</option>
+              <option>Обучение</option>
+              <option>Сопровождение</option>
+            </select>
+          </div>
+          <div class="err" id="err" role="alert"></div>
+          <button type="submit" class="btn main" style="justify-content:center">Отправить заявку</button>
+          <div class="hint">Это демо: данные никуда не отправляются.</div>
+        </form>
+      </div>
+
+      <div id="thanksWrap" class="thanks" hidden>
+        <div class="card">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <h2 style="margin-bottom:6px">Спасибо, заявка принята</h2>
+          <p class="sub" style="font-size:15px">Екатерина свяжется с вами в ближайшее время. <i class="ex">пример</i></p>
+        </div>
+        <div class="tg" aria-label="Уведомление в Telegram владельца">
+          <div class="top">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 3.6 2.9 10.8c-.9.3-.9 1.3 0 1.6l4.7 1.5 1.8 5.6c.2.6.9.8 1.4.4l2.6-2.2 4.8 3.5c.6.4 1.3.1 1.5-.6l3-15.1c.2-.9-.6-1.6-1.4-1.3z"/></svg></div>
+            <div><b>Бот заявок</b><span>Telegram владельца</span></div>
+          </div>
+          <div class="msg">
+            <b>Новая заявка</b>
+            <div>Имя: <span id="nName"></span></div>
+            <div>Телефон: <span id="nPhone"></span></div>
+            <div>Услуга: <span id="nSvc"></span></div>
+          </div>
+          <div class="tm" id="nTime"></div>
+        </div>
+        <div class="tgcap">Так заявка сразу приходит владельцу в Telegram (пример)</div>
+        <div class="next"><button class="btn small" id="again">Заполнить ещё раз</button></div>
+        <div class="next" style="margin-top:10px"><a class="btn main small" href="#s5">Дальше: так уже сделали</a></div>
+      </div>
+    </section>
+
+    <!-- s5 кейсы -->
+    <section class="screen" id="s5">
+      <h2>Так уже сделали</h2>
+      <p class="warn">Это реальные кейсы других компаний. Цифры относятся к ним, а не к вашей странице.</p>
+
+      <div class="card case">
+        <div class="co">TEHNIKUM School</div>
+        <div class="meta">Узбекистан · малая, до 50 человек</div>
+        <div class="pat">Ответ на заявку сразу, в мессенджере и на сайте</div>
+        <div class="res">Настройка заняла три недели; конверсия агента-квалификатора 27%, на уровне опытных специалистов; закрытие части сделок агентом снизило стоимость обработки лидов в два раза; за два месяца школа обрабатывает вдвое больше заявок без расширения штата</div>
+        <div class="trust">по данным: цифры от самой компании; есть цифры результата; в работе</div>
+        <a href="https://www.spot.uz/ru/2026/04/21/tehnikum-school/" target="_blank" rel="noopener">Источник: spot.uz</a>
+      </div>
+
+      <div class="card case">
+        <div class="co">Детский клуб «Прознание»</div>
+        <div class="meta">Беларусь · малая, до 50 человек</div>
+        <div class="pat">Ответ на заявку сразу, в мессенджере и на сайте</div>
+        <div class="res">Результат словами: при том же составе команда обрабатывает больше сообщений; паузы в ответах практически исчезли, диалоги перестали теряться; по аренде пространства агент записывает сам; нагрузка на отдел продаж в пик рекламы снизилась</div>
+        <div class="trust">по данным: со слов самой компании; результат описан словами, без цифр; в работе</div>
+        <a href="https://brandplatform.by/articles/kak-ii-pomoshhnik-v-detskom-klube-v-mogileve-stal-pochti-polnoczennym-menedzherom-po-prodazham/" target="_blank" rel="noopener">Источник: brandplatform.by</a>
+      </div>
+      <div class="next"><a class="btn small" href="#s6">Дальше: контакт</a></div>
+    </section>
+
+    <!-- s6 финал -->
+    <section class="screen" id="s6">
+      <h2>Доведу до рабочей версии под ваш процесс</h2>
+      <p class="sub">Этот макет показывает, как может выглядеть страница. Дальше я сделаю её под вас.</p>
+      <ul class="steps">
+        <li><b>1</b><span>Подберу стиль и структуру под вашу нишу и тексты.</span></li>
+        <li><b>2</b><span>Соберу страницу в вашем аккаунте Taplink, тариф «Бизнес».</span></li>
+        <li><b>3</b><span>Подключу форму заявки, чтобы обращения приходили вам в Telegram.</span></li>
+      </ul>
+      <div class="card contact">
+        <div class="sub" style="font-size:13px;margin-bottom:4px">Контакт</div>
+        <div class="name">Роман Благов</div>
+        <div style="margin-top:4px">Telegram <a href="https://t.me/adam_nfb" target="_blank" rel="noopener">@adam_nfb</a></div>
+      </div>
+      <div class="next"><a class="btn main" style="justify-content:center" href="https://t.me/adam_nfb" target="_blank" rel="noopener">Написать в Telegram</a></div>
+    </section>
+  </main>
+
+  <div class="foot">Демо-макет. Перенесём в ваш аккаунт Taplink за 1 день</div>
+
+  <nav aria-label="Экраны">
+    <a href="#s1"><b>1</b>Профиль</a>
+    <a href="#s2"><b>2</b>Услуги</a>
+    <a href="#s3"><b>3</b>FAQ</a>
+    <a href="#s4"><b>4</b>Заявка</a>
+    <a href="#s5"><b>5</b>Кейсы</a>
+    <a href="#s6"><b>6</b>Контакт</a>
+  </nav>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var screens=[].slice.call(document.querySelectorAll('.screen'));
+  var navs=[].slice.call(document.querySelectorAll('nav a'));
+  function show(){
+    var m=/^#s([1-6])$/.exec(location.hash);
+    var n=m?+m[1]:1;
+    screens.forEach(function(s,i){s.classList.toggle('active',i===n-1)});
+    navs.forEach(function(a,i){
+      if(i===n-1)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+    });
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange',show);
+  show();
+
+  /* toast */
+  var toast=document.getElementById('toast'),tt;
+  function say(t){
+    toast.textContent=t;toast.classList.add('show');
+    clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove('show')},2400);
+  }
+  [].forEach.call(document.querySelectorAll('[data-toast]'),function(b){
+    b.addEventListener('click',function(){say(b.getAttribute('data-toast'))});
+  });
+
+  /* themes */
+  var tb=[].slice.call(document.querySelectorAll('[data-theme-btn]'));
+  tb.forEach(function(b){
+    b.addEventListener('click',function(){
+      document.body.setAttribute('data-theme',b.getAttribute('data-theme-btn'));
+      tb.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+    });
+  });
+
+  /* carousel */
+  var track=document.getElementById('track');
+  var dots=[].slice.call(document.querySelectorAll('#dots i'));
+  function idx(){return Math.round(track.scrollLeft/(track.clientWidth+12))}
+  function upd(){var i=Math.max(0,Math.min(2,idx()));dots.forEach(function(d,k){d.classList.toggle('on',k===i)})}
+  track.addEventListener('scroll',upd);
+  function go(d){
+    var i=Math.max(0,Math.min(2,idx()+d));
+    track.scrollTo({left:i*(track.clientWidth+12),behavior:'smooth'});
+  }
+  document.getElementById('prev').addEventListener('click',function(){go(-1)});
+  document.getElementById('next').addEventListener('click',function(){go(1)});
+
+  /* faq */
+  [].forEach.call(document.querySelectorAll('.q'),function(q){
+    q.addEventListener('click',function(){
+      var open=q.getAttribute('aria-expanded')==='true';
+      q.setAttribute('aria-expanded',open?'false':'true');
+      q.nextElementSibling.classList.toggle('open',!open);
+    });
+  });
+
+  /* navigation helpers */
+  var svc=document.getElementById('fsvc');
+  [].forEach.call(document.querySelectorAll('[data-book]'),function(b){
+    b.addEventListener('click',function(){
+      svc.value=b.getAttribute('data-book');
+      resetForm();
+      location.hash='#s4';
+    });
+  });
+  [].forEach.call(document.querySelectorAll('[data-go]'),function(b){
+    b.addEventListener('click',function(){
+      if(b.getAttribute('data-go')==='book'){location.hash='#s4';}
+      else{
+        location.hash='#s2';
+        setTimeout(function(){document.getElementById('reviews').scrollIntoView()},30);
+      }
+    });
+  });
+
+  /* form */
+  var form=document.getElementById('form'),err=document.getElementById('err');
+  var fw=document.getElementById('formWrap'),tw=document.getElementById('thanksWrap');
+  function resetForm(){fw.hidden=false;tw.hidden=true;err.textContent=''}
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=document.getElementById('fname').value.trim();
+    var phone=document.getElementById('fphone').value.trim();
+    if(!name){err.textContent='Укажите, как к вам обращаться';return}
+    if(phone.replace(/\D/g,'').length<10){err.textContent='Укажите телефон полностью';return}
+    err.textContent='';
+    document.getElementById('nName').textContent=name;
+    document.getElementById('nPhone').textContent=phone;
+    document.getElementById('nSvc').textContent=svc.value;
+    var d=new Date(),p=function(x){return (x<10?'0':'')+x};
+    document.getElementById('nTime').textContent=p(d.getHours())+':'+p(d.getMinutes());
+    fw.hidden=true;tw.hidden=false;window.scrollTo(0,0);
+  });
+  document.getElementById('again').addEventListener('click',function(){
+    form.reset();resetForm();window.scrollTo(0,0);
+  });
+})();
+</script>
+</body>
+</html>
